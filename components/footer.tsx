@@ -234,11 +234,11 @@ const Footer = () => {
           </Text>
           <Text
             style={{ color: "white", fontStyle: "italic" }}
-            onPress={() =>
-              Linking.openURL(
-                "https://www.haravan.com/?utm_campaign=poweredby&utm_medium=haravan&utm_source=onlinestore"
-              )
-            }
+            // onPress={() =>
+            //   Linking.openURL(
+            //     "https://www.haravan.com/?utm_campaign=poweredby&utm_medium=haravan&utm_source=onlinestore"
+            //   )
+            // }
           >
             Powered by Haravan
           </Text>

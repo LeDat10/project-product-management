@@ -31,7 +31,7 @@ const HomeScreen = () => {
           style={styles.button}
           onPress={() => navigation.navigate("product")}
         >
-          <Text style={styles.textButton}>Shop Now</Text>
+          <Text style={styles.textButton}>Mua Sắm Ngay</Text>
         </TouchableOpacity>
       </View>
       {/* <ImageSlide /> */}
@@ -175,7 +175,7 @@ const HomeScreen = () => {
                 style={styles.buttonImgClean}
                 onPress={() => navigation.navigate("Cleaning")}
               >
-                <Text style={styles.textButton2}>Shop Now</Text>
+                <Text style={styles.textButton2}>Mua Sắm Ngay</Text>
               </TouchableOpacity>
             </View>
           </ImageBackground>
@@ -244,7 +244,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 120,
     marginTop: 20,
     backgroundColor: "#FFB13F",
-    borderRadius: 10,
+    borderRadius: 20,
   },
 
   textButton: {
@@ -321,12 +321,11 @@ const styles = StyleSheet.create({
   },
 
   buttonImgClean: {
-    width: 160,
+    width: 180,
     height: 55,
-    marginHorizontal: 120,
-    marginLeft: 50,
+    marginLeft: 40,
     backgroundColor: "#FFB13F",
-    borderRadius: 10,
+    borderRadius: 20,
     alignItems: "center",
   },
 
