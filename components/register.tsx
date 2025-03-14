@@ -2,13 +2,12 @@ import { NavigationProp, useNavigation } from "@react-navigation/native";
 import React from "react";
 import { View, Text } from "react-native";
 
-const AboutUs = () => {
-  const navigation: NavigationProp<RootStackParamList> = useNavigation();
+const Register = () => {
   return (
     <View>
-      <Text>about us</Text>
+      <Text>dang ky</Text>
     </View>
   );
 };
 
-export default AboutUs;
+export default Register;

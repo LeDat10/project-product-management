@@ -2,13 +2,14 @@ import { NavigationProp, useNavigation } from "@react-navigation/native";
 import React from "react";
 import { View, Text } from "react-native";
 
-const AboutUs = () => {
+const Milk = () => {
   const navigation: NavigationProp<RootStackParamList> = useNavigation();
+
   return (
     <View>
-      <Text>about us</Text>
+      <Text>milk</Text>
     </View>
   );
 };
 
-export default AboutUs;
+export default Milk;
