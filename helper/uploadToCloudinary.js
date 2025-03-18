@@ -9,6 +9,12 @@ cloudinary.config({
 
 module.exports.uploadToCloud = function (req, res, next) {
     if (req.file) {
+        const allowedMimeTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+        if (!allowedMimeTypes.includes(req.file.mimetype)) {
+            return res.json({
+                code: 400
+            });
+        }
         let streamUpload = (req) => {
             return new Promise((resolve, reject) => {
                 let stream = cloudinary.uploader.upload_stream(

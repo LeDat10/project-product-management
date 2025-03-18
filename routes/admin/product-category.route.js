@@ -12,4 +12,11 @@ router.get("/", controller.index);
 
 router.post("/create", upload.single("thumbnail"), uploadToCloudHelper.uploadToCloud, controller.create);
 
+router.patch("/change-status/:id", controller.changeStatus);
+
+router.patch("/change-multi", controller.changeMulti);
+
+router.get("/detail/:id", controller.detail);
+
+router.patch("/edit/:id", upload.single("thumbnail"), uploadToCloudHelper.uploadToCloud, controller.edit);
 module.exports = router;
