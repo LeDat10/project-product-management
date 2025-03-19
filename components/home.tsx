@@ -1,4 +1,8 @@
-import { NavigationProp, useNavigation } from "@react-navigation/native";
+import {
+  NavigationContainer,
+  NavigationProp,
+  useNavigation,
+} from "@react-navigation/native";
 import {
   View,
   Text,
@@ -12,13 +16,12 @@ import {
 import ImageSlide from "./imageSlide";
 import React from "react";
 import { ScrollView } from "react-native-gesture-handler";
-import AntDesign from "@expo/vector-icons/AntDesign";
-import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
-import Fontisto from "@expo/vector-icons/Fontisto";
 import Footer from "./footer";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 const HomeScreen = () => {
   const navigation: NavigationProp<RootStackParamList> = useNavigation();
+  const Stack = createNativeStackNavigator<RootStackParamList>();
 
   return (
     <ScrollView>
@@ -44,13 +47,16 @@ const HomeScreen = () => {
         {/* Row1 */}
         <View style={styles.row}>
           <View style={styles.menu}>
-            <View>
+            <View style={styles.innerImage}>
               <TouchableOpacity
-                onPress={() => navigation.navigate("Vegetable")}
+                onPress={() => {
+                  navigation.navigate("Vegetable");
+                }}
               >
                 <Image
-                  style={{ width: 160, height: 160 }}
+                  style={{ width: "100%", height: "100%" }}
                   source={require("../assets/vegetable.png")}
+                  resizeMode="cover"
                 />
               </TouchableOpacity>
             </View>
@@ -58,11 +64,12 @@ const HomeScreen = () => {
           </View>
 
           <View style={styles.menu}>
-            <View>
+            <View style={styles.innerImage}>
               <TouchableOpacity onPress={() => navigation.navigate("Bakery")}>
                 <Image
-                  style={{ width: 160, height: 160 }}
+                  style={{ width: "100%", height: "100%" }}
                   source={require("../assets/bakery.png")}
+                  resizeMode="cover"
                 />
               </TouchableOpacity>
             </View>
@@ -73,11 +80,12 @@ const HomeScreen = () => {
         {/* Row 2 */}
         <View style={styles.row}>
           <View style={styles.menu}>
-            <View>
+            <View style={styles.innerImage}>
               <TouchableOpacity onPress={() => navigation.navigate("Snack")}>
                 <Image
-                  style={{ width: 160, height: 160 }}
+                  style={{ width: "100%", height: "100%" }}
                   source={require("../assets/snack.png")}
+                  resizeMode="cover"
                 />
               </TouchableOpacity>
             </View>
@@ -85,11 +93,12 @@ const HomeScreen = () => {
           </View>
 
           <View style={styles.menu}>
-            <View>
+            <View style={styles.innerImage}>
               <TouchableOpacity onPress={() => navigation.navigate("Milk")}>
                 <Image
-                  style={{ width: 160, height: 160 }}
+                  style={{ width: "100%", height: "100%" }}
                   source={require("../assets/milk.png")}
+                  resizeMode="cover"
                 />
               </TouchableOpacity>
             </View>
@@ -100,11 +109,12 @@ const HomeScreen = () => {
         {/* Row 3 */}
         <View style={styles.row}>
           <View style={styles.menu}>
-            <View>
+            <View style={styles.innerImage}>
               <TouchableOpacity onPress={() => navigation.navigate("Meat")}>
                 <Image
-                  style={{ width: 160, height: 160 }}
+                  style={{ width: "100%", height: "100%" }}
                   source={require("../assets/meat.png")}
+                  resizeMode="cover"
                 />
               </TouchableOpacity>
             </View>
@@ -112,11 +122,12 @@ const HomeScreen = () => {
           </View>
 
           <View style={styles.menu}>
-            <View>
+            <View style={styles.innerImage}>
               <TouchableOpacity onPress={() => navigation.navigate("Drink")}>
                 <Image
-                  style={{ width: 160, height: 160 }}
+                  style={{ width: "100%", height: "100%" }}
                   source={require("../assets/drink.png")}
+                  resizeMode="cover"
                 />
               </TouchableOpacity>
             </View>
@@ -127,23 +138,25 @@ const HomeScreen = () => {
         {/* Row 4 */}
         <View style={styles.row}>
           <View style={styles.menu}>
-            <View>
+            <View style={styles.innerImage}>
               <TouchableOpacity onPress={() => navigation.navigate("Cleaning")}>
                 <Image
-                  style={{ width: 160, height: 160 }}
+                  style={{ width: "100%", height: "100%" }}
                   source={require("../assets/cleaning.png")}
+                  resizeMode="cover"
                 />
               </TouchableOpacity>
             </View>
-            <Text style={styles.Text}>Đồ Gia Dụng</Text>
+            <Text style={styles.Text}>Dụng cụ vệ sinh</Text>
           </View>
 
           <View style={styles.menu}>
-            <View>
+            <View style={styles.innerImage}>
               <TouchableOpacity onPress={() => navigation.navigate("Care")}>
                 <Image
-                  style={{ width: 160, height: 160 }}
+                  style={{ width: "100%", height: "100%" }}
                   source={require("../assets/care.png")}
+                  resizeMode="cover"
                 />
               </TouchableOpacity>
             </View>
@@ -377,6 +390,14 @@ const styles = StyleSheet.create({
     marginTop: 20,
     fontSize: 16,
     fontWeight: "600",
+  },
+
+  innerImage: {
+    backgroundColor: "white",
+    borderRadius: 100,
+    width: 130,
+    height: 130,
+    overflow: "hidden",
   },
 });
 

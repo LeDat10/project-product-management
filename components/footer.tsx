@@ -111,7 +111,7 @@ const Footer = () => {
                 style={styles.dmsp1}
                 onPress={() => navigation.navigate("Cleaning")}
               >
-                Đồ Gia Dụng
+                Dụng Cụ Vệ Sinh
               </Text>
             </View>
           </View>
@@ -130,7 +130,7 @@ const Footer = () => {
               style={{
                 paddingTop: 10,
                 color: "white",
-                marginRight: 20,
+                marginRight: 30,
                 fontSize: 15,
                 paddingLeft: 6,
               }}
@@ -155,7 +155,7 @@ const Footer = () => {
               style={{
                 paddingTop: 10,
                 color: "white",
-                marginRight: 15,
+                marginRight: 30,
                 fontSize: 15,
                 paddingLeft: 6,
               }}

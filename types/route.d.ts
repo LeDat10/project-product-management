@@ -12,6 +12,9 @@ type RootStackParamList = {
   Cleaning: undefined;
   Care: undefined;
   product: undefined;
+  cart: undefined;
+  account: undefined;
+  menu: undefined;
   // Feed: { sort: 'latest' | 'top' } | undefined;
 };
 

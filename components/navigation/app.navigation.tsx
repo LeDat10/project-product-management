@@ -10,7 +10,6 @@ import Feather from "@expo/vector-icons/Feather";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import React from "react";
 import Product from "../product";
-// import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 const AppNavigation = () => {
   const Drawer = createDrawerNavigator();

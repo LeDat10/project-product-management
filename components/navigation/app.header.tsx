@@ -1,9 +1,8 @@
 import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { globalStyles } from "../../utils/const";
-import { NavigationProp, useNavigation } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
 import { useState } from "react";
 import React from "react";
+import Feather from "@expo/vector-icons/Feather";
 
 const AppHeader = () => {
   const navigation: any = useNavigation();
@@ -17,17 +16,6 @@ const AppHeader = () => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.icon}>
-        <MaterialIcons
-          name="menu"
-          size={35}
-          color="black"
-          onPress={() => {
-            navigation.openDrawer();
-          }}
-        />
-      </View>
-
       <TouchableOpacity
         style={[styles.headerText, { backgroundColor: bgColor }]}
         onPress={() => {
@@ -38,6 +26,17 @@ const AppHeader = () => {
         <Text style={styles.headerText1}>Temp</Text>
         <Text style={styles.headerText2}>i</Text>
       </TouchableOpacity>
+
+      <View style={styles.icon}>
+        <Feather
+          name="shopping-cart"
+          size={30}
+          color="black"
+          onPress={() => {
+            navigation.navigate("cart");
+          }}
+        />
+      </View>
 
       <View style={[styles.logo, { backgroundColor: bgColor }]}>
         <TouchableOpacity
@@ -77,7 +76,7 @@ const styles = StyleSheet.create({
   },
 
   headerText1: {
-    flex: 2,
+    flex: 1,
     textAlign: "right",
     fontSize: 35,
     fontWeight: "900",
@@ -97,7 +96,7 @@ const styles = StyleSheet.create({
 
   logo: {
     alignItems: "flex-end",
-    flexGrow: 1,
+    paddingHorizontal: 15,
     // borderWidth: 1,
     // borderColor: "red",
   },
@@ -105,9 +104,8 @@ const styles = StyleSheet.create({
   icon: {
     // borderWidth: 1,
     // borderColor: "red",
-    flexGrow: 1,
-    alignItems: "flex-start",
-    paddingTop: 5,
+    justifyContent: "center",
+    paddingHorizontal: 10,
   },
 });
 

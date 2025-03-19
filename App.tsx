@@ -7,20 +7,19 @@ import { TIMES_NEW_ROMAN } from "./utils/const";
 import { NavigationContainer } from "@react-navigation/native";
 import "react-native-gesture-handler";
 import React from "react";
-import AppNavigation from "./components/navigation/app.navigation";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import Vegetable from "./components/menu/vegatable";
 import Bakery from "./components/menu/bakery";
-// import FullMenu from "./components/fullMenu";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import HomeScreen from "./components/home";
-import AppHeader from "./components/navigation/app.header";
 import Snack from "./components/menu/snack";
 import Milk from "./components/menu/milk";
 import Meat from "./components/menu/meat";
 import Drink from "./components/menu/drink";
 import Cleaning from "./components/menu/cleaning";
 import Care from "./components/menu/care";
+import TabNavigation from "./components/navigation/app.tabnavigation";
+import AppHeader from "./components/navigation/app.header";
+import Cart from "./components/cart";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -43,11 +42,11 @@ const App = () => {
     <GestureHandlerRootView>
       <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
         <NavigationContainer>
-          <Stack.Navigator initialRouteName="App">
+          <Stack.Navigator>
             <Stack.Screen
-              name="App"
-              component={AppNavigation}
-              options={{ headerShown: false }}
+              name="menu"
+              component={TabNavigation}
+              options={{ header: () => <AppHeader /> }}
             />
             <Stack.Screen name="Vegetable" component={Vegetable} />
             <Stack.Screen name="Bakery" component={Bakery} />
@@ -57,6 +56,7 @@ const App = () => {
             <Stack.Screen name="Cleaning" component={Cleaning} />
             <Stack.Screen name="Care" component={Care} />
             <Stack.Screen name="Snack" component={Snack} />
+            <Stack.Screen name="cart" component={Cart} />
           </Stack.Navigator>
         </NavigationContainer>
       </SafeAreaView>
