@@ -8,6 +8,7 @@ const Product = () => {
 
   return (
     <ScrollView>
+      <Text style={styles.danhmuc}>Danh Mục Sản Phẩm</Text>
       {/* list menu */}
       <View style={styles.listMenu}>
         {/* Row1 */}
@@ -127,6 +128,13 @@ const Product = () => {
 };
 
 const styles = StyleSheet.create({
+  danhmuc: {
+    fontSize: 25,
+    fontWeight: "500",
+    paddingLeft: 20,
+    paddingTop: 15,
+  },
+
   row: {
     flexDirection: "row",
     justifyContent: "space-around",

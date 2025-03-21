@@ -15,6 +15,8 @@ type RootStackParamList = {
   cart: undefined;
   account: undefined;
   menu: undefined;
+  longin: undefined;
+  register: undefined;
   // Feed: { sort: 'latest' | 'top' } | undefined;
 };
 

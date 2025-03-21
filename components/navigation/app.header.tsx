@@ -16,6 +16,20 @@ const AppHeader = () => {
 
   return (
     <View style={styles.container}>
+      <View style={[styles.logo, { backgroundColor: bgColor }]}>
+        <TouchableOpacity
+          onPress={() => {
+            navigation.navigate("Home");
+            changeColor();
+          }}
+        >
+          <Image
+            style={{ height: 50, width: 50 }}
+            source={require("../../assets/logo.png")}
+          />
+        </TouchableOpacity>
+      </View>
+
       <TouchableOpacity
         style={[styles.headerText, { backgroundColor: bgColor }]}
         onPress={() => {
@@ -36,20 +50,6 @@ const AppHeader = () => {
             navigation.navigate("cart");
           }}
         />
-      </View>
-
-      <View style={[styles.logo, { backgroundColor: bgColor }]}>
-        <TouchableOpacity
-          onPress={() => {
-            navigation.navigate("Home");
-            changeColor();
-          }}
-        >
-          <Image
-            style={{ height: 50, width: 50 }}
-            source={require("../../assets/logo.png")}
-          />
-        </TouchableOpacity>
       </View>
     </View>
   );
@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
     // borderWidth: 1,
     // borderColor: "red",
     justifyContent: "center",
-    paddingHorizontal: 10,
+    paddingHorizontal: 15,
   },
 });
 

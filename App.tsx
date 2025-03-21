@@ -20,6 +20,8 @@ import Care from "./components/menu/care";
 import TabNavigation from "./components/navigation/app.tabnavigation";
 import AppHeader from "./components/navigation/app.header";
 import Cart from "./components/cart";
+import LognIn from "./components/lognIn";
+import Register from "./components/register";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -57,6 +59,16 @@ const App = () => {
             <Stack.Screen name="Care" component={Care} />
             <Stack.Screen name="Snack" component={Snack} />
             <Stack.Screen name="cart" component={Cart} />
+            <Stack.Screen
+              name="longin"
+              component={LognIn}
+              options={{ title: "Đăng Nhập" }}
+            />
+            <Stack.Screen
+              name="register"
+              component={Register}
+              options={{ title: "Tạo Tài Khoản" }}
+            />
           </Stack.Navigator>
         </NavigationContainer>
       </SafeAreaView>

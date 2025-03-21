@@ -4,7 +4,6 @@ import HomeScreen from "../home";
 import Product from "../product";
 import Feather from "@expo/vector-icons/Feather";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import Cart from "../cart";
 import Account from "../account";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import AboutUs from "../aboutus";
@@ -20,6 +19,7 @@ const TabNavigation = () => {
         name="Home"
         component={HomeScreen}
         options={{
+          title: "Trang chủ",
           headerShown: false,
           tabBarIcon: ({ focused, size }) => {
             return (
@@ -55,7 +55,8 @@ const TabNavigation = () => {
         name="product"
         component={Product}
         options={{
-          title: "Tất Cả Sản Phẩm",
+          title: "Sản Phẩm",
+          headerShown: false,
           tabBarIcon: ({ focused, size }) => {
             return (
               <MaterialCommunityIcons
@@ -91,6 +92,7 @@ const TabNavigation = () => {
         component={Account}
         options={{
           title: "Tài Khoản",
+          headerShown: false,
           tabBarIcon: ({ focused, size }) => {
             return (
               <MaterialCommunityIcons
