@@ -20,6 +20,13 @@ type RootStackParamList = {
   // Feed: { sort: 'latest' | 'top' } | undefined;
 };
 
+type Product = {
+  id: string;
+  title: string;
+  price: number;
+  thumbnail: string;
+};
+
 declare global {
   namespace ReactNavigation {
     interface RootParamList extends RootStackParamList {}

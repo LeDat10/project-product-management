@@ -1,43 +1,63 @@
 import { NavigationProp, useNavigation } from "@react-navigation/native";
-import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Image } from "react-native";
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  TextInput,
+  Image,
+} from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 
 const Register = () => {
   const navigator: NavigationProp<RootStackParamList> = useNavigation();
+  const [username, setUsername] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [lastname, setLastname] = useState<string>("");
+  const [firstname, setFirstname] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
+
   return (
     <ScrollView>
       <View style={styles.container}>
-        <Image
-          style={styles.logo}
-          source={require("../assets/logo.png")}
-        />
+        <Image style={styles.logo} source={require("../assets/logo.png")} />
         <Text style={styles.slogan}>Đăng Ký Tài Khoản</Text>
         <TextInput
           style={styles.input}
           placeholder="Họ"
           maxLength={25}
+          value={firstname}
+          onChangeText={setFirstname}
         />
         <TextInput
           style={styles.input}
           placeholder="Tên"
+          value={lastname}
+          onChangeText={setLastname}
         />
         <TextInput
           style={styles.input}
           placeholder="Tên đăng nhập"
           maxLength={25}
+          value={username}
+          onChangeText={setUsername}
         />
         <TextInput
           style={styles.input}
           placeholder="Email"
+          value={email}
+          onChangeText={setEmail}
         />
         <TextInput
-          style={styles.input} 
+          style={styles.input}
           placeholder="Mật khẩu"
+          value={password}
+          onChangeText={setPassword}
         />
         <TouchableOpacity
           style={styles.button}
-          onPress={() => navigator.navigate("LognIn")}
+          onPress={() => navigator.navigate("longin")}
         >
           <Text style={styles.text1}>Đăng Ký</Text>
         </TouchableOpacity>
@@ -45,7 +65,7 @@ const Register = () => {
           <Text style={styles.row1}>Bạn đã có tài khoản ?</Text>
           <Text
             style={styles.linkText1}
-            onPress={() => navigator.navigate("LognIn")}
+            onPress={() => navigator.navigate("longin")}
           >
             Đăng Nhập
           </Text>
@@ -87,9 +107,9 @@ const styles = StyleSheet.create({
     borderColor: "#fff",
     backgroundColor: "#e0e0e0",
     borderRadius: 15,
-    marginBottom: 10, 
+    marginBottom: 10,
     color: "#000",
-    paddingHorizontal: 10, 
+    paddingHorizontal: 10,
   },
   button: {
     width: 143,

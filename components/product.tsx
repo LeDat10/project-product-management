@@ -1,13 +1,24 @@
 import { NavigationProp, useNavigation } from "@react-navigation/native";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
-import { ScrollView } from "react-native-gesture-handler";
+import { FlatList, ScrollView } from "react-native-gesture-handler";
 
 const Product = () => {
   const navigation: NavigationProp<RootStackParamList> = useNavigation();
+  const [product, setProduct] = useState<Product[]>([]);
+
+  useEffect(() => {
+    fetch("https://dummyjson.com/products")
+      .then((response) => response.json())
+      .then((data) => {
+        setProduct(data);
+        // console.log(data);
+      })
+      .catch((error) => console.log(error));
+  }, []);
 
   return (
-    <ScrollView>
+    <View>
       <Text style={styles.danhmuc}>Danh Mục Sản Phẩm</Text>
       {/* list menu */}
       <View style={styles.listMenu}>
@@ -123,7 +134,24 @@ const Product = () => {
           </View>
         </View>
       </View>
-    </ScrollView>
+
+      {/* hiện sản phẩm */}
+      <FlatList
+        data={product}
+        keyExtractor={(item) => item.id}
+        numColumns={2}
+        renderItem={({ item }: { item: Product }) => (
+          <View>
+            <Image source={{ uri: item.thumbnail }} />
+            <Text> {item.title} </Text>
+            <Text> {item.price} </Text>
+            <TouchableOpacity>
+              <Text>Shop Now</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      />
+    </View>
   );
 };
 

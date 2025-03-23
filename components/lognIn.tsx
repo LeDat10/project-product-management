@@ -1,29 +1,51 @@
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Image } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  TextInput,
+  Image,
+  Alert,
+} from "react-native";
 import { useState } from "react";
 import { ScrollView } from "react-native-gesture-handler";
 
 const LognIn = () => {
   const navigator: NavigationProp<RootStackParamList> = useNavigation();
   const [username, setUsername] = useState<string>("");
-  const [password, setPassword] = useState<String>("");
+  const [password, setPassword] = useState<string>("");
 
   const handleLogin = () => {
-
     console.log("Username:", username);
     console.log("Password:", password);
-
   };
+
+  const handleSubmit = () => {
+    if (!username) {
+      Alert.alert("Thông tin không hợp lệ. Vui lòng không bỏ trống.");
+      return;
+    }
+    if (!password) {
+      Alert.alert("Thông tin không hợp lệ. Vui lòng không bỏ trống.");
+      return;
+    }
+
+    // addAccount({
+    //   username,
+    //   password,
+    // });
+  };
+
   return (
     <ScrollView>
       <View style={styles.container}>
-        <Image
-          style={styles.logo}
-          source={require("../assets/logo.png")}
-        />
+        <Image style={styles.logo} source={require("../assets/logo.png")} />
         <Text style={styles.dangnhap}>Đăng Nhập Tài Khoản</Text>
-        <Text style={styles.huongdan}>Nhập tên đăng nhập và mật khẩu của bạn </Text>
+        <Text style={styles.huongdan}>
+          Nhập tên đăng nhập và mật khẩu của bạn{" "}
+        </Text>
         <TextInput
           style={styles.input1}
           placeholder="Tên đăng nhập"
@@ -42,8 +64,8 @@ const LognIn = () => {
         <Text style={styles.quenpass}>Bạn đã quên mật khẩu?</Text>
         <TouchableOpacity
           style={styles.button}
+          // onPress={() => handleSubmit()}
           onPress={() => navigator.navigate("Home")}
-          onPressIn={handleLogin}
         >
           <Text style={styles.text3}>Đăng Nhập</Text>
         </TouchableOpacity>
@@ -51,7 +73,7 @@ const LognIn = () => {
           <Text style={styles.row1}>Bạn là khách hàng mới?</Text>
           <Text
             style={styles.linkText}
-            onPress={() => navigator.navigate("Register")}
+            onPress={() => navigator.navigate("register")}
           >
             Đăng Ký
           </Text>
@@ -59,11 +81,14 @@ const LognIn = () => {
         <Text
           style={styles.textlink}
           onPress={() => navigator.navigate("Home")}
-        >Quay lại trang chủ</Text>
+        >
+          Quay lại trang chủ
+        </Text>
       </View>
     </ScrollView>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -137,32 +162,35 @@ const styles = StyleSheet.create({
     paddingTop: 10,
   },
   rowContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   row1: {
-    textAlign: 'center',
-    color: 'black',
+    textAlign: "center",
+    color: "black",
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: "600",
     paddingTop: 10,
   },
   linkText: {
-    color: '#006FFF',
+    color: "#006FFF",
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: "600",
     paddingTop: 10,
     marginLeft: 5,
-    textDecorationLine: 'underline',
+    textDecorationLine: "underline",
   },
   textlink: {
-    textAlign: 'center',
-    color: 'blue',
+    textAlign: "center",
+    color: "blue",
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: "600",
     paddingTop: 120,
     marginTop: 19,
   },
 });
 
 export default LognIn;
+function addAccount(arg0: { username: string; password: string }) {
+  throw new Error("Function not implemented.");
+}
