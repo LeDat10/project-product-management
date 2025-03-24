@@ -8,34 +8,39 @@ import {
   TextInput,
   Image,
   Alert,
+  Button,
 } from "react-native";
 import { useState } from "react";
 import { ScrollView } from "react-native-gesture-handler";
 
-const LognIn = () => {
-  const navigator: NavigationProp<RootStackParamList> = useNavigation();
-  const [username, setUsername] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
+type LoginScreen = NavigationProp<RootStackParamList, "login">;
+
+interface Props {
+  navigation: LoginScreen;
+}
+
+interface IProps {
+  addUser: (user: { username: string; password: string }) => void;
+}
+
+const LognIn = ({ navigation, addUser }: Props & IProps) => {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
 
   const handleLogin = () => {
-    console.log("Username:", username);
-    console.log("Password:", password);
-  };
-
-  const handleSubmit = () => {
-    if (!username) {
-      Alert.alert("Thông tin không hợp lệ. Vui lòng không bỏ trống.");
-      return;
-    }
-    if (!password) {
+    if (!username || !password) {
       Alert.alert("Thông tin không hợp lệ. Vui lòng không bỏ trống.");
       return;
     }
 
-    // addAccount({
-    //   username,
-    //   password,
-    // });
+    addUser({
+      username,
+      password,
+    });
+
+    // const user = { username, password };
+    Alert.alert("Đăng nhập thành công");
+    navigation.navigate("account");
   };
 
   return (
@@ -61,26 +66,29 @@ const LognIn = () => {
           maxLength={20}
           secureTextEntry={true}
         />
+
         <Text style={styles.quenpass}>Bạn đã quên mật khẩu?</Text>
+
         <TouchableOpacity
           style={styles.button}
-          // onPress={() => handleSubmit()}
-          onPress={() => navigator.navigate("Home")}
+          onPress={handleLogin}
+          // onPress={() => navigator.navigate("Home")}
         >
           <Text style={styles.text3}>Đăng Nhập</Text>
         </TouchableOpacity>
+
         <View style={styles.rowContainer}>
           <Text style={styles.row1}>Bạn là khách hàng mới?</Text>
           <Text
             style={styles.linkText}
-            onPress={() => navigator.navigate("register")}
+            onPress={() => navigation.navigate("register")}
           >
             Đăng Ký
           </Text>
         </View>
         <Text
           style={styles.textlink}
-          onPress={() => navigator.navigate("Home")}
+          onPress={() => navigation.navigate("Home")}
         >
           Quay lại trang chủ
         </Text>
@@ -192,5 +200,8 @@ const styles = StyleSheet.create({
 
 export default LognIn;
 function addAccount(arg0: { username: string; password: string }) {
+  throw new Error("Function not implemented.");
+}
+function addUser(arg0: { username: string; password: string }) {
   throw new Error("Function not implemented.");
 }

@@ -13,19 +13,19 @@ type RootStackParamList = {
   Care: undefined;
   product: undefined;
   cart: undefined;
-  account: undefined;
   menu: undefined;
-  longin: undefined;
+  login: undefined;
   register: undefined;
+  account: undefined;
+  "user-info": { username: string; password: string } | undefined;
   // Feed: { sort: 'latest' | 'top' } | undefined;
 };
-
-type Product = {
+interface Product {
   id: string;
   title: string;
   price: number;
   thumbnail: string;
-};
+}
 
 declare global {
   namespace ReactNavigation {

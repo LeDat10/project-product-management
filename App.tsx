@@ -22,6 +22,7 @@ import AppHeader from "./components/navigation/app.header";
 import Cart from "./components/cart";
 import LognIn from "./components/lognIn";
 import Register from "./components/register";
+import Account from "./components/account";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -59,8 +60,9 @@ const App = () => {
             <Stack.Screen name="Care" component={Care} />
             <Stack.Screen name="Snack" component={Snack} />
             <Stack.Screen name="cart" component={Cart} />
+            <Stack.Screen name="account" component={Account} />
             <Stack.Screen
-              name="longin"
+              name="login"
               component={LognIn}
               options={{ title: "Đăng Nhập" }}
             />

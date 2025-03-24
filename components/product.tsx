@@ -2,23 +2,30 @@ import { NavigationProp, useNavigation } from "@react-navigation/native";
 import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 import { FlatList, ScrollView } from "react-native-gesture-handler";
+import Footer from "./footer";
+
+interface Product {
+  id: string;
+  title: string;
+  price: number;
+  thumbnail: string;
+}
 
 const Product = () => {
   const navigation: NavigationProp<RootStackParamList> = useNavigation();
   const [product, setProduct] = useState<Product[]>([]);
 
   useEffect(() => {
-    fetch("https://dummyjson.com/products")
+    fetch("http://192.168.0.103:3000/products")
       .then((response) => response.json())
       .then((data) => {
         setProduct(data);
-        // console.log(data);
       })
       .catch((error) => console.log(error));
   }, []);
 
   return (
-    <View>
+    <ScrollView>
       <Text style={styles.danhmuc}>Danh Mục Sản Phẩm</Text>
       {/* list menu */}
       <View style={styles.listMenu}>
@@ -138,20 +145,29 @@ const Product = () => {
       {/* hiện sản phẩm */}
       <FlatList
         data={product}
-        keyExtractor={(item) => item.id}
         numColumns={2}
-        renderItem={({ item }: { item: Product }) => (
-          <View>
-            <Image source={{ uri: item.thumbnail }} />
-            <Text> {item.title} </Text>
-            <Text> {item.price} </Text>
-            <TouchableOpacity>
-              <Text>Shop Now</Text>
+        columnWrapperStyle={styles.Row}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <View style={styles.card}>
+            <Image
+              source={{
+                uri: item.thumbnail,
+              }}
+              style={styles.image}
+            />
+            <Text style={styles.name}> {item.title} </Text>
+            <Text style={styles.price}> {item.price} VND</Text>
+            <TouchableOpacity style={styles.button}>
+              <Text style={styles.buttonText}>Shop Now</Text>
             </TouchableOpacity>
           </View>
         )}
       />
-    </View>
+
+      {/* footer */}
+      <Footer />
+    </ScrollView>
   );
 };
 
@@ -170,7 +186,7 @@ const styles = StyleSheet.create({
 
   listMenu: {
     paddingTop: 20,
-    paddingBottom: 70,
+    // paddingBottom: 70,
   },
 
   menu: {
@@ -190,6 +206,51 @@ const styles = StyleSheet.create({
     width: 70,
     height: 70,
     overflow: "hidden",
+  },
+
+  Row: {
+    justifyContent: "space-between", // Căn đều các item
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+  },
+
+  card: {
+    backgroundColor: "#fff",
+    padding: 10,
+    borderRadius: 10,
+    alignItems: "center",
+    flex: 1,
+    margin: 5,
+    elevation: 3,
+  },
+
+  image: {
+    width: 100,
+    height: 100,
+    resizeMode: "contain",
+  },
+
+  name: {
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+
+  price: {
+    color: "red",
+    fontSize: 16,
+    marginVertical: 5,
+  },
+
+  button: {
+    backgroundColor: "green",
+    paddingVertical: 8,
+    paddingHorizontal: 15,
+    borderRadius: 5,
+  },
+
+  buttonText: {
+    color: "#fff",
+    fontWeight: "bold",
   },
 });
 

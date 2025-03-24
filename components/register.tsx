@@ -7,16 +7,35 @@ import {
   TouchableOpacity,
   TextInput,
   Image,
+  Alert,
 } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 
-const Register = () => {
-  const navigator: NavigationProp<RootStackParamList> = useNavigation();
+type RegisterScreen = NavigationProp<RootStackParamList, "register">;
+
+interface Props {
+  navigation: RegisterScreen;
+}
+
+const Register = ({ navigation }: Props) => {
+  // const navigator: NavigationProp<RootStackParamList> = useNavigation();
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [lastname, setLastname] = useState<string>("");
   const [firstname, setFirstname] = useState<string>("");
   const [email, setEmail] = useState<string>("");
+  const [phone, setPhone] = useState<string>("");
+
+  const handleRegister = () => {
+    if (!username || !password || !lastname || !firstname || !email || !phone) {
+      Alert.alert("Thông tin không hợp lệ. Vui lòng không bỏ trống.");
+      return;
+    }
+
+    // const user = { username, password };
+    Alert.alert("Đăng ký thành công");
+    navigation.navigate("account");
+  };
 
   return (
     <ScrollView>
@@ -51,28 +70,34 @@ const Register = () => {
         />
         <TextInput
           style={styles.input}
+          placeholder="Số điện thoại"
+          value={phone}
+          onChangeText={setPhone}
+        />
+        <TextInput
+          style={styles.input}
           placeholder="Mật khẩu"
           value={password}
           onChangeText={setPassword}
         />
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => navigator.navigate("longin")}
-        >
+
+        <TouchableOpacity style={styles.button} onPress={handleRegister}>
           <Text style={styles.text1}>Đăng Ký</Text>
         </TouchableOpacity>
+
         <View style={styles.rowContainer1}>
           <Text style={styles.row1}>Bạn đã có tài khoản ?</Text>
           <Text
             style={styles.linkText1}
-            onPress={() => navigator.navigate("longin")}
+            onPress={() => navigation.navigate("login")}
           >
             Đăng Nhập
           </Text>
         </View>
+
         <Text
           style={styles.linkText2}
-          onPress={() => navigator.navigate("Home")}
+          onPress={() => navigation.navigate("Home")}
         >
           Quay lại trang chủ
         </Text>

@@ -6,10 +6,22 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import Fontisto from "@expo/vector-icons/Fontisto";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { ScrollView } from "react-native-gesture-handler";
-import { NavigationProp, useNavigation } from "@react-navigation/native";
+import {
+  NavigationProp,
+  RouteProp,
+  useNavigation,
+  useRoute,
+} from "@react-navigation/native";
+
+// type AccountScreenRouteProp = RouteProp<RootStackParamList, "account">;
+
+// interface Props {
+//   route: AccountScreenRouteProp;
+// }
 
 const Account = () => {
   const navigation: NavigationProp<RootStackParamList> = useNavigation();
+  const route: RouteProp<RootStackParamList, "user-info"> = useRoute();
 
   return (
     <ScrollView>
@@ -25,7 +37,7 @@ const Account = () => {
           <View style={styles.button}>
             <TouchableOpacity
               style={styles.button1}
-              onPress={() => navigation.navigate("longin")}
+              onPress={() => navigation.navigate("login")}
             >
               <Text style={{ color: "#257cda", fontSize: 15 }}>Đăng Nhập </Text>
             </TouchableOpacity>
@@ -86,6 +98,8 @@ const Account = () => {
           <Text style={styles.text4}>Đổi trả</Text>
         </View>
       </View>
+
+      <Text>username: {route.params?.username ?? "Chưa có thông tin"} </Text>
     </ScrollView>
   );
 };
