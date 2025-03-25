@@ -1,5 +1,6 @@
 const { model } = require("mongoose");
 const Product = require("../../models/product.model");
+const ProductCategory = require("../../models/product-category.model");
 
 // [GET] /api/products
 module.exports.index = async (req, res) => {
@@ -31,6 +32,12 @@ module.exports.index = async (req, res) => {
         }
         // End sort
 
+        // filter with category
+        if (req.query.categoryId) {
+            find.categoryId = req.query.categoryId;
+        }
+        // end filter with category
+
         const products = await Product.find(find).sort(sort);
 
         res.json({
@@ -52,11 +59,13 @@ module.exports.changeStatus = async (req, res) => {
 
         await Product.updateOne({ _id: id }, { status: status });
         res.json({
-            code: 200
+            code: 200,
+            message: "Cập nhật trạng thái sản phẩm thành công!"
         });
     } catch (error) {
         res.json({
-            code: 400
+            code: 400,
+            message: "Cập nhật trạng thái sản phẩm thất bại!"
         })
     }
 };
@@ -65,17 +74,19 @@ module.exports.changeStatus = async (req, res) => {
 module.exports.delete = async (req, res) => {
     try {
         const id = req.params.id;
-        await Product.updateOne({ _id: id }, { 
+        await Product.updateOne({ _id: id }, {
             deleted: true,
             deletedAt: Date.now()
-            
+
         });
         res.json({
-            code: 200
+            code: 200,
+            message: "Xóa sản phẩm thành công!"
         });
     } catch (error) {
         res.json({
-            code: 400
+            code: 400,
+            message: "Xóa sản phẩm thất bại!"
         });
     };
 };
@@ -175,8 +186,18 @@ module.exports.detail = async (req, res) => {
 
         const product = await Product.findOne({
             _id: id
-        });
+        }).lean();
 
+        if (product.categoryId) {
+            const category = await ProductCategory.findOne({
+                _id: product.categoryId,
+                deleted: false
+            });
+
+            if (category) {
+                product["categoryTitle"] = category.title
+            }
+        };
         res.json({
             code: 200,
             product: product

@@ -19,4 +19,6 @@ router.patch("/change-multi", controller.changeMulti);
 router.get("/detail/:id", controller.detail);
 
 router.patch("/edit/:id", upload.single("thumbnail"), uploadToCloudHelper.uploadToCloud, controller.edit);
+
+router.delete("/delete/:id", controller.delete);
 module.exports = router;

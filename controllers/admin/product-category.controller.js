@@ -72,16 +72,18 @@ module.exports.changeStatus = async (req, res) => {
 
         await ProductCategory.updateOne({ _id: id }, { status: status });
         res.json({
-            code: 200
+            code: 200,
+            message: "Cập nhật trạng thái danh mục thành công!"
         });
     } catch (error) {
         res.json({
-            code: 400
+            code: 400,
+            message: "Cập nhật trạng thái danh mục thất bại!"
         });
     }
 };
 
-// [PATCH] /api/products/change-multi
+// [PATCH] /api/products-category/change-multi
 module.exports.changeMulti = async (req, res) => {
     try {
         const { ids, key } = req.body;
@@ -183,4 +185,26 @@ module.exports.edit = async (req, res) => {
             code: 400
         });
     }
+};
+
+
+// [DELETE] /api/products-category/delete/:id
+module.exports.delete = async (req, res) => {
+    try {
+        const id = req.params.id;
+        await ProductCategory.updateOne({ _id: id }, {
+            deleted: true,
+            deletedAt: Date.now()
+
+        });
+        res.json({
+            code: 200,
+            message: "Xóa danh mục thành công!"
+        });
+    } catch (error) {
+        res.json({
+            code: 400,
+            message: "Xóa danh mục thất bại!"
+        });
+    };
 };
