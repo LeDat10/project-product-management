@@ -23,7 +23,7 @@ interface IProps {
   addUser: (user: { username: string; password: string }) => void;
 }
 
-const LognIn = ({ navigation, addUser }: Props & IProps) => {
+const LognIn = ({ navigation }: Props) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
@@ -33,10 +33,10 @@ const LognIn = ({ navigation, addUser }: Props & IProps) => {
       return;
     }
 
-    addUser({
-      username,
-      password,
-    });
+    // addUser({
+    //   username,
+    //   password,
+    // });
 
     // const user = { username, password };
     Alert.alert("Đăng nhập thành công");

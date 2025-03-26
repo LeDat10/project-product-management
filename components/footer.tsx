@@ -105,7 +105,7 @@ const Footer = () => {
                 style={styles.dmsp1}
                 onPress={() => navigation.navigate("Care")}
               >
-                Đồ Chăm Sóc Cá Nhân
+                Hóa Mỹ Phẩm
               </Text>
               <Text
                 style={styles.dmsp1}

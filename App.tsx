@@ -23,6 +23,7 @@ import Cart from "./components/cart";
 import LognIn from "./components/lognIn";
 import Register from "./components/register";
 import Account from "./components/account";
+import DetailProduct from "./components/detail_product";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -70,6 +71,11 @@ const App = () => {
               name="register"
               component={Register}
               options={{ title: "Tạo Tài Khoản" }}
+            />
+            <Stack.Screen
+              name="detail-product"
+              component={DetailProduct}
+              options={{ title: "Chi tiết sản phẩm" }}
             />
           </Stack.Navigator>
         </NavigationContainer>

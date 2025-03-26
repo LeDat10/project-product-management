@@ -1,8 +1,4 @@
-import {
-  NavigationContainer,
-  NavigationProp,
-  useNavigation,
-} from "@react-navigation/native";
+import { NavigationProp, useNavigation } from "@react-navigation/native";
 import {
   View,
   Text,
@@ -11,17 +7,14 @@ import {
   StyleSheet,
   Image,
   ImageBackground,
-  Linking,
 } from "react-native";
 import ImageSlide from "./imageSlide";
 import React from "react";
 import { ScrollView } from "react-native-gesture-handler";
 import Footer from "./footer";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 const HomeScreen = () => {
   const navigation: NavigationProp<RootStackParamList> = useNavigation();
-  const Stack = createNativeStackNavigator<RootStackParamList>();
 
   return (
     <ScrollView>
@@ -160,7 +153,7 @@ const HomeScreen = () => {
                 />
               </TouchableOpacity>
             </View>
-            <Text style={styles.Text}>Đồ Chăm Sóc Cá nhân</Text>
+            <Text style={styles.Text}>Hóa Mỹ Phẩm</Text>
           </View>
         </View>
       </View>
@@ -258,6 +251,11 @@ const styles = StyleSheet.create({
     marginTop: 20,
     backgroundColor: "#FFB13F",
     borderRadius: 20,
+    elevation: 5, // Độ nổi cho Android
+    shadowColor: "#000", // Độ bóng cho iOS
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 5,
   },
 
   textButton: {
@@ -340,6 +338,11 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFB13F",
     borderRadius: 20,
     alignItems: "center",
+    elevation: 5, // Độ nổi cho Android
+    shadowColor: "#000", // Độ bóng cho iOS
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 5,
   },
 
   textButton2: {
@@ -398,6 +401,11 @@ const styles = StyleSheet.create({
     width: 130,
     height: 130,
     overflow: "hidden",
+    elevation: 5, // Độ nổi cho Android
+    shadowColor: "#000", // Độ bóng cho iOS
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 5,
   },
 });
 

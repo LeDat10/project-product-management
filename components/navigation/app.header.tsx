@@ -66,6 +66,7 @@ const styles = StyleSheet.create({
     alignItems: "stretch",
     marginTop: 20,
     flexWrap: "nowrap",
+    justifyContent: "space-around",
   },
 
   headerText: {
@@ -76,7 +77,7 @@ const styles = StyleSheet.create({
   },
 
   headerText1: {
-    flex: 1,
+    flex: 1.5,
     textAlign: "right",
     fontSize: 35,
     fontWeight: "900",

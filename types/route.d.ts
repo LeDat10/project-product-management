@@ -17,15 +17,20 @@ type RootStackParamList = {
   login: undefined;
   register: undefined;
   account: undefined;
-  "user-info": { username: string; password: string } | undefined;
+  "detail-product":
+    | {
+        id: string;
+        // title: string;
+        // price: number;
+        // thumbnail: string;
+        // description: string;
+        // images: Array;
+        // stock: number;
+        // discountPercentage: Double;
+      }
+    | undefined;
   // Feed: { sort: 'latest' | 'top' } | undefined;
 };
-interface Product {
-  id: string;
-  title: string;
-  price: number;
-  thumbnail: string;
-}
 
 declare global {
   namespace ReactNavigation {

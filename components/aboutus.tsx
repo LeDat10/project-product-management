@@ -152,6 +152,11 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFB13F",
     borderRadius: 20,
     marginBottom: 20,
+    elevation: 5, // Độ nổi cho Android
+    shadowColor: "#000", // Độ bóng cho iOS
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 5,
   },
 
   text3: {

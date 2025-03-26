@@ -1,27 +1,43 @@
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  ActivityIndicator,
+} from "react-native";
 import { FlatList, ScrollView } from "react-native-gesture-handler";
 import Footer from "./footer";
+import { Double } from "react-native/Libraries/Types/CodegenTypes";
 
 interface Product {
   id: string;
   title: string;
   price: number;
   thumbnail: string;
+  description: string;
+  images: string;
+  stock: number;
+  discountPercentage: Double;
 }
 
 const Product = () => {
   const navigation: NavigationProp<RootStackParamList> = useNavigation();
   const [product, setProduct] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("http://192.168.0.103:3000/products")
+    fetch("http://192.168.1.15:3000/products")
       .then((response) => response.json())
       .then((data) => {
         setProduct(data);
       })
-      .catch((error) => console.log(error));
+      .catch((error) => console.log(error))
+      .finally(() => {
+        setLoading(false);
+      });
   }, []);
 
   return (
@@ -137,33 +153,45 @@ const Product = () => {
                 />
               </TouchableOpacity>
             </View>
-            <Text style={styles.Text}>Đồ CS Cá nhân</Text>
+            <Text style={styles.Text}>Hóa Mỹ Phẩm</Text>
           </View>
         </View>
       </View>
 
       {/* hiện sản phẩm */}
-      <FlatList
-        data={product}
-        numColumns={2}
-        columnWrapperStyle={styles.Row}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.card}>
-            <Image
-              source={{
-                uri: item.thumbnail,
-              }}
-              style={styles.image}
-            />
-            <Text style={styles.name}> {item.title} </Text>
-            <Text style={styles.price}> {item.price} VND</Text>
-            <TouchableOpacity style={styles.button}>
-              <Text style={styles.buttonText}>Shop Now</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      />
+      {loading ? (
+        <ActivityIndicator size={"large"} color="#0000ff" />
+      ) : (
+        <FlatList
+          data={product}
+          numColumns={2}
+          columnWrapperStyle={styles.Row}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <View style={styles.card}>
+              <Image
+                source={{
+                  uri: item.thumbnail,
+                }}
+                style={styles.image}
+              />
+              <Text style={styles.name}> {item.title} </Text>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Text style={styles.price}> {item.price} VND</Text>
+                <Text style={styles.coupon}>-{item.discountPercentage}%</Text>
+              </View>
+              <TouchableOpacity
+                style={styles.button}
+                onPress={() =>
+                  navigation.navigate("detail-product", { id: item.id })
+                }
+              >
+                <Text style={styles.buttonText}>Shop Now</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        />
+      )}
 
       {/* footer */}
       <Footer />
@@ -206,6 +234,11 @@ const styles = StyleSheet.create({
     width: 70,
     height: 70,
     overflow: "hidden",
+    elevation: 5, // Độ nổi cho Android
+    shadowColor: "#000", // Độ bóng cho iOS
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 5,
   },
 
   Row: {
@@ -239,6 +272,18 @@ const styles = StyleSheet.create({
     color: "red",
     fontSize: 16,
     marginVertical: 5,
+    marginRight: 5,
+  },
+
+  coupon: {
+    backgroundColor: "red",
+    color: "white",
+    fontSize: 14,
+    fontWeight: "600",
+    textAlign: "center",
+    justifyContent: "center",
+    marginVertical: 5,
+    padding: 3,
   },
 
   button: {

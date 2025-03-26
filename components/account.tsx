@@ -13,15 +13,8 @@ import {
   useRoute,
 } from "@react-navigation/native";
 
-// type AccountScreenRouteProp = RouteProp<RootStackParamList, "account">;
-
-// interface Props {
-//   route: AccountScreenRouteProp;
-// }
-
 const Account = () => {
   const navigation: NavigationProp<RootStackParamList> = useNavigation();
-  const route: RouteProp<RootStackParamList, "user-info"> = useRoute();
 
   return (
     <ScrollView>
@@ -99,7 +92,10 @@ const Account = () => {
         </View>
       </View>
 
-      <Text>username: {route.params?.username ?? "Chưa có thông tin"} </Text>
+      {/* sản phẩm tham khảo */}
+      <View>
+        <Text>Sản phẩm nổi bật</Text>
+      </View>
     </ScrollView>
   );
 };
@@ -175,6 +171,11 @@ const styles = StyleSheet.create({
     backgroundColor: "#d3e1ee",
     padding: 8,
     borderRadius: 10,
+    elevation: 5, // Độ nổi cho Android
+    shadowColor: "#000", // Độ bóng cho iOS
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 5,
   },
 });
 
