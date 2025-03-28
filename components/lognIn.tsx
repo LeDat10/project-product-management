@@ -8,7 +8,6 @@ import {
   TextInput,
   Image,
   Alert,
-  Button,
 } from "react-native";
 import { useState } from "react";
 import { ScrollView } from "react-native-gesture-handler";
@@ -28,7 +27,6 @@ const LognIn = ({ navigation }: Props) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false); // Cái trạng thái màn hình chờ khi đăng nhập để tránh đăng nhập nhiều lần
-  const Api_url = "";
 
   const handleLogin = async () => {
     if (!username || !password) {

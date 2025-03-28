@@ -10,6 +10,8 @@ import {
   Alert,
 } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
+import { createAccount } from "../src/services/accountServices";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type RegisterScreen = NavigationProp<RootStackParamList, "register">;
 
@@ -25,14 +27,39 @@ const Register = ({ navigation }: Props) => {
   const [firstname, setFirstname] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [phone, setPhone] = useState<string>("");
+  const [isLoading , setisLoading] = useState(true); 
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
     if (!username || !password || !lastname || !firstname || !email || !phone) {
       Alert.alert("Thông tin không hợp lệ. Vui lòng không bỏ trống.");
       return;
     }
-
-    // const user = { username, password };
+    setisLoading(true); // Đặt trạng thái isLoading thành true khi bắt đầu xử lý đăng ký
+    try {
+      const response = await createAccount({
+        username,password,
+        lastname,firstname,
+        email,phone
+    });
+      if (response) {
+        const { token } = response.data;
+        await AsyncStorage.setItem("token", token);
+        Alert.alert("Đăng ký thành công");
+        navigation.navigate("account");
+    }
+   } catch (error) {
+      if (typeof error === "object" && error !== null && "response" in error) {
+        const err = error as { response?: { data?: { message?: string } } };
+        Alert.alert(
+          "Đăng ký thất bại",
+          err.response?.data?.message || "Vui lòng thử lại"
+        );
+      } else {
+        Alert.alert("Lỗi không xác định", String(error));
+      }
+    } finally {
+      setisLoading(false);  
+    }
     Alert.alert("Đăng ký thành công");
     navigation.navigate("account");
   };
@@ -94,7 +121,6 @@ const Register = ({ navigation }: Props) => {
             Đăng Nhập
           </Text>
         </View>
-
         <Text
           style={styles.linkText2}
           onPress={() => navigation.navigate("Home")}
