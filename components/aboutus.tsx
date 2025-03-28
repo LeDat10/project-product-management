@@ -101,7 +101,6 @@ const AboutUs = () => {
           trải nghiệm mua sắm đáng tin cậy và xứng đáng nhất.
         </Text>
       </View>
-
       <Footer />
     </ScrollView>
   );

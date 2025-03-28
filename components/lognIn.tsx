@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { useState } from "react";
 import { ScrollView } from "react-native-gesture-handler";
+import { login } from "../";
 
 type LoginScreen = NavigationProp<RootStackParamList, "login">;
 
@@ -26,23 +27,39 @@ interface IProps {
 const LognIn = ({ navigation }: Props) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false); // Cái trạng thái màn hình chờ khi đăng nhập để tránh đăng nhập nhiều lần
+  const Api_url = "";
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!username || !password) {
       Alert.alert("Thông tin không hợp lệ. Vui lòng không bỏ trống.");
       return;
     }
-
-    // addUser({
-    //   username,
-    //   password,
-    // });
-
-    // const user = { username, password };
-    Alert.alert("Đăng nhập thành công");
-    navigation.navigate("account");
+    setIsLoading(true);
+    try {
+      const response = await login({
+        username,
+        password
+      });
+      if (response) {
+        const { token } = response.data;
+        Alert.alert("Đăng nhập thành công");
+        navigation.navigate("account");
+      }
+    } catch (error) {
+      if (typeof error === 'object' && error !== null && 'response' in error) {
+        const err = error as { response?: { data?: { message?: string } } };
+        Alert.alert(
+          "Đăng nhập thất bại",
+          err.response?.data?.message || "Vui lòng thử lại"
+        );
+      } else {
+        Alert.alert("Lỗi không xác định", String(error));
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
-
   return (
     <ScrollView>
       <View style={styles.container}>
@@ -72,7 +89,7 @@ const LognIn = ({ navigation }: Props) => {
         <TouchableOpacity
           style={styles.button}
           onPress={handleLogin}
-          // onPress={() => navigator.navigate("Home")}
+        // onPress={() => navigator.navigate("Home")}
         >
           <Text style={styles.text3}>Đăng Nhập</Text>
         </TouchableOpacity>
@@ -194,7 +211,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "600",
     paddingTop: 120,
-    marginTop: 19,
+    marginTop: 20,
   },
 });
 
