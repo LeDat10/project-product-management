@@ -237,7 +237,6 @@ module.exports.getRole = async (req, res) => {
             _id: roleId,
             deleted: false
         });
-        console.log(role.permissions)
         res.json({
             code: 200,
             permissions: role.permissions

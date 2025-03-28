@@ -6,7 +6,7 @@ const accountRoutes = require("./account.route");
 const authMiddleware = require("../../middlewares/admin/auth.middleware");
 
 module.exports = (app) => {
-    const version = "/api";
+    const version = "/api/admin";
 
     app.use(version + "/products", authMiddleware.requireAuth, productRoutes);
 
