@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { useState } from "react";
 import { ScrollView } from "react-native-gesture-handler";
-import { login } from "../";
+import { login } from "../src/services/accountServices";
 
 type LoginScreen = NavigationProp<RootStackParamList, "login">;
 
