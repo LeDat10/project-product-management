@@ -9,9 +9,13 @@ const userchema = new mongoose.Schema(
         phone: String,
         avatar: String,
         address: String,
+        isVerified: {
+            type: Boolean,
+            default: false
+        },
         status: {
             type: String,
-            default: "active"
+            default: "inactive"
         },
         deleted: {
             type: Boolean,
