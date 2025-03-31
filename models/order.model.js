@@ -17,8 +17,6 @@ const orderSchema = new mongoose.Schema(
                 priceNew: Number
             }
         ],
-        totalQuantity: Number,
-        totalPrice: Number
     },
     {
         timestamps: true

@@ -17,5 +17,5 @@ module.exports = (app) => {
 
     app.use(version + "/users", userRoutes);
 
-    app.use(version + "/order", cartMiddleware.cartId, orderRoutes);
+    app.use(version + "/order", orderRoutes);
 };

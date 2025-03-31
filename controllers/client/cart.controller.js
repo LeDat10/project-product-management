@@ -16,12 +16,10 @@ module.exports.index = async (req, res) => {
                 const product = await Product.findOne({
                     _id: item.product_id
                 });
-                console.log(product);
                 item.price = product.price;
                 item.discountPercentage = product.discountPercentage;
-                item.priceNew = productHelper.pricenewProduct(item);
-                item.totalPrice = parseFloat((item.quantity * item.priceNew).toFixed(2));
                 item.titleProduct = product.title;
+                item.thumbnail = product.thumbnail;
             };
         };
 
