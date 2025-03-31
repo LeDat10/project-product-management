@@ -10,8 +10,7 @@ import {
   Alert,
 } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
-import { createAccount } from "../src/services/accountServices";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import accountService ,{RegisterData , UserResponse}from "../services/accountService";
 
 type RegisterScreen = NavigationProp<RootStackParamList, "register">;
 
@@ -20,50 +19,60 @@ interface Props {
 }
 
 const Register = ({ navigation }: Props) => {
-  // const navigator: NavigationProp<RootStackParamList> = useNavigation();
+  
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [lastname, setLastname] = useState<string>("");
   const [firstname, setFirstname] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [phone, setPhone] = useState<string>("");
-  const [isLoading , setisLoading] = useState(true); 
+  const [isLoading , setisLoading] = useState(false); 
 
   const handleRegister = async () => {
     if (!username || !password || !lastname || !firstname || !email || !phone) {
       Alert.alert("Thông tin không hợp lệ. Vui lòng không bỏ trống.");
       return;
     }
-    setisLoading(true); // Đặt trạng thái isLoading thành true khi bắt đầu xử lý đăng ký
     try {
-      const response = await createAccount({
-        username,password,
-        lastname,firstname,
-        email,phone
-    });
-      if (response) {
-        const { token } = response.data;
-        await AsyncStorage.setItem("token", token);
-        Alert.alert("Đăng ký thành công");
-        navigation.navigate("account");
-    }
-   } catch (error) {
-      if (typeof error === "object" && error !== null && "response" in error) {
-        const err = error as { response?: { data?: { message?: string } } };
+      const registerData: RegisterData = {
+        email: email,
+        password: password,
+        username: username,
+        firstname: firstname,
+        lastname: lastname,
+        phone: phone,
+      };
+
+      const response = await accountService.register(registerData);
+
+      if (response && (response as UserResponse).code === 200) {
         Alert.alert(
-          "Đăng ký thất bại",
-          err.response?.data?.message || "Vui lòng thử lại"
+          "Đăng ký thành công",
+          (response as UserResponse).message || "Vui lòng kiểm tra email để xác thực.",
+          [
+            {
+              text: "OK",
+              onPress: () => navigation.navigate("login"),
+            },
+          ]
         );
       } else {
-        Alert.alert("Lỗi không xác định", String(error));
+        Alert.alert(
+          "Đăng ký thất bại",
+          (response as any).message || "Có lỗi xảy ra khi đăng ký."
+        );
       }
+    } catch (error: any) {
+      console.error("Registration error:", error);
+      Alert.alert(
+        "Lỗi",
+        error.message || "Không thể kết nối đến server. Vui lòng thử lại."
+      );
     } finally {
-      setisLoading(false);  
+      setisLoading(false);
     }
-    Alert.alert("Đăng ký thành công");
-    navigation.navigate("account");
   };
-
+  
   return (
     <ScrollView>
       <View style={styles.container}>

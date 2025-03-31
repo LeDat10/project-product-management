@@ -11,7 +11,8 @@ import {
 } from "react-native";
 import { useState } from "react";
 import { ScrollView } from "react-native-gesture-handler";
-import { login } from "../src/services/accountServices";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import accountService, {LoginData, UserResponse} from "../services/accountService";
 
 type LoginScreen = NavigationProp<RootStackParamList, "login">;
 
@@ -20,40 +21,42 @@ interface Props {
 }
 
 interface IProps {
-  addUser: (user: { username: string; password: string }) => void;
+  addUser: (user: { userName: string; password: string }) => void;
 }
 
 const LognIn = ({ navigation }: Props) => {
-  const [username, setUsername] = useState("");
+  const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false); // Cái trạng thái màn hình chờ khi đăng nhập để tránh đăng nhập nhiều lần
 
   const handleLogin = async () => {
-    if (!username || !password) {
+    if (!userName || !password) {
       Alert.alert("Thông tin không hợp lệ. Vui lòng không bỏ trống.");
       return;
     }
-    setIsLoading(true);
     try {
-      const response = await login({
-        username,
-        password
-      });
-      if (response) {
-        const { token } = response.data;
-        Alert.alert("Đăng nhập thành công");
+      setIsLoading(true);
+      const loginData: LoginData = {
+        userName: userName,
+        password: password,
+      };
+
+      const response = await accountService.login(loginData);
+
+      if (response && (response as UserResponse).code === 200) {
+        await AsyncStorage.setItem("token", (response as UserResponse).token!);
+        if ((response as UserResponse).cartId) {
+          await AsyncStorage.setItem("cartId", (response as UserResponse).cartId!);
+        }
+
+        Alert.alert("Thành công", (response as UserResponse).message || "Đăng nhập thành công!");
         navigation.navigate("account");
-      }
-    } catch (error) {
-      if (typeof error === 'object' && error !== null && 'response' in error) {
-        const err = error as { response?: { data?: { message?: string } } };
-        Alert.alert(
-          "Đăng nhập thất bại",
-          err.response?.data?.message || "Vui lòng thử lại"
-        );
       } else {
-        Alert.alert("Lỗi không xác định", String(error));
+        Alert.alert("Lỗi", (response as any).message || "Đăng nhập thất bại");
       }
+    } catch (error: any) {
+      Alert.alert("Lỗi", error.message || "Không thể kết nối đến máy chủ");
+      console.error(error);
     } finally {
       setIsLoading(false);
     }
@@ -69,8 +72,8 @@ const LognIn = ({ navigation }: Props) => {
         <TextInput
           style={styles.input1}
           placeholder="Tên đăng nhập"
-          value={username}
-          onChangeText={setUsername}
+          value={userName}
+          onChangeText={setUserName}
           maxLength={25}
         />
         <TextInput
@@ -87,7 +90,6 @@ const LognIn = ({ navigation }: Props) => {
         <TouchableOpacity
           style={styles.button}
           onPress={handleLogin}
-        // onPress={() => navigator.navigate("Home")}
         >
           <Text style={styles.text3}>Đăng Nhập</Text>
         </TouchableOpacity>
@@ -214,9 +216,3 @@ const styles = StyleSheet.create({
 });
 
 export default LognIn;
-function addAccount(arg0: { username: string; password: string }) {
-  throw new Error("Function not implemented.");
-}
-function addUser(arg0: { username: string; password: string }) {
-  throw new Error("Function not implemented.");
-}
