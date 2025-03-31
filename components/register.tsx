@@ -10,6 +10,7 @@ import {
   Alert,
 } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
+import accountService ,{RegisterData , UserResponse}from "../services/accountService";
 
 type RegisterScreen = NavigationProp<RootStackParamList, "register">;
 
@@ -18,25 +19,60 @@ interface Props {
 }
 
 const Register = ({ navigation }: Props) => {
-  // const navigator: NavigationProp<RootStackParamList> = useNavigation();
+  
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [lastname, setLastname] = useState<string>("");
   const [firstname, setFirstname] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [phone, setPhone] = useState<string>("");
+  const [isLoading , setisLoading] = useState(false); 
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
     if (!username || !password || !lastname || !firstname || !email || !phone) {
       Alert.alert("Thông tin không hợp lệ. Vui lòng không bỏ trống.");
       return;
     }
+    try {
+      const registerData: RegisterData = {
+        email: email,
+        password: password,
+        username: username,
+        firstname: firstname,
+        lastname: lastname,
+        phone: phone,
+      };
 
-    // const user = { username, password };
-    Alert.alert("Đăng ký thành công");
-    navigation.navigate("account");
+      const response = await accountService.register(registerData);
+
+      if (response && (response as UserResponse).code === 200) {
+        Alert.alert(
+          "Đăng ký thành công",
+          (response as UserResponse).message || "Vui lòng kiểm tra email để xác thực.",
+          [
+            {
+              text: "OK",
+              onPress: () => navigation.navigate("login"),
+            },
+          ]
+        );
+      } else {
+        Alert.alert(
+          "Đăng ký thất bại",
+          (response as any).message || "Có lỗi xảy ra khi đăng ký."
+        );
+      }
+    } catch (error: any) {
+      console.error("Registration error:", error);
+      Alert.alert(
+        "Lỗi",
+        error.message || "Không thể kết nối đến server. Vui lòng thử lại."
+      );
+    } finally {
+      setisLoading(false);
+    }
   };
-
+  
   return (
     <ScrollView>
       <View style={styles.container}>
@@ -94,7 +130,6 @@ const Register = ({ navigation }: Props) => {
             Đăng Nhập
           </Text>
         </View>
-
         <Text
           style={styles.linkText2}
           onPress={() => navigation.navigate("Home")}

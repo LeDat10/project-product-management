@@ -22,7 +22,6 @@ const Account = () => {
         <View style={styles.icon}>
           <MaterialCommunityIcons name="account" size={30} color={"black"} />
         </View>
-
         <View style={styles.text}>
           <Text style={{ fontSize: 17, fontWeight: "600" }}>
             Chào mừng bạn đến với Tempi!!
@@ -58,14 +57,12 @@ const Account = () => {
           </TouchableOpacity>
           <Text style={styles.text4}>Chờ thanh toán</Text>
         </View>
-
         <View style={styles.button2}>
           <TouchableOpacity style={styles.icon1}>
             <Fontisto name="checkbox-passive" size={25} color="black" />
           </TouchableOpacity>
           <Text style={styles.text4}>Đang xử lý</Text>
         </View>
-
         <View style={styles.button2}>
           <TouchableOpacity style={styles.icon1}>
             <MaterialIcons
