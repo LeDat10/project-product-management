@@ -2,6 +2,7 @@ const routesProduct = require("./product.route");
 const searchRoutes = require("./search.route");
 const cartRoutes = require("./cart.route");
 const userRoutes = require("./user.route");
+const orderRoutes = require("./order.route");
 
 const cartMiddleware = require("../../middlewares/client/cart.middleware");
 
@@ -15,4 +16,6 @@ module.exports = (app) => {
     app.use(version + "/carts", cartMiddleware.cartId, cartRoutes);
 
     app.use(version + "/users", userRoutes);
+
+    app.use(version + "/order", cartMiddleware.cartId, orderRoutes);
 };

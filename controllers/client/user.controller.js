@@ -1,5 +1,6 @@
 const User = require("../../models/user.model");
 const Confirm = require("../../models/confirm.model");
+const Cart = require("../../models/cart.model");
 const jwt = require("jsonwebtoken");
 const argon2 = require("argon2");
 
@@ -29,7 +30,7 @@ module.exports.register = async (req, res) => {
             email: req.body.email,
             isVerified: false,
             status: "inactive"
-        }).select("email phone address");
+        }).select("email phone");
 
         if (userIsVerified) {
             const otp = generateHelper.generateRadomNumber(6);
@@ -78,7 +79,7 @@ module.exports.register = async (req, res) => {
 
         const userRegister = await User.findOne({
             _id: user.id
-        }).select("email phone address");
+        }).select("email phone");
 
         const otp = generateHelper.generateRadomNumber(6);
 
@@ -196,17 +197,37 @@ module.exports.login = async (req, res) => {
 
         const token = user.token;
 
+        const cart = await Cart.findOne({
+            user_id: user.id
+        });
+
+        let cartId;
+
+        if (cart) {
+            cartId = cart.id;
+            console.log(cartId);
+        } else {
+            cartId = req.cart.id;
+            console.log(cartId);
+            await Cart.updateOne({
+                _id: cartId
+            }, {
+                user_id: user.id
+            });
+        }
+
         res.json({
             code: 200,
-            message: "Đăng nhập tài công!",
-            token: token
+            message: "Đăng nhập thành công!",
+            token: token,
+            cartId: cartId
         });
     } catch (error) {
         res.json({
             code: 400,
             message: "Đăng nhập thất bại!"
         });
-    }
+    };
 };
 
 //[POST] /api/users/password/forgot

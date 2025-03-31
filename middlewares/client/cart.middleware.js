@@ -6,8 +6,7 @@ module.exports.cartId = async (req, res, next) => {
             
             const cart = new Cart();
             await cart.save();
-
-
+            
             res.setHeader("cartId", cart.id);
 
             req.cart = cart;

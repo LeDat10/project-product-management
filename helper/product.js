@@ -1,5 +1,3 @@
-const ProductCategory = require("../models/product-category.model");
-
 module.exports.pricenewProducts = (products) => {
     const newProducts = products.map(item => {
         item.priceNew = parseFloat((item.price * (100 - item.discountPercentage) / 100).toFixed(2));

@@ -7,8 +7,10 @@ const cartSchema = new mongoose.Schema(
             {
                 product_id: String,
                 quantity: Number,
-                discountPercentage: Number,
-                price: Number
+                selected: {
+                    type: Boolean,
+                    default: false
+                }
             }
         ]
     },

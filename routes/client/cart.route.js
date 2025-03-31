@@ -7,8 +7,10 @@ router.get('/', controller.index);
 
 router.post("/add/:productId", controller.addProduct);
 
-router.delete('/delete/:objectId', controller.delete);
+router.delete('/delete/:productId', controller.delete);
 
-router.patch('/update/:objectId', controller.update);
+router.patch('/update/:productId', controller.update);
+
+router.patch("/selected", controller.select);
 
 module.exports = router;

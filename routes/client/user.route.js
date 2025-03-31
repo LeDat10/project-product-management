@@ -3,11 +3,14 @@ const router = express.Router();
 
 const controller = require("../../controllers/client/user.controller");
 
+const cartMiddleware = require("../../middlewares/client/cart.middleware");
+
+
 router.post("/register", controller.register);
 
 router.post("/register/confirm", controller.confirmOTP);
 
-router.post("/login", controller.login);
+router.post("/login", cartMiddleware.cartId, controller.login);
 
 router.post("/password/forgot", controller.forgot);
 

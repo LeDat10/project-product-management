@@ -8,7 +8,6 @@ const userchema = new mongoose.Schema(
         token: String,
         phone: String,
         avatar: String,
-        address: String,
         isVerified: {
             type: Boolean,
             default: false

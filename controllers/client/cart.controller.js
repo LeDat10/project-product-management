@@ -1,5 +1,5 @@
 const Cart = require("../../models/cart.model");
-
+const Product = require("../../models/product.model");
 const productHelper = require("../../helper/product");
 
 //[GET] ./api/carts
@@ -13,8 +13,15 @@ module.exports.index = async (req, res) => {
 
         if (cart.products.length > 0) {
             for (const item of cart.products) {
+                const product = await Product.findOne({
+                    _id: item.product_id
+                });
+                console.log(product);
+                item.price = product.price;
+                item.discountPercentage = product.discountPercentage;
                 item.priceNew = productHelper.pricenewProduct(item);
-                item.totalPrice = item.quantity * item.priceNew;
+                item.totalPrice = parseFloat((item.quantity * item.priceNew).toFixed(2));
+                item.titleProduct = product.title;
             };
         };
 
@@ -40,20 +47,15 @@ module.exports.addProduct = async (req, res) => {
 
         const quantity = parseInt(req.body.quantity);
 
-        const discountPercentage = parseFloat(req.body.discountPercentage);
-
-        const price = parseFloat(req.body.price);
-
         const cart = await Cart.findOne({
             _id: cartId
         });
 
-        const existProductInCart = cart.products.find(item => item.product_id === productId && item.discountPercentage === discountPercentage && item.price);
-        let cartUpdate = {};
+        const existProductInCart = cart.products.find(item => item.product_id === productId);
 
         if (existProductInCart) {
             const newQuantity = quantity + existProductInCart.quantity;
-            cartUpdate = await Cart.updateOne({
+            await Cart.updateOne({
                 _id: cartId,
                 "products.product_id": productId
             }, {
@@ -64,11 +66,9 @@ module.exports.addProduct = async (req, res) => {
             const objectCart = {
                 product_id: productId,
                 quantity: quantity,
-                discountPercentage: discountPercentage,
-                price: price
             }
 
-            cartUpdate = await Cart.updateOne({
+            await Cart.updateOne({
                 _id: cartId
             }, {
                 $push: { products: objectCart }
@@ -88,17 +88,17 @@ module.exports.addProduct = async (req, res) => {
     }
 };
 
-// [DELETE] /carts/delete/:objectId
+// [DELETE] /carts/delete/:productId
 module.exports.delete = async (req, res) => {
     try {
-        const objectId = req.params.objectId;
-
+        const productId = req.params.productId;
+        console.log(productId);
         const cartId = req.cart.id;
 
         await Cart.updateOne({
             _id: cartId
         }, {
-            "$pull": { products: { "_id": objectId } }
+            "$pull": { products: { "product_id": productId } }
         });
         res.json({
             code: 200,
@@ -112,16 +112,16 @@ module.exports.delete = async (req, res) => {
     };
 };
 
-//[PATCH] /api/carts/update/:objectId
+//[PATCH] /api/carts/update/:productId
 module.exports.update = async (req, res) => {
     try {
-        const objectId = req.params.objectId;
+        const productId = req.params.productId;
         const quantity = req.body.quantity;
         const cartId = req.cart.id;
 
         await Cart.updateOne({
             _id: cartId,
-            "products._id": objectId
+            "products.product_id": productId
         }, {
             "products.$.quantity": quantity
         });
@@ -137,3 +137,37 @@ module.exports.update = async (req, res) => {
         });
     };
 };
+
+// [POST] /api/carts/select
+module.exports.select = async (req, res) => {
+    try {
+        const cartId = req.cart.id;
+        const productSelected = req.body.productSelected;
+        console.log(productSelected);
+        const products = [];
+        if (productSelected.length > 0) {
+            for (const product of productSelected) {
+                const productUpdate = await Cart.updateOne({
+                    _id: cartId,
+                    "products._id": product
+                }, {
+                    "products.$.selected": true
+                });
+
+                products.push(productUpdate);
+            };
+        };
+
+        res.json({
+            code: 200,
+            message: "Chọn sản phẩm thành công!",
+            products: products
+        });
+    } catch (error) {
+        res.json({
+            code: 400,
+            message: "Chọn sản phẩm thất bại!"
+        });
+    };
+};
+
