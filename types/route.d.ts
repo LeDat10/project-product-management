@@ -19,7 +19,8 @@ type RootStackParamList = {
   account: undefined;
   "detail-product":
     | {
-        id: string;
+        // id: string;
+        slug: string;
         // title: string;
         // price: number;
         // thumbnail: string;

@@ -59,8 +59,8 @@ const TabNavigation = () => {
           headerShown: false,
           tabBarIcon: ({ focused, size }) => {
             return (
-              <MaterialCommunityIcons
-                name="food-variant"
+              <Feather
+                name="shopping-bag"
                 size={24}
                 color={focused ? "#257cda" : "black"}
               />
@@ -96,7 +96,7 @@ const TabNavigation = () => {
           tabBarIcon: ({ focused, size }) => {
             return (
               <MaterialCommunityIcons
-                name="account"
+                name="account-outline"
                 size={24}
                 color={focused ? "#257cda" : "black"}
               />

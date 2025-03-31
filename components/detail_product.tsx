@@ -8,14 +8,17 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  useWindowDimensions,
 } from "react-native";
 import { FlatList, ScrollView } from "react-native-gesture-handler";
 import Footer from "./footer";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Double } from "react-native/Libraries/Types/CodegenTypes";
+import RenderHtml from "react-native-render-html";
+import axios from "axios";
 
 interface Detail_Product {
-  id: string;
+  _id: string;
   title: string;
   price: number;
   thumbnail: string;
@@ -27,26 +30,32 @@ interface Detail_Product {
 
 const DetailProduct = ({ route }: any) => {
   const navigation: NavigationProp<RootStackParamList> = useNavigation();
-  const { id } = route.params;
+  const { slug } = route.params;
+  // console.log(id);
   const [inventory, setInventory] = useState(true);
   const [detail_product, setDetailProduct] = useState<Detail_Product | null>(
     null
   );
   const [loading, setLoading] = useState(true);
+  const [loading2, setLoading2] = useState(true);
   const [count, setCount] = useState(0);
+  const { width } = useWindowDimensions();
 
+  // lấy dữ liệu sản phẩm từ api
   useEffect(() => {
-    fetch(`http://192.168.1.15:3000/products/${id}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setDetailProduct(data);
+    axios
+      .get(
+        `https://api-project-product-management.vercel.app/api/products/detail/${slug}`
+      )
+      .then((reponse) => {
+        setDetailProduct(reponse.data.product);
         setLoading(false);
       })
       .catch((error) => {
         console.log(error);
         setLoading(false);
       });
-  }, [id]);
+  }, [slug]);
 
   useEffect(() => {
     if (detail_product?.stock !== undefined) {
@@ -54,7 +63,15 @@ const DetailProduct = ({ route }: any) => {
     }
   });
 
-  const handleButton = () => {
+  const [formData, setFormData] = useState({
+    id: "",
+    title: "",
+    count: "",
+    price: "",
+    discountPercentage: "",
+  });
+
+  const handleButton = async () => {
     if (count === 0) {
       Alert.alert(
         "Thông báo", // Tiêu đề
@@ -68,9 +85,25 @@ const DetailProduct = ({ route }: any) => {
         { cancelable: true } // Cho phép nhấn ngoài để tắt
       );
     } else {
+      // setLoading2(false);
+      // try {
+      //   const reponse = await axios.post("", formData);
+      //   setFormData({
+      //     id: "",
+      //     title: "",
+      //     count: "",
+      //     price: "",
+      //     discountPercentage: "",
+      //   });
+      // } catch (error) {
+      //   console.log(error);
+      // } finally {
+      //   setLoading(false);
+      // }
+
       Alert.alert(
         "Thành công",
-        `Đã thêm ${count} ${detail_product?.title} vào giỏ hàng!`,
+        `Đã thêm ${count} sản phẩm vào giỏ hàng!`,
         [
           {
             text: "Tiếp tục mua sắm",
@@ -100,7 +133,7 @@ const DetailProduct = ({ route }: any) => {
         <View>
           <Image
             source={{ uri: detail_product.thumbnail }}
-            style={{ width: "100%", height: "auto" }}
+            style={{ width: "100%", height: 300, objectFit: "cover" }}
           />
           <View style={styles.line1}>
             <Text style={styles.price}>{detail_product.price} VND</Text>
@@ -118,12 +151,15 @@ const DetailProduct = ({ route }: any) => {
             )}
           </Text>
           <Text style={styles.detail}>Mô tả chi tiết: </Text>
-          <Text style={styles.description}>{detail_product.description} </Text>
+          <Text style={styles.description}>
+            <RenderHtml
+              contentWidth={width}
+              source={{ html: detail_product.description }}
+            />
+          </Text>
         </View>
 
-        <View style={{ paddingBottom: 70 }}>
-          <Footer />
-        </View>
+        {/* <View style={{ paddingBottom: 70 }}></View> */}
       </ScrollView>
 
       <View style={styles.container}>
@@ -214,7 +250,7 @@ const styles = StyleSheet.create({
   description: {
     fontSize: 16,
     paddingLeft: 20,
-    paddingBottom: 20,
+    paddingBottom: 90,
   },
 
   container: {
@@ -305,3 +341,6 @@ const styles = StyleSheet.create({
 });
 
 export default DetailProduct;
+function async() {
+  throw new Error("Function not implemented.");
+}

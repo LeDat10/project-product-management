@@ -102,7 +102,7 @@ const AboutUs = () => {
         </Text>
       </View>
 
-      <Footer />
+      {/* <Footer /> */}
     </ScrollView>
   );
 };
@@ -120,6 +120,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     height: 420,
+    marginHorizontal: 10,
+    borderRadius: 10,
+    overflow: "hidden",
+    elevation: 5, // Độ nổi cho Android
+    shadowColor: "#000", // Độ bóng cho iOS
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 5,
   },
 
   background: {
@@ -175,6 +183,13 @@ const styles = StyleSheet.create({
     paddingLeft: 20,
     paddingTop: 10,
     marginBlock: 20,
+    overflow: "hidden",
+    elevation: 5, // Độ nổi cho Android
+    shadowColor: "#000", // Độ bóng cho iOS
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 5,
+    borderRadius: 10,
   },
 
   title1: {

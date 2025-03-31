@@ -224,7 +224,7 @@ const HomeScreen = () => {
         </Text>
       </View>
 
-      <Footer />
+      {/* <Footer /> */}
     </ScrollView>
   );
 };

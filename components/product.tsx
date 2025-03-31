@@ -11,9 +11,10 @@ import {
 import { FlatList, ScrollView } from "react-native-gesture-handler";
 import Footer from "./footer";
 import { Double } from "react-native/Libraries/Types/CodegenTypes";
+import axios from "axios";
 
 interface Product {
-  id: string;
+  _id: string;
   title: string;
   price: number;
   thumbnail: string;
@@ -21,6 +22,7 @@ interface Product {
   images: string;
   stock: number;
   discountPercentage: Double;
+  slug: string;
 }
 
 const Product = () => {
@@ -29,15 +31,13 @@ const Product = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("http://192.168.1.15:3000/products")
-      .then((response) => response.json())
-      .then((data) => {
-        setProduct(data);
+    axios
+      .get(`https://api-project-product-management.vercel.app/api/products`)
+      .then((response) => {
+        setProduct(response.data.products);
       })
       .catch((error) => console.log(error))
-      .finally(() => {
-        setLoading(false);
-      });
+      .finally(() => setLoading(false));
   }, []);
 
   return (
@@ -166,9 +166,12 @@ const Product = () => {
           data={product}
           numColumns={2}
           columnWrapperStyle={styles.Row}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item._id}
           renderItem={({ item }) => (
             <View style={styles.card}>
+              <View style={styles.containerCoupon}>
+                <Text style={styles.coupon}>-{item.discountPercentage}%</Text>
+              </View>
               <Image
                 source={{
                   uri: item.thumbnail,
@@ -178,12 +181,11 @@ const Product = () => {
               <Text style={styles.name}> {item.title} </Text>
               <View style={{ flexDirection: "row", alignItems: "center" }}>
                 <Text style={styles.price}> {item.price} VND</Text>
-                <Text style={styles.coupon}>-{item.discountPercentage}%</Text>
               </View>
               <TouchableOpacity
                 style={styles.button}
                 onPress={() =>
-                  navigation.navigate("detail-product", { id: item.id })
+                  navigation.navigate("detail-product", { slug: item.slug })
                 }
               >
                 <Text style={styles.buttonText}>Shop Now</Text>
@@ -192,9 +194,6 @@ const Product = () => {
           )}
         />
       )}
-
-      {/* footer */}
-      <Footer />
     </ScrollView>
   );
 };
@@ -214,7 +213,6 @@ const styles = StyleSheet.create({
 
   listMenu: {
     paddingTop: 20,
-    // paddingBottom: 70,
   },
 
   menu: {
@@ -254,7 +252,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flex: 1,
     margin: 5,
-    elevation: 3,
+    elevation: 3, // đổ bóng
   },
 
   image: {
@@ -275,22 +273,28 @@ const styles = StyleSheet.create({
     marginRight: 5,
   },
 
+  containerCoupon: {
+    position: "absolute",
+    top: 5,
+    right: 5,
+    backgroundColor: "#fadbd8",
+    paddingVertical: 3,
+    paddingHorizontal: 6,
+    borderRadius: 5,
+    zIndex: 10, //  đảm bảo phần giảm giá hiển thị trên thumbnail
+  },
+
   coupon: {
-    backgroundColor: "red",
-    color: "white",
-    fontSize: 14,
+    color: "red",
+    fontSize: 12,
     fontWeight: "600",
-    textAlign: "center",
-    justifyContent: "center",
-    marginVertical: 5,
-    padding: 3,
   },
 
   button: {
     backgroundColor: "green",
     paddingVertical: 8,
     paddingHorizontal: 15,
-    borderRadius: 5,
+    borderRadius: 10,
   },
 
   buttonText: {

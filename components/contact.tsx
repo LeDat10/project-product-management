@@ -105,7 +105,7 @@ const Contact = () => {
         nay!{" "}
       </Text>
 
-      <Footer />
+      {/* <Footer /> */}
     </ScrollView>
   );
 };
