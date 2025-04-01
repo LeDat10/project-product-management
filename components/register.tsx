@@ -10,7 +10,10 @@ import {
   Alert,
 } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
-import accountService ,{RegisterData , UserResponse}from "../services/accountService";
+import accountService, {
+  RegisterData,
+  UserResponse,
+} from "../services/accountService";
 
 type RegisterScreen = NavigationProp<RootStackParamList, "register">;
 
@@ -19,14 +22,13 @@ interface Props {
 }
 
 const Register = ({ navigation }: Props) => {
-  
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [lastname, setLastname] = useState<string>("");
   const [firstname, setFirstname] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [phone, setPhone] = useState<string>("");
-  const [isLoading , setisLoading] = useState(false); 
+  const [isLoading, setisLoading] = useState(false);
 
   const handleRegister = async () => {
     if (!username || !password || !lastname || !firstname || !email || !phone) {
@@ -48,7 +50,8 @@ const Register = ({ navigation }: Props) => {
       if (response && (response as UserResponse).code === 200) {
         Alert.alert(
           "Đăng ký thành công",
-          (response as UserResponse).message || "Vui lòng kiểm tra email để xác thực.",
+          (response as UserResponse).message ||
+            "Vui lòng kiểm tra email để xác thực.",
           [
             {
               text: "OK",
@@ -72,7 +75,7 @@ const Register = ({ navigation }: Props) => {
       setisLoading(false);
     }
   };
-  
+
   return (
     <ScrollView>
       <View style={styles.container}>
@@ -190,18 +193,21 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   row1: {
-    fontSize: 16,
+    fontSize: 15,
     color: "#000",
+    fontWeight: "600",
   },
   linkText1: {
-    fontSize: 16,
-    color: "#007bff",
+    color: "#006FFF",
+    fontSize: 15,
+    fontWeight: "600",
     marginLeft: 5,
+    textDecorationLine: "underline",
   },
   linkText2: {
     fontSize: 16,
     color: "#007bff",
-    marginTop: 12,
+    marginVertical: 12,
   },
 });
 

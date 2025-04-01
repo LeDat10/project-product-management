@@ -1,5 +1,5 @@
-import apiClient, { ApiError} from './apiClient';
-import axios from 'axios';
+import apiClient, { ApiError } from "./apiClient";
+import axios from "axios";
 
 export interface RegisterData {
   email: string;
@@ -16,7 +16,7 @@ export interface ConfirmOTPData {
 }
 
 export interface LoginData {
-  userName: string;
+  email: string;
   password: string;
 }
 
@@ -32,32 +32,63 @@ export interface UserResponse {
   cartId?: string;
 }
 
-const register = async (userData: RegisterData): Promise<UserResponse | ApiError> => {
-  return apiClient.post<UserResponse, RegisterData>(`/register`, userData);
+const register = async (
+  userData: RegisterData
+): Promise<UserResponse | ApiError> => {
+  return apiClient.post<UserResponse, RegisterData>(
+    `/users/register`,
+    userData
+  );
 };
 
-const confirmOTP = async (otpData: ConfirmOTPData): Promise<UserResponse | ApiError> => {
-  return apiClient.post<UserResponse, ConfirmOTPData>(`/register/confirmOTP`, otpData);
+const confirmOTP = async (
+  otpData: ConfirmOTPData
+): Promise<UserResponse | ApiError> => {
+  return apiClient.post<UserResponse, ConfirmOTPData>(
+    `/users/register/confirmOTP`,
+    otpData
+  );
 };
 
-const login = async (loginData: LoginData): Promise<UserResponse | ApiError> => {
-  return apiClient.post<UserResponse, LoginData>(`/login`, loginData);
+const login = async (
+  loginData: LoginData
+): Promise<UserResponse | ApiError> => {
+  return apiClient.post<UserResponse, LoginData>(`/users/login`, loginData);
 };
 
-const forgotPassword = async (email: string): Promise<UserResponse | ApiError> => {
-  return apiClient.post<UserResponse, { email: string }>(`/password/forgot`, { email });
+const forgotPassword = async (
+  email: string
+): Promise<UserResponse | ApiError> => {
+  return apiClient.post<UserResponse, { email: string }>(
+    `/users/password/forgot`,
+    {
+      email,
+    }
+  );
 };
 
-const otpPassword = async (otpData: ConfirmOTPData): Promise<UserResponse | ApiError> => {
-  return apiClient.post<UserResponse, ConfirmOTPData>(`/password/otp`, otpData);
+const otpPassword = async (
+  otpData: ConfirmOTPData
+): Promise<UserResponse | ApiError> => {
+  return apiClient.post<UserResponse, ConfirmOTPData>(
+    `/users/password/otp`,
+    otpData
+  );
 };
 
-const resetPassword = async (passwordData: ResetPasswordData, token: string): Promise<UserResponse | ApiError> => {
-  return apiClient.post<UserResponse, ResetPasswordData>(`/password/reset`, passwordData, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+const resetPassword = async (
+  passwordData: ResetPasswordData,
+  token: string
+): Promise<UserResponse | ApiError> => {
+  return apiClient.post<UserResponse, ResetPasswordData>(
+    `/users/password/reset`,
+    passwordData,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
 };
 
 const userService = {

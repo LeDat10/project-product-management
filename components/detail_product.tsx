@@ -38,7 +38,7 @@ const DetailProduct = ({ route }: any) => {
   );
   const [loading, setLoading] = useState(true);
   const [loading2, setLoading2] = useState(true);
-  const [count, setCount] = useState(0);
+  const [quantity, setQuantity] = useState(0);
   const { width } = useWindowDimensions();
 
   // lấy dữ liệu sản phẩm từ api
@@ -64,15 +64,12 @@ const DetailProduct = ({ route }: any) => {
   });
 
   const [formData, setFormData] = useState({
-    id: "",
-    title: "",
-    count: "",
-    price: "",
-    discountPercentage: "",
+    _id: "",
+    quantity: "",
   });
 
   const handleButton = async () => {
-    if (count === 0) {
+    if (quantity === 0) {
       Alert.alert(
         "Thông báo", // Tiêu đề
         "Vui lòng chọn số lượng lớn hơn 0!", // Nội dung
@@ -85,15 +82,19 @@ const DetailProduct = ({ route }: any) => {
         { cancelable: true } // Cho phép nhấn ngoài để tắt
       );
     } else {
-      // setLoading2(false);
+      setLoading2(false);
       // try {
-      //   const reponse = await axios.post("", formData);
+      //   const formData = {
+      //     _id: detail_product?._id,
+      //     quantity: quantity,
+      //   }
+      //   const reponse = await axios.post(
+      //     "https://api-project-product-management.vercel.app/api/cart/add",
+      //     formData
+      //   );
       //   setFormData({
-      //     id: "",
-      //     title: "",
-      //     count: "",
-      //     price: "",
-      //     discountPercentage: "",
+      //     _id: "",
+      //     quantity: "",
       //   });
       // } catch (error) {
       //   console.log(error);
@@ -103,7 +104,7 @@ const DetailProduct = ({ route }: any) => {
 
       Alert.alert(
         "Thành công",
-        `Đã thêm ${count} sản phẩm vào giỏ hàng!`,
+        `Đã thêm ${quantity} sản phẩm vào giỏ hàng!`,
         [
           {
             text: "Tiếp tục mua sắm",
@@ -166,19 +167,19 @@ const DetailProduct = ({ route }: any) => {
         <View style={styles.counterContainer}>
           <TouchableOpacity
             style={styles.quantity}
-            onPress={() => setCount(Math.max(0, count - 1))}
+            onPress={() => setQuantity(Math.max(0, quantity - 1))}
           >
             <Text style={styles.sign}>-</Text>
           </TouchableOpacity>
 
           <View style={styles.countText}>
-            <Text style={styles.count}>{count}</Text>
+            <Text style={styles.count}>{quantity}</Text>
           </View>
 
           <TouchableOpacity
             style={styles.quantity}
             onPress={() =>
-              setCount(Math.min(detail_product.stock || 0, count + 1))
+              setQuantity(Math.min(detail_product.stock || 0, quantity + 1))
             }
           >
             <Text style={styles.sign}>+</Text>

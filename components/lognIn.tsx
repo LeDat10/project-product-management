@@ -12,7 +12,10 @@ import {
 import { useState } from "react";
 import { ScrollView } from "react-native-gesture-handler";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import accountService, {LoginData, UserResponse} from "../services/accountService";
+import accountService, {
+  LoginData,
+  UserResponse,
+} from "../services/accountService";
 
 type LoginScreen = NavigationProp<RootStackParamList, "login">;
 
@@ -20,24 +23,20 @@ interface Props {
   navigation: LoginScreen;
 }
 
-interface IProps {
-  addUser: (user: { userName: string; password: string }) => void;
-}
-
 const LognIn = ({ navigation }: Props) => {
-  const [userName, setUserName] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false); // Cái trạng thái màn hình chờ khi đăng nhập để tránh đăng nhập nhiều lần
 
   const handleLogin = async () => {
-    if (!userName || !password) {
+    if (!email || !password) {
       Alert.alert("Thông tin không hợp lệ. Vui lòng không bỏ trống.");
       return;
     }
     try {
       setIsLoading(true);
       const loginData: LoginData = {
-        userName: userName,
+        email: email,
         password: password,
       };
 
@@ -46,10 +45,16 @@ const LognIn = ({ navigation }: Props) => {
       if (response && (response as UserResponse).code === 200) {
         await AsyncStorage.setItem("token", (response as UserResponse).token!);
         if ((response as UserResponse).cartId) {
-          await AsyncStorage.setItem("cartId", (response as UserResponse).cartId!);
+          await AsyncStorage.setItem(
+            "cartId",
+            (response as UserResponse).cartId!
+          );
         }
 
-        Alert.alert("Thành công", (response as UserResponse).message || "Đăng nhập thành công!");
+        Alert.alert(
+          "Thành công",
+          (response as UserResponse).message || "Đăng nhập thành công!"
+        );
         navigation.navigate("account");
       } else {
         Alert.alert("Lỗi", (response as any).message || "Đăng nhập thất bại");
@@ -66,14 +71,12 @@ const LognIn = ({ navigation }: Props) => {
       <View style={styles.container}>
         <Image style={styles.logo} source={require("../assets/logo.png")} />
         <Text style={styles.dangnhap}>Đăng Nhập Tài Khoản</Text>
-        <Text style={styles.huongdan}>
-          Nhập tên đăng nhập và mật khẩu của bạn{" "}
-        </Text>
+        <Text style={styles.huongdan}>Nhập email và mật khẩu của bạn </Text>
         <TextInput
           style={styles.input1}
-          placeholder="Tên đăng nhập"
-          value={userName}
-          onChangeText={setUserName}
+          placeholder="Email"
+          value={email}
+          onChangeText={setEmail}
           maxLength={25}
         />
         <TextInput
@@ -87,10 +90,7 @@ const LognIn = ({ navigation }: Props) => {
 
         <Text style={styles.quenpass}>Bạn đã quên mật khẩu?</Text>
 
-        <TouchableOpacity
-          style={styles.button}
-          onPress={handleLogin}
-        >
+        <TouchableOpacity style={styles.button} onPress={handleLogin}>
           <Text style={styles.text3}>Đăng Nhập</Text>
         </TouchableOpacity>
 
@@ -206,12 +206,10 @@ const styles = StyleSheet.create({
     textDecorationLine: "underline",
   },
   textlink: {
-    textAlign: "center",
-    color: "blue",
-    fontSize: 15,
-    fontWeight: "600",
-    paddingTop: 120,
-    marginTop: 20,
+    fontSize: 16,
+    color: "#007bff",
+    marginTop: 12,
+    fontStyle: "italic",
   },
 });
 
