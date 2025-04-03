@@ -2,27 +2,42 @@ const Cart = require("../../models/cart.model");
 
 module.exports.cartId = async (req, res, next) => {
     try {
-        if (!req.headers.cartid) {
-            
-            const cart = new Cart();
-            await cart.save();
-            
-            res.setHeader("cartId", cart.id);
+        if (!req.user) {
+            if (!req.headers.cartid) {
+                const cart = new Cart();
+                await cart.save();
 
-            req.cart = cart;
+                res.setHeader("cartId", cart.id);
 
+                req.cart = cart;
+
+            } else {
+                const cartId = req.headers.cartid;
+
+                const cart = await Cart.findOne({
+                    _id: cartId
+                });
+                req.cart = cart;
+            };
         } else {
-            const cartId = req.headers.cartid;
+            const userId = req.user.id;
 
             const cart = await Cart.findOne({
-                _id: cartId
+                user_id: userId
             });
+            if (cart) {
+                req.cart = cart;
+                res.setHeader("cartId", cart.id);
+            } else {
+                const cart = new Cart({
+                    user_id: user.id
+                });
+                await cart.save();
 
-            const totalQuantity = cart.products.reduce((sum, item) => sum + item.quantity, 0);
+                res.setHeader("cartId", cart.id);
 
-            cart.totalQuantity = totalQuantity;
-
-            req.cart = cart;
+                req.cart = cart;
+            };
         };
         next();
     } catch (error) {

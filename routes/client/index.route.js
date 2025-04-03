@@ -5,6 +5,9 @@ const userRoutes = require("./user.route");
 const orderRoutes = require("./order.route");
 
 const cartMiddleware = require("../../middlewares/client/cart.middleware");
+const authenMiddeware = require("../../middlewares/client/authenticateToken.middleware");
+const authorMiddleware = require("../../middlewares/client/author.middlware");
+
 
 module.exports = (app) => {
     const version = "/api";
@@ -13,9 +16,9 @@ module.exports = (app) => {
 
     app.use(version + "/search", searchRoutes);
 
-    app.use(version + "/carts", cartMiddleware.cartId, cartRoutes);
+    app.use(version + "/carts", authenMiddeware.authenticateToken, cartMiddleware.cartId, cartRoutes);
 
     app.use(version + "/users", userRoutes);
 
-    app.use(version + "/order", orderRoutes);
+    app.use(version + "/order", authorMiddleware.requireAuth, orderRoutes);
 };

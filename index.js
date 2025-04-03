@@ -4,8 +4,8 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 
 const database = require("./config/database");
-const routesAmdin = require("./routes/admin/index");
-const routesClient = require("./routes/client/index");
+const routesAmdin = require("./routes/admin/index.route");
+const routesClient = require("./routes/client/index.route");
 
 const app = express();
 database.connect();
@@ -19,6 +19,6 @@ app.use(bodyParser.json());
 routesAmdin(app);
 // Routes Client
 routesClient(app);
-app.listen(process.env.PORT, () => {
+app.listen(process.env.PORT,"0.0.0.0" , () => {
     console.log(`App listen on port ${process.env.PORT}`);
 });

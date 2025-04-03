@@ -2,26 +2,21 @@ const Order = require("../../models/order.model");
 const Cart = require("../../models/cart.model");
 const Product = require("../../models/product.model");
 
-const productHelper = require("../../helper/product");
+// const productHelper = require("../../helper/product");
 
 // [POST] /api/order/confirm
 module.exports.order = async (req, res) => {
     try {
-        const cartId = req.cart.id;
+        // const cartId = req.cart.id;
         const userInfo = req.body.userInfo;
+        const userId = req.user.id;
 
         const cart = await Cart.findOne({
-            _id: cartId
+            user_id: userId,
+            products: { $elemMatch: { selected: true } }
         });
 
-        const userId = cart.user_id;
-        if (!userId) {
-            res.json({
-                code: 400,
-                message: "Hãy đăng nhập trước khi đặt hàng!"
-            });
-            return;
-        };
+        console.log(cart);
 
         let productSelects = [];
 
@@ -37,10 +32,11 @@ module.exports.order = async (req, res) => {
         };
 
         const objectOrder = {
-            cart_id: cartId,
+            cart_id: cart.id,
+            user_id: userId,
             userInfo: userInfo,
             products: productSelects
-        }
+        };
 
         const order = Order(objectOrder);
         await order.save();
@@ -58,16 +54,17 @@ module.exports.order = async (req, res) => {
     };
 };
 
-// [GET] /api/order/info-order/orderId
+// [GET] /api/order/:orderId
 module.exports.orderInfo = async (req, res) => {
     try {
         const orderId = req.params.orderId;
 
         const order = await Order.findOne({
-            _id: orderId
+            _id: orderId,
+            user_id: req.user.id
         }).select("cartId userInfo products").lean();
 
-        if(order.products.length > 0) {
+        if (order.products.length > 0) {
             for (const product of order.products) {
                 const productInfo = await Product.findOne({
                     _id: product.product_id

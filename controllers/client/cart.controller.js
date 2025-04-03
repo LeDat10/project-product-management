@@ -7,6 +7,8 @@ module.exports.index = async (req, res) => {
     try {
         const cartId = req.cart.id;
 
+        console.log(cartId);
+
         const cart = await Cart.findOne({
             _id: cartId
         }).lean();
@@ -23,10 +25,9 @@ module.exports.index = async (req, res) => {
             };
         };
 
-        cart.total = cart.products.reduce((sum, item) => sum = sum + item.totalPrice, 0);
-        cart.totalQuantity = cart.products.reduce((sum, item) => sum + item.quantity, 0);
         res.json({
             code: 200,
+            message: "Lấy giỏ hàng thành công!",
             cart: cart
         });
     } catch (error) {
@@ -147,7 +148,7 @@ module.exports.select = async (req, res) => {
             for (const product of productSelected) {
                 const productUpdate = await Cart.updateOne({
                     _id: cartId,
-                    "products._id": product
+                    "products.product_id": product
                 }, {
                     "products.$.selected": true
                 });

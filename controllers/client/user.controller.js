@@ -159,10 +159,9 @@ module.exports.confirmOTP = async (req, res) => {
         res.json({
             code: 400,
             message: "Xác thực và đăng ký tài khoản thất bại!"
-        })
-    }
-
-}
+        });
+    };
+};
 
 //[POST] /api/users/login
 module.exports.login = async (req, res) => {
@@ -183,7 +182,7 @@ module.exports.login = async (req, res) => {
                 message: "Email đăng nhập không tồn tại!"
             });
             return;
-        }
+        };
 
         const match = await argon2.verify(user.password, password);
 
@@ -195,33 +194,42 @@ module.exports.login = async (req, res) => {
             return;
         };
 
-        const token = user.token;
+        const payload = {
+            id: user.id,
+            email: user.email,
+            fullName: user.fullName
+        };
 
-        const cart = await Cart.findOne({
-            user_id: user.id
-        });
+        const token = jwt.sign(
+            payload,
+            process.env.JWT_SECRET,
+            {
+                expiresIn: process.env.JWT_EXPIRE
+            }
+        );
 
-        let cartId;
+        // const cart = await Cart.findOne({
+        //     user_id: user.id
+        // });
 
-        if (cart) {
-            cartId = cart.id;
-            console.log(cartId);
-        } else {
-            cartId = req.cart.id;
-            console.log(cartId);
-            await Cart.updateOne({
-                _id: cartId
-            }, {
-                user_id: user.id
-            });
-        }
+        // let cartId;
+
+
+        // if (!cart) {
+        //     cartId = req.cart.id;
+        //     await Cart.updateOne({
+        //         _id: cartId
+        //     }, {
+        //         user_id: user.id
+        //     });
+        // };
 
         res.json({
             code: 200,
             message: "Đăng nhập thành công!",
-            token: token,
-            cartId: cartId
+            token: token
         });
+
     } catch (error) {
         res.json({
             code: 400,
@@ -367,6 +375,21 @@ module.exports.resetPassword = async (req, res) => {
         res.json({
             code: 400,
             message: "Đổi mật khẩu thất bại!"
+        });
+    };
+};
+
+module.exports.getInfoUser = async (req, res) => {
+    try {
+        res.json({
+            code: 200,
+            message: "Lấy thông tin người dùng thành công!",
+            user: req.user
+        });
+    } catch (error) {
+        res.json({
+            code: 400,
+            message: "Lấy thông tin người dùng thất bại!"
         });
     };
 };
