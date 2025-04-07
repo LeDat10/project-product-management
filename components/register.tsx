@@ -8,11 +8,15 @@ import {
   TextInput,
   Image,
   Alert,
+  Modal,
+  Button,
+  ActivityIndicator,
 } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import accountService, {
   RegisterData,
   UserResponse,
+  ConfirmOTPData,
 } from "../services/accountService";
 
 type RegisterScreen = NavigationProp<RootStackParamList, "register">;
@@ -28,6 +32,8 @@ const Register = ({ navigation }: Props) => {
   const [firstname, setFirstname] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [phone, setPhone] = useState<string>("");
+  const [otp, setOtp] = useState<string>("");
+  const [otpModalVisible, setOtpModalVisible] = useState(false);
   const [isLoading, setisLoading] = useState(false);
 
   const handleRegister = async () => {
@@ -35,6 +41,7 @@ const Register = ({ navigation }: Props) => {
       Alert.alert("Thông tin không hợp lệ. Vui lòng không bỏ trống.");
       return;
     }
+    setisLoading(true);
     try {
       const registerData: RegisterData = {
         email: email,
@@ -55,7 +62,7 @@ const Register = ({ navigation }: Props) => {
           [
             {
               text: "OK",
-              onPress: () => navigation.navigate("login"),
+              onPress: () => setOtpModalVisible(true),
             },
           ]
         );
@@ -71,6 +78,42 @@ const Register = ({ navigation }: Props) => {
         "Lỗi",
         error.message || "Không thể kết nối đến server. Vui lòng thử lại."
       );
+    } finally {
+      setisLoading(false);
+    }
+  };
+
+  const handleConfirmOtp = async () => {
+    if (!otp) {
+      Alert.alert("Lỗi", "Vui lòng nhập mã OTP");
+      return;
+    }
+    setisLoading(true);
+    try {
+      const ConfirmOTPData: ConfirmOTPData = {
+        email: email,
+        otp: otp,
+      };
+      const otpResponse = await accountService.confirmOTP(ConfirmOTPData);
+
+      if (otpResponse && otpResponse.code === 200) {
+        setOtpModalVisible(false);
+        Alert.alert("Thành công", otpResponse.message, [
+          {
+            text: "Đăng nhập",
+            onPress: () => navigation.navigate("login"),
+          },
+        ]);
+      } else {
+        Alert.alert("Thông báo", otpResponse.message, [
+          {
+            text: "OK",
+            style: "cancel",
+          },
+        ]);
+      }
+    } catch (error: any) {
+      Alert.alert("Lỗi", "Không thể xác thực email, vui lòng thử lại.");
     } finally {
       setisLoading(false);
     }
@@ -120,9 +163,127 @@ const Register = ({ navigation }: Props) => {
           onChangeText={setPassword}
         />
 
-        <TouchableOpacity style={styles.button} onPress={handleRegister}>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={handleRegister}
+          disabled={isLoading}
+        >
           <Text style={styles.text1}>Đăng Ký</Text>
         </TouchableOpacity>
+
+        {isLoading && (
+          <View
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              justifyContent: "center",
+              backgroundColor: "rgba(0,0,0,0.4)",
+            }}
+          >
+            <ActivityIndicator size={"large"} color="#007bff" />
+          </View>
+        )}
+
+        <Modal
+          visible={otpModalVisible}
+          transparent={true}
+          animationType="slide"
+          onRequestClose={() => setOtpModalVisible(false)}
+          style={{
+            backgroundColor: "white",
+            justifyContent: "center",
+            alignItems: "center",
+            borderRadius: 10,
+          }}
+        >
+          <View
+            style={{
+              flex: 1,
+              justifyContent: "center",
+              alignItems: "center",
+              backgroundColor: "rgba(0,0,0,0.6)",
+            }}
+          >
+            <View
+              style={{
+                backgroundColor: "white",
+                padding: 20,
+                borderRadius: 15,
+                width: "90%",
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.3,
+                shadowRadius: 5,
+                elevation: 5,
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 20,
+                  marginBottom: 15,
+                  fontWeight: "600",
+                  color: "#333",
+                }}
+              >
+                Xác thực OTP
+              </Text>
+              <Text style={{ marginBottom: 10, fontSize: 16, color: "#666" }}>
+                Vui lòng nhập mã OTP được gửi đến email của bạn.
+              </Text>
+              <TextInput
+                value="Mã OTP"
+                onChangeText={setOtp}
+                keyboardType="numeric"
+                placeholder="Nhập mã OTP"
+                style={{
+                  borderWidth: 1,
+                  borderColor: "#ccc",
+                  padding: 10,
+                  marginBottom: 10,
+                  borderRadius: 5,
+                  backgroundColor: "#f9f9f9",
+                }}
+              />
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Button
+                  title="Hủy"
+                  onPress={() => setOtpModalVisible(false)}
+                  color="#ff4444"
+                />
+
+                <Button
+                  title="Xác nhận"
+                  onPress={handleConfirmOtp}
+                  color="#007bff"
+                />
+
+                {isLoading && (
+                  <View
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      justifyContent: "center",
+                      backgroundColor: "rgba(0,0,0,0.4)",
+                    }}
+                  >
+                    <ActivityIndicator size={"large"} color="#007bff" />
+                  </View>
+                )}
+              </View>
+            </View>
+          </View>
+        </Modal>
 
         <View style={styles.rowContainer1}>
           <Text style={styles.row1}>Bạn đã có tài khoản ?</Text>

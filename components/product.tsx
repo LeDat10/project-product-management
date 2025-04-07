@@ -40,161 +40,190 @@ const Product = () => {
       .finally(() => setLoading(false));
   }, []);
 
-  return (
-    <ScrollView>
-      <Text style={styles.danhmuc}>Danh Mục Sản Phẩm</Text>
-      {/* list menu */}
-      <View style={styles.listMenu}>
-        {/* Row1 */}
-        <View style={styles.row}>
-          <View style={styles.menu}>
-            <View style={styles.innerImage}>
-              <TouchableOpacity
-                onPress={() => navigation.navigate("Vegetable")}
-              >
-                <Image
-                  style={{ width: "100%", height: "100%" }}
-                  source={require("../assets/vegetable.png")}
-                  resizeMode="cover"
-                />
-              </TouchableOpacity>
-            </View>
-            <Text style={styles.Text}>Rau Củ Quả</Text>
-          </View>
-
-          <View style={styles.menu}>
-            <View style={styles.innerImage}>
-              <TouchableOpacity onPress={() => navigation.navigate("Bakery")}>
-                <Image
-                  style={{ width: "100%", height: "100%" }}
-                  source={require("../assets/bakery.png")}
-                  resizeMode="cover"
-                />
-              </TouchableOpacity>
-            </View>
-            <Text style={styles.Text}>Các Loại Bánh</Text>
-          </View>
-
-          <View style={styles.menu}>
-            <View style={styles.innerImage}>
-              <TouchableOpacity onPress={() => navigation.navigate("Snack")}>
-                <Image
-                  style={{ width: "100%", height: "100%" }}
-                  source={require("../assets/snack.png")}
-                  resizeMode="cover"
-                />
-              </TouchableOpacity>
-            </View>
-            <Text style={styles.Text}>Đồ Ăn Vặt</Text>
-          </View>
-
-          <View style={styles.menu}>
-            <View style={styles.innerImage}>
-              <TouchableOpacity onPress={() => navigation.navigate("Milk")}>
-                <Image
-                  style={{ width: "100%", height: "100%" }}
-                  source={require("../assets/milk.png")}
-                  resizeMode="cover"
-                />
-              </TouchableOpacity>
-            </View>
-            <Text style={styles.Text}>Trứng Và Sữa</Text>
-          </View>
-        </View>
-
-        {/* Row 2 */}
-        <View style={styles.row}>
-          <View style={styles.menu}>
-            <View style={styles.innerImage}>
-              <TouchableOpacity onPress={() => navigation.navigate("Meat")}>
-                <Image
-                  style={{ width: "100%", height: "100%" }}
-                  source={require("../assets/meat.png")}
-                  resizeMode="cover"
-                />
-              </TouchableOpacity>
-            </View>
-            <Text style={styles.Text}>Các Loại Thịt</Text>
-          </View>
-
-          <View style={styles.menu}>
-            <View style={styles.innerImage}>
-              <TouchableOpacity onPress={() => navigation.navigate("Drink")}>
-                <Image
-                  style={{ width: "100%", height: "100%" }}
-                  source={require("../assets/drink.png")}
-                  resizeMode="cover"
-                />
-              </TouchableOpacity>
-            </View>
-            <Text style={styles.Text}>Đồ Uống</Text>
-          </View>
-
-          <View style={styles.menu}>
-            <View style={styles.innerImage}>
-              <TouchableOpacity onPress={() => navigation.navigate("Cleaning")}>
-                <Image
-                  style={{ width: "100%", height: "100%" }}
-                  source={require("../assets/cleaning.png")}
-                  resizeMode="cover"
-                />
-              </TouchableOpacity>
-            </View>
-            <Text style={styles.Text}>Dụng cụ vệ sinh</Text>
-          </View>
-
-          <View style={styles.menu}>
-            <View style={styles.innerImage}>
-              <TouchableOpacity onPress={() => navigation.navigate("Care")}>
-                <Image
-                  style={{ width: "100%", height: "100%" }}
-                  source={require("../assets/care.png")}
-                  resizeMode="cover"
-                />
-              </TouchableOpacity>
-            </View>
-            <Text style={styles.Text}>Hóa Mỹ Phẩm</Text>
-          </View>
-        </View>
+  if (loading) {
+    return (
+      <View
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          justifyContent: "center",
+        }}
+      >
+        <ActivityIndicator size={"large"} color="#007bff" />
       </View>
+    );
+  }
 
-      {/* hiện sản phẩm */}
-      {loading ? (
-        <ActivityIndicator size={"large"} color="#0000ff" />
-      ) : (
-        <FlatList
-          data={product}
-          numColumns={2}
-          columnWrapperStyle={styles.Row}
-          keyExtractor={(item) => item._id}
-          renderItem={({ item }) => (
-            <View style={styles.card}>
-              <View style={styles.containerCoupon}>
-                <Text style={styles.coupon}>-{item.discountPercentage}%</Text>
+  return (
+    <View>
+      <FlatList
+        data={product}
+        numColumns={2}
+        columnWrapperStyle={styles.Row}
+        keyExtractor={(item) => item._id}
+        ListHeaderComponent={
+          <View>
+            <Text style={styles.danhmuc}>Danh Mục Sản Phẩm</Text>
+            <View style={styles.listMenu}>
+              {/* Row1 */}
+              <View style={styles.row}>
+                <View style={styles.menu}>
+                  <View style={styles.innerImage}>
+                    <TouchableOpacity
+                      onPress={() => navigation.navigate("Vegetable")}
+                    >
+                      <Image
+                        style={{ width: "100%", height: "100%" }}
+                        source={require("../assets/vegetable.png")}
+                        resizeMode="cover"
+                      />
+                    </TouchableOpacity>
+                  </View>
+                  <Text style={styles.Text}>Rau Củ Quả</Text>
+                </View>
+
+                <View style={styles.menu}>
+                  <View style={styles.innerImage}>
+                    <TouchableOpacity
+                      onPress={() => navigation.navigate("Bakery")}
+                    >
+                      <Image
+                        style={{ width: "100%", height: "100%" }}
+                        source={require("../assets/bakery.png")}
+                        resizeMode="cover"
+                      />
+                    </TouchableOpacity>
+                  </View>
+                  <Text style={styles.Text}>Các Loại Bánh</Text>
+                </View>
+
+                <View style={styles.menu}>
+                  <View style={styles.innerImage}>
+                    <TouchableOpacity
+                      onPress={() => navigation.navigate("Snack")}
+                    >
+                      <Image
+                        style={{ width: "100%", height: "100%" }}
+                        source={require("../assets/snack.png")}
+                        resizeMode="cover"
+                      />
+                    </TouchableOpacity>
+                  </View>
+                  <Text style={styles.Text}>Đồ Ăn Vặt</Text>
+                </View>
+
+                <View style={styles.menu}>
+                  <View style={styles.innerImage}>
+                    <TouchableOpacity
+                      onPress={() => navigation.navigate("Milk")}
+                    >
+                      <Image
+                        style={{ width: "100%", height: "100%" }}
+                        source={require("../assets/milk.png")}
+                        resizeMode="cover"
+                      />
+                    </TouchableOpacity>
+                  </View>
+                  <Text style={styles.Text}>Trứng Và Sữa</Text>
+                </View>
               </View>
-              <Image
-                source={{
-                  uri: item.thumbnail,
-                }}
-                style={styles.image}
-              />
-              <Text style={styles.name}> {item.title} </Text>
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <Text style={styles.price}> {item.price} VND</Text>
+
+              {/* Row 2 */}
+              <View style={styles.row}>
+                <View style={styles.menu}>
+                  <View style={styles.innerImage}>
+                    <TouchableOpacity
+                      onPress={() => navigation.navigate("Meat")}
+                    >
+                      <Image
+                        style={{ width: "100%", height: "100%" }}
+                        source={require("../assets/meat.png")}
+                        resizeMode="cover"
+                      />
+                    </TouchableOpacity>
+                  </View>
+                  <Text style={styles.Text}>Các Loại Thịt</Text>
+                </View>
+
+                <View style={styles.menu}>
+                  <View style={styles.innerImage}>
+                    <TouchableOpacity
+                      onPress={() => navigation.navigate("Drink")}
+                    >
+                      <Image
+                        style={{ width: "100%", height: "100%" }}
+                        source={require("../assets/drink.png")}
+                        resizeMode="cover"
+                      />
+                    </TouchableOpacity>
+                  </View>
+                  <Text style={styles.Text}>Đồ Uống</Text>
+                </View>
+
+                <View style={styles.menu}>
+                  <View style={styles.innerImage}>
+                    <TouchableOpacity
+                      onPress={() => navigation.navigate("Cleaning")}
+                    >
+                      <Image
+                        style={{ width: "100%", height: "100%" }}
+                        source={require("../assets/cleaning.png")}
+                        resizeMode="cover"
+                      />
+                    </TouchableOpacity>
+                  </View>
+                  <Text style={styles.Text}>Dụng cụ vệ sinh</Text>
+                </View>
+
+                <View style={styles.menu}>
+                  <View style={styles.innerImage}>
+                    <TouchableOpacity
+                      onPress={() => navigation.navigate("Care")}
+                    >
+                      <Image
+                        style={{ width: "100%", height: "100%" }}
+                        source={require("../assets/care.png")}
+                        resizeMode="cover"
+                      />
+                    </TouchableOpacity>
+                  </View>
+                  <Text style={styles.Text}>Hóa Mỹ Phẩm</Text>
+                </View>
               </View>
-              <TouchableOpacity
-                style={styles.button}
-                onPress={() =>
-                  navigation.navigate("detail-product", { slug: item.slug })
-                }
-              >
-                <Text style={styles.buttonText}>Shop Now</Text>
-              </TouchableOpacity>
             </View>
-          )}
-        />
-      )}
-    </ScrollView>
+            {/* <ActivityIndicator size="large" color="#0000ff" /> */}
+          </View>
+        }
+        renderItem={({ item }) => (
+          <View style={styles.card}>
+            <View style={styles.containerCoupon}>
+              <Text style={styles.coupon}>-{item.discountPercentage}%</Text>
+            </View>
+            <Image
+              source={{
+                uri: item.thumbnail,
+              }}
+              style={styles.image}
+            />
+            <Text style={styles.name}> {item.title} </Text>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Text style={styles.price}> {item.price} VND</Text>
+            </View>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() =>
+                navigation.navigate("detail-product", { slug: item.slug })
+              }
+            >
+              <Text style={styles.buttonText}>Shop Now</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      />
+    </View>
   );
 };
 

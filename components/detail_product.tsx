@@ -11,11 +11,10 @@ import {
   useWindowDimensions,
 } from "react-native";
 import { FlatList, ScrollView } from "react-native-gesture-handler";
-import Footer from "./footer";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { Double } from "react-native/Libraries/Types/CodegenTypes";
 import RenderHtml from "react-native-render-html";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
+import product, { AddCarts } from "../services/product";
 
 interface Detail_Product {
   _id: string;
@@ -63,11 +62,6 @@ const DetailProduct = ({ route }: any) => {
     }
   });
 
-  const [formData, setFormData] = useState({
-    _id: "",
-    quantity: "",
-  });
-
   const handleButton = async () => {
     if (quantity === 0) {
       Alert.alert(
@@ -83,45 +77,75 @@ const DetailProduct = ({ route }: any) => {
       );
     } else {
       setLoading2(false);
-      // try {
-      //   const formData = {
-      //     _id: detail_product?._id,
-      //     quantity: quantity,
-      //   }
-      //   const reponse = await axios.post(
-      //     "https://api-project-product-management.vercel.app/api/cart/add",
-      //     formData
-      //   );
-      //   setFormData({
-      //     _id: "",
-      //     quantity: "",
-      //   });
-      // } catch (error) {
-      //   console.log(error);
-      // } finally {
-      //   setLoading(false);
-      // }
+      try {
+        const addcarts: AddCarts = {
+          quantity: quantity,
+        };
 
-      Alert.alert(
-        "Thành công",
-        `Đã thêm ${quantity} sản phẩm vào giỏ hàng!`,
-        [
-          {
-            text: "Tiếp tục mua sắm",
-            style: "cancel",
-          },
-          {
-            text: "Xem giỏ hàng",
-            onPress: () => navigation.navigate("cart"),
-          },
-        ],
-        { cancelable: true }
-      );
+        const responseCart = await product.addCarts(
+          detail_product!._id,
+          addcarts
+        );
+
+        // kiểm tra responseCart có phải là object và có code hay không
+        if (
+          responseCart &&
+          typeof responseCart === "object" &&
+          "code" in responseCart &&
+          responseCart.code === 200
+        ) {
+          Alert.alert(
+            "Thành công",
+            responseCart.message,
+            [
+              {
+                text: "Tiếp tục mua sắm",
+                style: "cancel",
+              },
+              {
+                text: "Xem giỏ hàng",
+                onPress: () => navigation.navigate("cart"),
+              },
+            ],
+            { cancelable: true }
+          );
+        } else {
+          const errorMessage =
+            responseCart &&
+            typeof responseCart === "object" &&
+            "error" in responseCart &&
+            typeof responseCart.error === "string"
+              ? responseCart.error
+              : "Thêm vào giỏ hàng thất bại!";
+          Alert.alert("Thất bại", errorMessage);
+        }
+      } catch (error: any) {
+        console.error("Registration error:", error);
+        Alert.alert(
+          "Lỗi",
+          error.message || "Không thể kết nối đến server. Vui lòng thử lại."
+        );
+      } finally {
+        setLoading2(true);
+      }
     }
   };
 
   if (loading) {
-    return <ActivityIndicator size={"large"} color="#0000ff" />;
+    return (
+      <View
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          justifyContent: "center",
+        }}
+      >
+        <ActivityIndicator size={"large"} color="#007bff" />
+      </View>
+    );
   }
 
   if (!detail_product) {
@@ -129,7 +153,7 @@ const DetailProduct = ({ route }: any) => {
   }
 
   return (
-    <SafeAreaView>
+    <View>
       <ScrollView>
         <View>
           <Image
@@ -194,7 +218,23 @@ const DetailProduct = ({ route }: any) => {
           <Text style={styles.text}>Thêm vào giỏ hàng</Text>
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+
+      {!loading2 && (
+        <View
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            justifyContent: "center",
+            backgroundColor: "rgba(0,0,0,0.4)",
+          }}
+        >
+          <ActivityIndicator size={"large"} color="#007bff" />
+        </View>
+      )}
+    </View>
   );
 };
 
