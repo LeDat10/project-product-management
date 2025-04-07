@@ -3,7 +3,7 @@ import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import { SafeAreaView, StyleSheet, Text, View } from "react-native";
 import * as SplashScreen from "expo-splash-screen";
-import { TIMES_NEW_ROMAN } from "./utils/const";
+import { TIMES_NEW_ROMAN } from "./utils/request";
 import { NavigationContainer } from "@react-navigation/native";
 import "react-native-gesture-handler";
 import React from "react";

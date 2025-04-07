@@ -14,7 +14,9 @@ import { FlatList, ScrollView } from "react-native-gesture-handler";
 import { Double } from "react-native/Libraries/Types/CodegenTypes";
 import RenderHtml from "react-native-render-html";
 import axios, { AxiosError } from "axios";
-import product, { AddCarts } from "../services/product";
+import product, { AddCarts } from "../services/productServices";
+import { setConfig } from "../helper/setConfig";
+import { PostCart } from "../services/cartSevices";
 
 interface Detail_Product {
   _id: string;
@@ -82,21 +84,17 @@ const DetailProduct = ({ route }: any) => {
           quantity: quantity,
         };
 
-        const responseCart = await product.addCarts(
+        const config = await setConfig();
+        const responseCart = await PostCart(
           detail_product!._id,
+          config,
           addcarts
         );
 
-        // kiểm tra responseCart có phải là object và có code hay không
-        if (
-          responseCart &&
-          typeof responseCart === "object" &&
-          "code" in responseCart &&
-          responseCart.code === 200
-        ) {
+        if (responseCart && responseCart.data.code === 200) {
           Alert.alert(
             "Thành công",
-            responseCart.message,
+            responseCart.data.message,
             [
               {
                 text: "Tiếp tục mua sắm",
@@ -110,14 +108,7 @@ const DetailProduct = ({ route }: any) => {
             { cancelable: true }
           );
         } else {
-          const errorMessage =
-            responseCart &&
-            typeof responseCart === "object" &&
-            "error" in responseCart &&
-            typeof responseCart.error === "string"
-              ? responseCart.error
-              : "Thêm vào giỏ hàng thất bại!";
-          Alert.alert("Thất bại", errorMessage);
+          Alert.alert("Thất bại", responseCart.data.message);
         }
       } catch (error: any) {
         console.error("Registration error:", error);

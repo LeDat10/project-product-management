@@ -1,5 +1,5 @@
 import apiClient, { ApiError } from "./apiClient";
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
 
 export interface RegisterData {
   email: string;
@@ -32,13 +32,12 @@ export interface UserResponse {
   cartId?: string;
 }
 
-const register = async (
-  userData: RegisterData
-): Promise<UserResponse | ApiError> => {
-  return apiClient.post<UserResponse, RegisterData>(
+const register = async (userData: RegisterData): Promise<AxiosResponse> => {
+  const result = await apiClient.post<UserResponse, RegisterData>(
     `/users/register`,
     userData
   );
+  return result;
 };
 
 const confirmOTP = async (

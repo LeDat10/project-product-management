@@ -1,11 +1,21 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, Alert, ActivityIndicator, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  Alert,
+  ActivityIndicator,
+  StyleSheet,
+  Image,
+} from "react-native";
 // import product, { GetCarts } from "../services/product";
 import { Double } from "react-native/Libraries/Types/CodegenTypes";
 import axios from "axios";
 import { FlatList } from "react-native-gesture-handler";
-import product from "../services/product";
+import product from "../services/productServices";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getCart } from "../services/cartSevices";
+import { setConfig } from "../helper/setConfig";
+import { calcPrice } from "../helper/calcPrice";
 
 interface Product {
   _id: string; // cartId
@@ -17,41 +27,26 @@ interface Product {
 }
 
 const Cart = () => {
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [cartproduct, setCartproduct] = useState<Product[]>([]);
 
-  const getCartId = async (): Promise<string | null> => {
-    try {
-      const cartId = await AsyncStorage.getItem("cartId");
-      return cartId;
-    } catch (error) {
-      console.error(error);
-      return null;
+  const fetchAPI = async (): Promise<void> => {
+    setLoading(true);
+    const config = await setConfig();
+    // console.log(config);
+    const response = await getCart(config);
+    if (response) {
+      setLoading(false);
     }
+    // const cartId = response.headers["cartid"];
+    const cartId = response.data.cart["_id"];
+    await AsyncStorage.setItem("cartId", cartId);
+    setCartproduct(response.data.cart["products"]);
+    // console.log(response.data.cart["products"]);
   };
 
   useEffect(() => {
-    const fetchCartId = async () => {
-      const cartId = await getCartId();
-      console.log("CartId: ", cartId);
-
-      if (cartId) {
-        setLoading(true);
-        try {
-          const response = await axios.get(
-            "https://api-project-product-management.vercel.app/api/carts",
-            { headers: { cartid: cartId } }
-          );
-          setCartproduct(response.data.cart.products);
-          console.log(response.data.cart.products);
-        } catch (error) {
-          console.log("Error: ", error);
-        } finally {
-          setLoading(false);
-        }
-      }
-    };
-    fetchCartId();
+    fetchAPI();
   }, []);
 
   if (loading) {
@@ -72,16 +67,29 @@ const Cart = () => {
   }
 
   return (
-    <View>
+    <View style={styles.container}>
       <FlatList
         data={cartproduct}
-        // columnWrapperStyle={styles.Row}
         keyExtractor={(item) => item._id}
+        style={styles.Row}
         renderItem={({ item }) => (
-          <View>
-            <Text>{item.titleProduct}</Text>
-            <Text>{item.price}</Text>
-            <Text>{item.discountPercentage}</Text>
+          <View style={styles.item}>
+            <Image
+              source={{ uri: item.thumbnail }}
+              style={{ width: 100, height: 100 }}
+            />
+
+            <View style={styles.rowContainer}>
+              <Text style={styles.title}>{item.titleProduct}</Text>
+              <Text style={styles.coupon}>-{item.discountPercentage}%</Text>
+              <View style={styles.rowPrice}>
+                <Text style={styles.newPrice}>
+                  {calcPrice(item.price, item.discountPercentage)}$
+                </Text>
+                <Text style={styles.oldPrice}>{item.price}$</Text> // giá cũ
+              </View>
+              <Text>{item.quantity}</Text>
+            </View>
           </View>
         )}
       />
@@ -90,7 +98,68 @@ const Cart = () => {
 };
 
 const styles = StyleSheet.create({
-  Row: {},
+  container: {
+    flex: 1,
+    backgroundColor: "#ddd",
+  },
+  Row: {
+    backgroundColor: "#fff",
+    marginHorizontal: 5,
+    marginVertical: 10,
+    borderRadius: 5,
+    paddingHorizontal: 5,
+    paddingVertical: 10,
+  },
+
+  item: {
+    marginBottom: 10,
+    borderBottomColor: "#ddd",
+    borderBottomWidth: 1,
+    flexDirection: "row",
+    padding: 10,
+    alignItems: "center",
+  },
+
+  rowContainer: {
+    paddingLeft: 20,
+  },
+
+  title: {
+    fontSize: 18,
+    fontWeight: "600",
+    marginBottom: 10,
+  },
+
+  rowPrice: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  oldPrice: {
+    fontSize: 11,
+    textDecorationLine: "line-through",
+    opacity: 0.7,
+  },
+
+  newPrice: {
+    color: "#228654",
+    fontSize: 16,
+    fontWeight: "500",
+    marginRight: 10,
+  },
+
+  coupon: {
+    backgroundColor: "red",
+    color: "white",
+    fontSize: 15,
+    fontWeight: "600",
+    textAlign: "center",
+    justifyContent: "center",
+    padding: 3,
+    width: 60,
+    borderRadius: 3,
+    marginBottom: 3,
+  },
 });
 
 export default Cart;

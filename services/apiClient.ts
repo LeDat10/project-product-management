@@ -55,10 +55,10 @@ const get = async <T>(
   path: string,
   params?: any,
   config?: AxiosRequestConfig
-): Promise<T> => {
+): Promise<AxiosResponse<T>> => {
   try {
     const response = await apiClient.get<T>(path, { ...config, params });
-    return response.data;
+    return response;
   } catch (error: any) {
     throw handleApiError(error);
   }
