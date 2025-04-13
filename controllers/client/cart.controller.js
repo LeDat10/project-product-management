@@ -1,13 +1,11 @@
 const Cart = require("../../models/cart.model");
 const Product = require("../../models/product.model");
-const productHelper = require("../../helper/product");
+// const productHelper = require("../../helper/product");
 
 //[GET] ./api/carts
 module.exports.index = async (req, res) => {
     try {
         const cartId = req.cart.id;
-
-        console.log(cartId);
 
         const cart = await Cart.findOne({
             _id: cartId
@@ -137,7 +135,7 @@ module.exports.update = async (req, res) => {
     };
 };
 
-// [POST] /api/carts/select
+// [PATCH] /api/carts/select
 module.exports.select = async (req, res) => {
     try {
         const cartId = req.cart.id;
