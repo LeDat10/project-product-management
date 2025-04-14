@@ -14,9 +14,9 @@ import { FlatList, ScrollView } from "react-native-gesture-handler";
 import { Double } from "react-native/Libraries/Types/CodegenTypes";
 import RenderHtml from "react-native-render-html";
 import axios, { AxiosError } from "axios";
-import product, { AddCarts } from "../services/productServices";
 import { setConfig } from "../helper/setConfig";
 import { PostCart } from "../services/cartSevices";
+import { detaiProduct } from "../services/productServices";
 
 interface Detail_Product {
   _id: string;
@@ -29,6 +29,10 @@ interface Detail_Product {
   discountPercentage: Double;
 }
 
+interface AddCarts {
+  quantity: number;
+}
+
 const DetailProduct = ({ route }: any) => {
   const navigation: NavigationProp<RootStackParamList> = useNavigation();
   const { slug } = route.params;
@@ -37,25 +41,23 @@ const DetailProduct = ({ route }: any) => {
   const [detail_product, setDetailProduct] = useState<Detail_Product | null>(
     null
   );
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [loading2, setLoading2] = useState(true);
   const [quantity, setQuantity] = useState(0);
   const { width } = useWindowDimensions();
 
   // lấy dữ liệu sản phẩm từ api
+  const fetchApi = async (): Promise<void> => {
+    setLoading(true);
+    const response = await detaiProduct(slug);
+    setDetailProduct(response.data.product);
+    if (response) {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    axios
-      .get(
-        `https://api-project-product-management.vercel.app/api/products/detail/${slug}`
-      )
-      .then((reponse) => {
-        setDetailProduct(reponse.data.product);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.log(error);
-        setLoading(false);
-      });
+    fetchApi();
   }, [slug]);
 
   useEffect(() => {

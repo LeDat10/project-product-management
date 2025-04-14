@@ -28,3 +28,20 @@ export const post = async <U>(
   const response = await axios.post(API_DOMAIN + path, params, config);
   return response;
 };
+
+export const patch = async <U>(
+  path: string,
+  config: AxiosRequestConfig,
+  params?: U
+): Promise<AxiosResponse> => {
+  const response = await axios.patch(API_DOMAIN + path, params, config);
+  return response;
+};
+
+export const deleteRequest = async (
+  path: string,
+  config: AxiosRequestConfig
+): Promise<AxiosResponse> => {
+  const response = await axios.delete(API_DOMAIN + path, config);
+  return response;
+};

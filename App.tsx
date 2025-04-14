@@ -60,7 +60,11 @@ const App = () => {
             <Stack.Screen name="Cleaning" component={Cleaning} />
             <Stack.Screen name="Care" component={Care} />
             <Stack.Screen name="Snack" component={Snack} />
-            <Stack.Screen name="cart" component={Cart} />
+            <Stack.Screen
+              name="cart"
+              component={Cart}
+              options={{ title: "Giỏ Hàng" }}
+            />
             <Stack.Screen name="account" component={Account} />
             <Stack.Screen
               name="login"

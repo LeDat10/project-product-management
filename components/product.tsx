@@ -8,10 +8,11 @@ import {
   Image,
   ActivityIndicator,
 } from "react-native";
-import { FlatList, ScrollView } from "react-native-gesture-handler";
+import { FlatList, ScrollView, TextInput } from "react-native-gesture-handler";
 import Footer from "./footer";
 import { Double } from "react-native/Libraries/Types/CodegenTypes";
 import axios from "axios";
+import { getProduct } from "../services/productServices";
 
 interface Product {
   _id: string;
@@ -30,14 +31,22 @@ const Product = () => {
   const [product, setProduct] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const fetchApi = async (): Promise<void> => {
+    setLoading(true);
+    const config = {};
+    const response = await getProduct(config);
+    setProduct(response.data.products);
+    if (response) {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    axios
-      .get(`https://api-project-product-management.vercel.app/api/products`)
-      .then((response) => {
-        setProduct(response.data.products);
-      })
-      .catch((error) => console.log(error))
-      .finally(() => setLoading(false));
+    try {
+      fetchApi();
+    } catch (error) {
+      console.log(error);
+    }
   }, []);
 
   if (loading) {
@@ -59,6 +68,13 @@ const Product = () => {
 
   return (
     <View>
+      {/* <TextInput
+      style={styles.search}
+      placeholder="Họ"
+      maxLength={25}
+      value={firstname}
+      onChangeText={setFirstname}
+      /> */}
       <FlatList
         data={product}
         numColumns={2}
@@ -194,7 +210,6 @@ const Product = () => {
                 </View>
               </View>
             </View>
-            {/* <ActivityIndicator size="large" color="#0000ff" /> */}
           </View>
         }
         renderItem={({ item }) => (
