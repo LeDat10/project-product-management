@@ -1,4 +1,3 @@
-import { NavigationProp, useNavigation } from "@react-navigation/native";
 import React, { useState } from "react";
 import {
   View,
@@ -11,11 +10,11 @@ import {
   Modal,
   Button,
   ActivityIndicator,
+  ScrollView,
 } from "react-native";
-import { ScrollView } from "react-native-gesture-handler";
+import { NavigationProp } from "@react-navigation/native";
 import accountService, {
   RegisterData,
-  UserResponse,
   ConfirmOTPData,
 } from "../services/accountService";
 
@@ -26,60 +25,54 @@ interface Props {
 }
 
 const Register = ({ navigation }: Props) => {
-  const [username, setUsername] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-  const [lastname, setLastname] = useState<string>("");
-  const [firstname, setFirstname] = useState<string>("");
-  const [email, setEmail] = useState<string>("");
-  const [phone, setPhone] = useState<string>("");
-  const [otp, setOtp] = useState<string>("");
+  const [form, setForm] = useState({
+    username: "",
+    password: "",
+    firstname: "",
+    lastname: "",
+    email: "",
+    phone: "",
+  });
+  const [otp, setOtp] = useState("");
   const [otpModalVisible, setOtpModalVisible] = useState(false);
-  const [isLoading, setisLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleChange = (field: string, value: string) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
+  };
 
   const handleRegister = async () => {
-    if (!username || !password || !lastname || !firstname || !email || !phone) {
-      Alert.alert("Thông tin không hợp lệ. Vui lòng không bỏ trống.");
+    const { username, password, firstname, lastname, email, phone } = form;
+
+    if (!username || !password || !firstname || !lastname || !email || !phone) {
+      Alert.alert("Thông tin không hợp lệ", "Vui lòng không bỏ trống.");
       return;
     }
-    setisLoading(true);
-    try {
-      const registerData: RegisterData = {
-        email: email,
-        password: password,
-        username: username,
-        firstname: firstname,
-        lastname: lastname,
-        phone: phone,
-      };
 
+    setIsLoading(true);
+    try {
+      const registerData: RegisterData = { ...form };
       const response = await accountService.register(registerData);
 
-      if (response && (response as UserResponse).code === 200) {
+      if (response?.data.code === 200) {
+        setOtpModalVisible(true);
         Alert.alert(
           "Đăng ký thành công",
-          (response as UserResponse).message ||
-            "Vui lòng kiểm tra email để xác thực.",
+          (response as any).message || "Vui lòng kiểm tra email để xác thực.",
           [
             {
-              text: "OK",
-              onPress: () => setOtpModalVisible(true),
+              text: "Chuyển đến đăng nhập",
+              onPress: () => navigation.navigate("login"),
             },
           ]
         );
       } else {
-        Alert.alert(
-          "Đăng ký thất bại",
-          (response as any).message || "Có lỗi xảy ra khi đăng ký."
-        );
+        Alert.alert("Đăng ký thất bại", (response as any).message || "Đã xảy ra lỗi.");
       }
     } catch (error: any) {
-      console.error("Registration error:", error);
-      Alert.alert(
-        "Lỗi",
-        error.message || "Không thể kết nối đến server. Vui lòng thử lại."
-      );
+      Alert.alert("Lỗi", error.message || "Không thể kết nối đến server.");
     } finally {
-      setisLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -88,34 +81,24 @@ const Register = ({ navigation }: Props) => {
       Alert.alert("Lỗi", "Vui lòng nhập mã OTP");
       return;
     }
-    setisLoading(true);
-    try {
-      const ConfirmOTPData: ConfirmOTPData = {
-        email: email,
-        otp: otp,
-      };
-      const otpResponse = await accountService.confirmOTP(ConfirmOTPData);
 
-      if (otpResponse && otpResponse.code === 200) {
+    setIsLoading(true);
+    try {
+      const data: ConfirmOTPData = { email: form.email, otp };
+      const otpResponse = await accountService.confirmOTP(data);
+
+      if (otpResponse?.code === 200) {
         setOtpModalVisible(false);
         Alert.alert("Thành công", otpResponse.message, [
-          {
-            text: "Đăng nhập",
-            onPress: () => navigation.navigate("login"),
-          },
+          { text: "Đăng nhập", onPress: () => navigation.navigate("login") },
         ]);
       } else {
-        Alert.alert("Thông báo", otpResponse.message, [
-          {
-            text: "OK",
-            style: "cancel",
-          },
-        ]);
+        Alert.alert("Thông báo", otpResponse.message || "OTP không hợp lệ.");
       }
-    } catch (error: any) {
-      Alert.alert("Lỗi", "Không thể xác thực email, vui lòng thử lại.");
+    } catch {
+      Alert.alert("Lỗi", "Không thể xác thực email.");
     } finally {
-      setisLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -123,249 +106,150 @@ const Register = ({ navigation }: Props) => {
     <ScrollView>
       <View style={styles.container}>
         <Image style={styles.logo} source={require("../assets/logo.png")} />
-        <Text style={styles.slogan}>Đăng Ký Tài Khoản</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Họ"
-          maxLength={25}
-          value={firstname}
-          onChangeText={setFirstname}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Tên"
-          value={lastname}
-          onChangeText={setLastname}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Tên đăng nhập"
-          maxLength={25}
-          value={username}
-          onChangeText={setUsername}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          value={email}
-          onChangeText={setEmail}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Số điện thoại"
-          value={phone}
-          onChangeText={setPhone}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Mật khẩu"
-          value={password}
-          onChangeText={setPassword}
-        />
+        <Text style={styles.title}>Đăng Ký Tài Khoản</Text>
 
-        <TouchableOpacity
-          style={styles.button}
-          onPress={handleRegister}
-          disabled={isLoading}
-        >
-          <Text style={styles.text1}>Đăng Ký</Text>
+        <TextInput style={styles.input} placeholder="Họ" value={form.firstname} onChangeText={(val) => handleChange("firstname", val)} />
+        <TextInput style={styles.input} placeholder="Tên" value={form.lastname} onChangeText={(val) => handleChange("lastname", val)} />
+        <TextInput style={styles.input} placeholder="Tên đăng nhập" value={form.username} onChangeText={(val) => handleChange("username", val)} />
+        <TextInput style={styles.input} placeholder="Email" value={form.email} onChangeText={(val) => handleChange("email", val)} />
+        <TextInput style={styles.input} placeholder="Số điện thoại" keyboardType="numeric" maxLength={10} value={form.phone} onChangeText={(val) => handleChange("phone", val)} />
+        <TextInput style={styles.input} placeholder="Mật khẩu" secureTextEntry value={form.password} onChangeText={(val) => handleChange("password", val)} />
+
+        <TouchableOpacity style={styles.button} onPress={handleRegister} disabled={isLoading}>
+          <Text style={styles.buttonText}>Đăng Ký</Text>
         </TouchableOpacity>
 
         {isLoading && (
-          <View
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              justifyContent: "center",
-              backgroundColor: "rgba(0,0,0,0.4)",
-            }}
-          >
-            <ActivityIndicator size={"large"} color="#007bff" />
+          <View style={styles.loadingOverlay}>
+            <ActivityIndicator size="large" color="#007bff" />
           </View>
         )}
 
-        <Modal
-          visible={otpModalVisible}
-          transparent={true}
-          animationType="slide"
-          onRequestClose={() => setOtpModalVisible(false)}
-          style={{
-            backgroundColor: "white",
-            justifyContent: "center",
-            alignItems: "center",
-            borderRadius: 10,
-          }}
-        >
-          <View
-            style={{
-              flex: 1,
-              justifyContent: "center",
-              alignItems: "center",
-              backgroundColor: "rgba(0,0,0,0.6)",
-            }}
-          >
-            <View
-              style={{
-                backgroundColor: "white",
-                padding: 20,
-                borderRadius: 15,
-                width: "90%",
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.3,
-                shadowRadius: 5,
-                elevation: 5,
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: 20,
-                  marginBottom: 15,
-                  fontWeight: "600",
-                  color: "#333",
-                }}
-              >
-                Xác thực OTP
-              </Text>
-              <Text style={{ marginBottom: 10, fontSize: 16, color: "#666" }}>
-                Vui lòng nhập mã OTP được gửi đến email của bạn.
-              </Text>
-              <TextInput
-                value="Mã OTP"
-                onChangeText={setOtp}
-                keyboardType="numeric"
-                placeholder="Nhập mã OTP"
-                style={{
-                  borderWidth: 1,
-                  borderColor: "#ccc",
-                  padding: 10,
-                  marginBottom: 10,
-                  borderRadius: 5,
-                  backgroundColor: "#f9f9f9",
-                }}
-              />
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                }}
-              >
-                <Button
-                  title="Hủy"
-                  onPress={() => setOtpModalVisible(false)}
-                  color="#ff4444"
-                />
-
-                <Button
-                  title="Xác nhận"
-                  onPress={handleConfirmOtp}
-                  color="#007bff"
-                />
-
-                {isLoading && (
-                  <View
-                    style={{
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      justifyContent: "center",
-                      backgroundColor: "rgba(0,0,0,0.4)",
-                    }}
-                  >
-                    <ActivityIndicator size={"large"} color="#007bff" />
-                  </View>
-                )}
+        {/* OTP Modal */}
+        <Modal visible={otpModalVisible} transparent animationType="slide" onRequestClose={() => setOtpModalVisible(false)}>
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Xác thực OTP</Text>
+              <Text style={styles.modalDescription}>Vui lòng nhập mã OTP được gửi đến email của bạn.</Text>
+              <TextInput style={styles.otpInput} keyboardType="numeric" placeholder="Mã OTP" value={otp} onChangeText={setOtp} />
+              <View style={styles.modalButtons}>
+                <Button title="Hủy" onPress={() => setOtpModalVisible(false)} color="#ff4444" />
+                <Button title="Xác nhận" onPress={handleConfirmOtp} color="#007bff" />
               </View>
             </View>
           </View>
         </Modal>
 
-        <View style={styles.rowContainer1}>
-          <Text style={styles.row1}>Bạn đã có tài khoản ?</Text>
-          <Text
-            style={styles.linkText1}
-            onPress={() => navigation.navigate("login")}
-          >
-            Đăng Nhập
-          </Text>
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>Bạn đã có tài khoản?</Text>
+          <Text style={styles.link} onPress={() => navigation.navigate("login")}>Đăng Nhập</Text>
         </View>
-        <Text
-          style={styles.linkText2}
-          onPress={() => navigation.navigate("Home")}
-        >
-          Quay lại trang chủ
-        </Text>
+        <Text style={styles.backLink} onPress={() => navigation.navigate("Home")}>Quay lại trang chủ</Text>
       </View>
     </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  container: { 
     flex: 1,
-    justifyContent: "center",
     alignItems: "center",
-    color: "#fff",
+    padding: 20
   },
-  logo: {
-    width: 180,
-    height: 179,
-    alignSelf: "center",
+  logo: { 
+    width: 180, 
+    height: 179 
   },
-  slogan: {
-    fontSize: 36,
-    fontWeight: "bold",
-    marginTop: 20,
-    marginBottom: 20,
+  title: { 
+    fontSize: 28, 
+    fontWeight: "bold", 
+    marginVertical: 20 
   },
   input: {
-    width: 300,
-    height: 50,
+    width: "90%",
+    height: 48,
     borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 10,
+    backgroundColor: "#f2f2f2",
+    marginBottom: 12,
+    paddingHorizontal: 12,
     fontSize: 16,
-    borderColor: "#fff",
-    backgroundColor: "#e0e0e0",
-    borderRadius: 15,
-    marginBottom: 10,
-    color: "#000",
-    paddingHorizontal: 10,
   },
   button: {
-    width: 143,
-    height: 45,
     backgroundColor: "green",
-    borderRadius: 15,
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    borderRadius: 10,
+    marginTop: 10,
+  },
+  buttonText: { 
+    color: "#fff", 
+    fontWeight: "bold", 
+    fontSize: 16 
+  },
+  loadingOverlay: {
+    position: "absolute",
+    top: 0, 
+    left: 0, 
+    right: 0, 
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.4)",
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 20,
   },
-  text1: {
-    fontSize: 18,
-    color: "#fff",
-    fontWeight: "bold",
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    backgroundColor: "rgba(0,0,0,0.5)",
   },
-  rowContainer1: {
+  modalContent: {
+    backgroundColor: "white",
+    margin: 20,
+    borderRadius: 12,
+    padding: 20,
+    elevation: 10,
+  },
+  modalTitle: { 
+    fontSize: 20, 
+    fontWeight: "bold", 
+    marginBottom: 10 
+  },
+  modalDescription: { 
+    fontSize: 16,
+    color: "#555",
+     marginBottom: 15
+  },
+  otpInput: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 8,
+    padding: 10,
+    backgroundColor: "#f9f9f9",
+    marginBottom: 20,
+  },
+  modalButtons: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  footer: {
     flexDirection: "row",
     marginTop: 20,
+    alignItems: "center",
   },
-  row1: {
+  footerText: {
     fontSize: 15,
-    color: "#000",
-    fontWeight: "600",
+    fontWeight: "500",
+    color: "#333",
   },
-  linkText1: {
-    color: "#006FFF",
+  link: {
     fontSize: 15,
+    color: "#0066cc",
     fontWeight: "600",
     marginLeft: 5,
     textDecorationLine: "underline",
   },
-  linkText2: {
+  backLink: {
     fontSize: 16,
     color: "#007bff",
     marginVertical: 12,

@@ -24,6 +24,7 @@ import LognIn from "./components/lognIn";
 import Register from "./components/register";
 import Account from "./components/account";
 import DetailProduct from "./components/detail_product";
+import ForgotPassword from "./components/forgotpw";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -80,6 +81,11 @@ const App = () => {
               name="detail-product"
               component={DetailProduct}
               options={{ title: "Chi tiết sản phẩm" }}
+            />
+            <Stack.Screen
+              name="forgotpw"
+              component={ForgotPassword}
+              options={{ title: "Quên mật khẩu" }}
             />
           </Stack.Navigator>
         </NavigationContainer>

@@ -15,6 +15,7 @@ type RootStackParamList = {
   cart: undefined;
   menu: undefined;
   login: undefined;
+  forgotpw: undefined;
   register: undefined;
   account: undefined;
   "detail-product":
