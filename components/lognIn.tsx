@@ -17,6 +17,7 @@ import accountService, {
   UserResponse,
 } from "../services/accountService";
 
+
 type LoginScreen = NavigationProp<RootStackParamList, "login">;
 
 interface Props {
@@ -26,7 +27,7 @@ interface Props {
 const LognIn = ({ navigation }: Props) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false); // Cái trạng thái màn hình chờ khi đăng nhập để tránh đăng nhập nhiều lần
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -41,7 +42,7 @@ const LognIn = ({ navigation }: Props) => {
       };
 
       const response = await accountService.login(loginData);
-
+      console.log(response);
       if (response && (response as UserResponse).code === 200) {
         await AsyncStorage.setItem("token", (response as UserResponse).token!);
         if ((response as UserResponse).cartId) {
@@ -88,9 +89,14 @@ const LognIn = ({ navigation }: Props) => {
           secureTextEntry={true}
         />
 
-        <Text style={styles.quenpass}>Bạn đã quên mật khẩu?</Text>
-
-        <TouchableOpacity style={styles.button} onPress={handleLogin}>
+        <Text style={styles.quenpass}
+          onPress={() => navigation.navigate("forgotpw")}
+        >
+          Bạn đã quên mật khẩu?</Text>
+        
+        <TouchableOpacity 
+            style={styles.button} 
+            onPress={handleLogin}>
           <Text style={styles.text3}>Đăng Nhập</Text>
         </TouchableOpacity>
 
