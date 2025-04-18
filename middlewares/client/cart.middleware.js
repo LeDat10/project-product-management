@@ -6,7 +6,6 @@ module.exports.cartId = async (req, res, next) => {
             if (!req.headers.cartid) {
                 const cart = new Cart();
                 await cart.save();
-                console.log(cart.id);
 
                 res.setHeader("cartId", cart.id);
 
@@ -14,7 +13,7 @@ module.exports.cartId = async (req, res, next) => {
 
             } else {
                 const cartId = req.headers.cartid;
-                res.setHeader("cartId", cartId);
+                // res.setHeader("cartId", cartId);
                 const cart = await Cart.findOne({
                     _id: cartId
                 });
@@ -28,7 +27,7 @@ module.exports.cartId = async (req, res, next) => {
             });
             if (cart) {
                 req.cart = cart;
-                res.setHeader("cartId", cart.id);
+                // res.setHeader("cartId", cart.id);
             } else {
                 const cart = new Cart({
                     user_id: user.id
@@ -43,7 +42,7 @@ module.exports.cartId = async (req, res, next) => {
         next();
     } catch (error) {
         res.json({
-            code: 400
+            code: 400,
         });
     };
 };

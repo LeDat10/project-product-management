@@ -20,6 +20,7 @@ module.exports.index = async (req, res) => {
                 item.discountPercentage = product.discountPercentage;
                 item.titleProduct = product.title;
                 item.thumbnail = product.thumbnail;
+                item.stock = product.stock;
             };
         };
 
