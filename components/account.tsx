@@ -1,5 +1,5 @@
-import React from "react";
-import { View, Text, StyleSheet, Button, TouchableOpacity } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, StyleSheet, Button, TouchableOpacity, Alert } from "react-native";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
@@ -12,9 +12,27 @@ import {
   useNavigation,
   useRoute,
 } from "@react-navigation/native";
+import useStore from "../store/myStore";
+
+type RootStackParamList = {
+  login: undefined;
+  register: undefined;
+  menu: undefined;
+};
 
 const Account = () => {
   const navigation: NavigationProp<RootStackParamList> = useNavigation();
+  const { user, logout, isAuthenticated } = useStore();
+  
+  const handleLogout = async () => {
+    try {
+      logout();
+      Alert.alert("Thành công", "Đăng xuất thành công!");
+      navigation.navigate("menu");
+    } catch (error) {
+      Alert.alert("Lỗi", "Không thể đăng xuất. Vui lòng thử lại sau.");
+    }
+  };
 
   return (
     <ScrollView>
@@ -22,31 +40,40 @@ const Account = () => {
         <View style={styles.icon}>
           <MaterialCommunityIcons name="account" size={30} color={"black"} />
         </View>
-        <View style={styles.text}>
-          <Text style={{ fontSize: 17, fontWeight: "600" }}>
-            Chào mừng bạn đến với Tempi!!
-          </Text>
-          <View style={styles.button}>
-            <TouchableOpacity
-              style={styles.button1}
-              onPress={() => navigation.navigate("login")}
-            >
-              <Text style={{ color: "#257cda", fontSize: 15 }}>Đăng Nhập </Text>
-            </TouchableOpacity>
+        <View style={styles.greeting}>
+          {isAuthenticated && user ? (
+            <>
+              <Text style={styles.userGreeting}>Xin chào, {user.email || "Người dùng"}!</Text>
+              <View style={styles.button}>
+                <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+                  <Text style={{ color: "white", fontSize: 15 }}>Đăng Xuất</Text>
+                </TouchableOpacity>
+              </View>
+            </>
+          ) : (
+            <>
+              <Text style={styles.greeting}>Chào mừng bạn đến với Tempi!!</Text>
+              <View style={styles.button}>
+                <TouchableOpacity
+                  style={styles.button1}
+                  onPress={() => navigation.navigate("login")}
+                >
+                  <Text style={{ color: "#257cda", fontSize: 15 }}>Đăng Nhập</Text>
+                </TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.button1}
-              onPress={() => navigation.navigate("register")}
-            >
-              <Text style={{ color: "#257cda", fontSize: 15 }}>
-                Tạo tài khoản
-              </Text>
-            </TouchableOpacity>
-          </View>
+                <TouchableOpacity
+                  style={styles.button1}
+                  onPress={() => navigation.navigate("register")}
+                >
+                  <Text style={{ color: "#257cda", fontSize: 15 }}>
+                    Tạo tài khoản
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </>
+          )}
         </View>
       </View>
-
-      {/* đơn hàng  */}
       <View>
         <Text style={styles.text3}>Đơn hàng của tôi</Text>
       </View>
@@ -88,8 +115,6 @@ const Account = () => {
           <Text style={styles.text4}>Đổi trả</Text>
         </View>
       </View>
-
-      {/* sản phẩm tham khảo */}
       <View>
         <Text>Sản phẩm nổi bật</Text>
       </View>
@@ -101,8 +126,6 @@ const styles = StyleSheet.create({
   title1: {
     marginVertical: 10,
     flexDirection: "row",
-    // borderWidth: 1,
-    // borderColor: "red",
   },
 
   icon: {
@@ -112,24 +135,34 @@ const styles = StyleSheet.create({
     margin: 15,
   },
 
-  text: {
+  greeting: {
     alignItems: "flex-start",
     justifyContent: "space-around",
     marginVertical: 20,
-    // borderWidth: 1,
-    // borderColor: "red",
+  },
+  
+  userGreeting: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 10,
   },
 
   button: {
     flexDirection: "row",
     paddingRight: 20,
-    // borderWidth: 1,
-    // borderColor: "red",
   },
 
   button1: {
     borderWidth: 1,
     borderColor: "#257cda",
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    marginHorizontal: 5,
+  },
+  
+  logoutButton: {
+    backgroundColor: "red",
     borderRadius: 5,
     paddingHorizontal: 10,
     paddingVertical: 5,
@@ -146,16 +179,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-around",
     paddingVertical: 15,
-    // borderWidth: 1,
-    // borderColor: "red",
   },
 
   button2: {
     alignItems: "center",
     width: 70,
     height: 70,
-    // borderWidth: 1,
-    // borderColor: "red",
   },
 
   text4: {
@@ -168,8 +197,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#d3e1ee",
     padding: 8,
     borderRadius: 10,
-    elevation: 5, // Độ nổi cho Android
-    shadowColor: "#000", // Độ bóng cho iOS
+    elevation: 5, 
+    shadowColor: "#000", 
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.5,
     shadowRadius: 5,

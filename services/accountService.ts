@@ -32,54 +32,59 @@ export interface UserResponse {
   cartId?: string;
 }
 
-const register = async (userData: RegisterData): Promise<AxiosResponse> => {
-  const result = await apiClient.post<UserResponse, RegisterData>(
+const register = async (userData: RegisterData): Promise<UserResponse | ApiError> => {
+  const response = apiClient.post<UserResponse, RegisterData>(
     `/users/register`,
     userData
   );
-  return result;
-};
-
-const confirmOTP = async (
-  otpData: ConfirmOTPData
-): Promise<UserResponse | ApiError> => {
-  return apiClient.post<UserResponse, ConfirmOTPData>(
-    `/users/register/confirmOTP`,
-    otpData
-  );
+  return (await response).data;
 };
 
 const login = async (
   loginData: LoginData
 ): Promise<UserResponse | ApiError> => {
-  return apiClient.post<UserResponse, LoginData>(`/users/login`, loginData);
+  const response = apiClient.post<UserResponse, LoginData>(
+    `/users/login`, 
+    loginData
+  );
+  return (await response).data;
+};
+
+const confirmOTP = async (
+  otpData: ConfirmOTPData
+): Promise<UserResponse | ApiError> => {
+  const response = apiClient.post<UserResponse, ConfirmOTPData>(
+    `/users/register/confirmOTP`,
+    otpData
+  );
+  return (await response).data;
 };
 
 const forgotPassword = async (
   email: string
 ): Promise<UserResponse | ApiError> => {
-  return apiClient.post<UserResponse, { email: string }>(
+  const response = apiClient.post<UserResponse, { email: string }>(
     `/users/password/forgot`,
-    {
-      email,
-    }
+    { email }
   );
+  return (await response).data;
 };
 
 const otpPassword = async (
   otpData: ConfirmOTPData
 ): Promise<UserResponse | ApiError> => {
-  return apiClient.post<UserResponse, ConfirmOTPData>(
+  const response = apiClient.post<UserResponse, ConfirmOTPData>(
     `/users/password/otp`,
     otpData
   );
+  return (await response).data;
 };
 
 const resetPassword = async (
   passwordData: ResetPasswordData,
   token: string
 ): Promise<UserResponse | ApiError> => {
-  return apiClient.post<UserResponse, ResetPasswordData>(
+  const response = apiClient.post<UserResponse, ResetPasswordData>(
     `/users/password/reset`,
     passwordData,
     {
@@ -88,6 +93,7 @@ const resetPassword = async (
       },
     }
   );
+  return (await response).data;
 };
 
 const userService = {
