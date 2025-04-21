@@ -8,15 +8,12 @@ import {
   TextInput,
   Image,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import { useState } from "react";
 import { ScrollView } from "react-native-gesture-handler";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import accountService, {
-  LoginData,
-  UserResponse,
-} from "../services/accountService";
-
+import { LoginData } from "../services/accountService";
+import useStore from "../store/myStore";
 
 type LoginScreen = NavigationProp<RootStackParamList, "login">;
 
@@ -27,46 +24,45 @@ interface Props {
 const LognIn = ({ navigation }: Props) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const { login, loading, error, isAuthenticated, clearErrors } = useStore(state => ({
+    login: state.login,
+    loading: state.loading,
+    error: state.error,
+    isAuthenticated: state.isAuthenticated,
+    clearErrors: state.clearErrors,
+  }));
+
+  React.useEffect(() => {
+    clearErrors();
+    return () => clearErrors();
+  }, [clearErrors]);
+
+  React.useEffect(() => {
+    if (isAuthenticated) {
+      navigation.navigate("account");
+    }
+  }, [isAuthenticated, navigation]);
+
+  React.useEffect(() => {
+    if (error) {
+      Alert.alert("Lỗi", error || "Đăng nhập thất bại");
+    }
+  }, [error]);
 
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert("Thông tin không hợp lệ. Vui lòng không bỏ trống.");
+      Alert.alert("Thông tin không hợp lệ", "Vui lòng không bỏ trống.");
       return;
     }
-    try {
-      setIsLoading(true);
-      const loginData: LoginData = {
-        email: email,
-        password: password,
-      };
 
-      const response = await accountService.login(loginData);
-      console.log(response);
-      if (response && (response as UserResponse).code === 200) {
-        await AsyncStorage.setItem("token", (response as UserResponse).token!);
-        if ((response as UserResponse).cartId) {
-          await AsyncStorage.setItem(
-            "cartId",
-            (response as UserResponse).cartId!
-          );
-        }
+    const loginData: LoginData = {
+      email: email,
+      password: password,
+    };
 
-        Alert.alert(
-          "Thành công",
-          (response as UserResponse).message || "Đăng nhập thành công!"
-        );
-        navigation.navigate("account");
-      } else {
-        Alert.alert("Lỗi", (response as any).message || "Đăng nhập thất bại");
-      }
-    } catch (error: any) {
-      Alert.alert("Lỗi", error.message || "Không thể kết nối đến máy chủ");
-      console.error(error);
-    } finally {
-      setIsLoading(false);
-    }
+    await login(loginData);
   };
+  
   return (
     <ScrollView>
       <View style={styles.container}>
@@ -96,9 +92,20 @@ const LognIn = ({ navigation }: Props) => {
         
         <TouchableOpacity 
             style={styles.button} 
-            onPress={handleLogin}>
-          <Text style={styles.text3}>Đăng Nhập</Text>
+            onPress={handleLogin}
+            disabled={loading}>
+          <Text style={styles.text3}>
+            {loading ? "Đang xử lý..." : "Đăng Nhập"}
+          </Text>
         </TouchableOpacity>
+
+        {loading && (
+          <ActivityIndicator 
+            size="small" 
+            color="#007bff" 
+            style={{marginTop: 10}} 
+          />
+        )}
 
         <View style={styles.rowContainer}>
           <Text style={styles.row1}>Bạn là khách hàng mới?</Text>

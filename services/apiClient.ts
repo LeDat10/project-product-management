@@ -45,7 +45,7 @@ const post = async <T, U>(
 ): Promise<AxiosResponse<T>> => {
   try {
     const response = await apiClient.post<T>(path, data, config);
-    return response; // trả về toàn bộ AxiosResponse
+    return response; 
   } catch (error: any) {
     throw handleApiError(error);
   }
