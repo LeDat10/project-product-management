@@ -11,19 +11,33 @@ module.exports.index = async (req, res) => {
             status: "active"
         };
 
-        const products = await Product.find(find).sort({
-            position: "desc"
-        }).select("title description price discountPercentage stock thumbnail featured slug categoryId").lean();
+        // Filter
+
+        if (req.query.status) {
+            find.status = req.query.status;
+        }
+        // End Filter
+
+        // Sort
+        const sort = {};
+        if (req.query.sortKey && req.query.sortValue) {
+            sort[req.query.sortKey] = req.query.sortValue;
+        } else {
+            sort.position = "desc";
+        }
+        // End sort
+
+        const products = await Product.find(find).sort(sort).select("title description price discountPercentage stock thumbnail featured slug categoryId").lean();
 
         for (const product of products) {
-            if(product.categoryId) {
+            if (product.categoryId) {
                 const category = await ProductCategory.findOne({
                     _id: product.categoryId,
                     deleted: false,
                     status: "active"
                 }).select("title").lean();
 
-                if(category) {
+                if (category) {
                     product.categoryTitle = category.title;
                 };
             }
@@ -43,7 +57,7 @@ module.exports.index = async (req, res) => {
 };
 
 //[GET] /api/products/:slugCategory
-module.exports.category = async(req, res) => {
+module.exports.category = async (req, res) => {
     try {
         const slugCategory = req.params.slugCategory;
         const category = await ProductCategory.findOne({
@@ -52,26 +66,26 @@ module.exports.category = async(req, res) => {
             status: "active"
         });
 
-        if(!category) {
+        if (!category) {
             res.json({
                 code: 200,
                 message: "Không có sản phẩm nào trong danh mục này!"
             });
             return;
-        } 
+        }
 
         const products = await Product.find({
             categoryId: category.id,
             deleted: false,
             status: "active"
-        }).select("title description price discountPercentage stock thumbnail featured slug categoryId").sort({position: "desc"}).lean();
+        }).select("title description price discountPercentage stock thumbnail featured slug categoryId").sort({ position: "desc" }).lean();
 
         for (const product of products) {
             product.categoryTitle = category.title
         }
 
         const newProducts = productHelper.pricenewProducts(products);
-    
+
 
         res.json({
             code: 200,
@@ -87,7 +101,7 @@ module.exports.category = async(req, res) => {
 };
 
 //[GET] /api/products/detail/:slugProduct
-module.exports.detail = async(req, res) => {
+module.exports.detail = async (req, res) => {
     try {
         const slugProduct = req.params.slugProduct;
 
@@ -97,7 +111,7 @@ module.exports.detail = async(req, res) => {
             status: "active"
         }).select("title description price discountPercentage stock thumbnail featured slug categoryId").lean();
 
-        if(product.categoryId) {
+        if (product.categoryId) {
             const category = await ProductCategory.findOne({
                 _id: product.categoryId,
                 deleted: false,
@@ -111,7 +125,7 @@ module.exports.detail = async(req, res) => {
             message: "Lấy sản phẩm thành công!",
             product: product
         });
-        
+
     } catch (error) {
         res.json({
             code: 400,
@@ -122,7 +136,7 @@ module.exports.detail = async(req, res) => {
 
 
 //[GET] /api/products/featured
-module.exports.featured = async(req, res) => {
+module.exports.featured = async (req, res) => {
     try {
         const productsFeatured = await Product.find({
             deleted: false,
@@ -133,14 +147,14 @@ module.exports.featured = async(req, res) => {
         }).select("title description price discountPercentage stock thumbnail featured slug categoryId").lean();
 
         for (const product of productsFeatured) {
-            if(product.categoryId) {
+            if (product.categoryId) {
                 const category = await ProductCategory.findOne({
                     _id: product.categoryId,
                     deleted: false,
                     status: "active"
                 }).select("title").lean();
 
-                if(category) {
+                if (category) {
                     product.categoryTitle = category.title;
                 };
             }
@@ -153,7 +167,7 @@ module.exports.featured = async(req, res) => {
             message: "Lấy sản phẩm thành công!",
             product: newProducts
         });
-        
+
     } catch (error) {
         res.json({
             code: 400,
@@ -163,7 +177,7 @@ module.exports.featured = async(req, res) => {
 };
 
 //[GET] /api/products/listNewProducts
-module.exports.listNewProducts = async(req, res) => {
+module.exports.listNewProducts = async (req, res) => {
     try {
         const products = await Product.find({
             deleted: false,
@@ -173,14 +187,14 @@ module.exports.listNewProducts = async(req, res) => {
         }).select("title description price discountPercentage stock thumbnail featured slug categoryId").lean();
 
         for (const product of products) {
-            if(product.categoryId) {
+            if (product.categoryId) {
                 const category = await ProductCategory.findOne({
                     _id: product.categoryId,
                     deleted: false,
                     status: "active"
                 }).select("title").lean();
 
-                if(category) {
+                if (category) {
                     product.categoryTitle = category.title;
                 };
             }
@@ -193,7 +207,7 @@ module.exports.listNewProducts = async(req, res) => {
             message: "Lấy sản phẩm thành công!",
             product: newProducts
         });
-        
+
     } catch (error) {
         res.json({
             code: 400,
