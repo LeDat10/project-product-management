@@ -18,6 +18,7 @@ type RootStackParamList = {
   forgotpw: undefined;
   register: undefined;
   account: undefined;
+  search: undefined;
   "detail-product":
     | {
         // id: string;
@@ -34,7 +35,7 @@ type RootStackParamList = {
   // Feed: { sort: 'latest' | 'top' } | undefined;
 };
 
-declare global {
+declare module global {
   namespace ReactNavigation {
     interface RootParamList extends RootStackParamList {}
   }
