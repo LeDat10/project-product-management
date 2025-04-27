@@ -7,8 +7,6 @@ import {
   TextInput,
   Image,
   Alert,
-  Modal,
-  Button,
   ActivityIndicator,
   ScrollView,
 } from "react-native";
@@ -156,8 +154,6 @@ const Register = ({ navigation }: Props) => {
           placeholder="Số điện thoại"
           keyboardType="numeric"
           maxLength={10}
-          value={form.phone}
-          onChangeText={(val) => handleChange("phone", val)}
         />
         <TextInput
           style={styles.input}
@@ -266,8 +262,6 @@ const styles = StyleSheet.create({
   },
   button: {
     backgroundColor: "green",
-    paddingVertical: 12,
-    paddingHorizontal: 30,
     borderRadius: 10,
     marginTop: 10,
   },
@@ -318,11 +312,6 @@ const styles = StyleSheet.create({
   },
   modalButtons: {
     flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  footer: {
-    flexDirection: "row",
-    marginTop: 20,
     alignItems: "center",
   },
   footerText: {
@@ -334,8 +323,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: "#0066cc",
     fontWeight: "600",
-    marginLeft: 5,
-    textDecorationLine: "underline",
   },
   backLink: {
     fontSize: 16,
