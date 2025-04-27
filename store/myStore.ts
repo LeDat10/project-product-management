@@ -79,7 +79,9 @@ interface StoreState {
 }
 
 const useStore = create<StoreState>()(
+  //midelware
   persist(
+    //nhận vào 2 parameter set get
     (set, get) => ({
       user: null,
       isAuthenticated: false,
@@ -305,8 +307,6 @@ const useStore = create<StoreState>()(
           
           const config = await setConfig();
           await selectedCart(config, productSelected);
-          
-          // Update cart items with new selection state
           const updatedCart = get().cart.map(item => ({
             ...item,
             selected: !!selected[item.product_id]
