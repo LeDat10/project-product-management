@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -19,9 +19,11 @@ import {
   updatecart,
   updateCart,
 } from "../services/cartSevices";
-import { setConfig } from "../helper/setConfig";
+import { removeData, setConfig } from "../helper/setConfig";
 import { calcPrice } from "../helper/calcPrice";
 import Checkbox from "expo-checkbox";
+import { useFocusEffect } from "@react-navigation/native";
+// import { useCallback } from "react";
 
 interface Product {
   _id: string; // cartId
@@ -39,37 +41,59 @@ const Cart = () => {
   const [loading, setLoading] = useState(false);
   const [cartproduct, setCartproduct] = useState<Product[]>([]);
   const [selected, setSelected] = useState<{ [key: string]: boolean }>({});
-
   const fetchAPI = async (): Promise<void> => {
+    setLoading(true);
     try {
-      setLoading(true);
       const config = await setConfig();
       const response = await getCart(config);
-      console.log(response.data.cart["products"]);
       if (response) {
         setLoading(false);
       }
-      // const cartId = response.headers["cartid"];
-      const cartId = response.data.cart["_id"];
-      await AsyncStorage.setItem("cartId", cartId);
+
       const productData = response.data.cart["products"];
-      setCartproduct(productData);
+      console.log(response.data.cart["products"]);
+
+      const cartId = response.headers["cartid"];
+      if (cartId) {
+        await AsyncStorage.setItem("cartId", cartId);
+      }
+      // await removeData("cartId");
+      // console.log(config);
+      // const cartId = response.data.cart["_id"];
 
       const newSelected: { [key: string]: boolean } = {};
-      cartproduct.forEach((item: Product) => {
-        newSelected[item.product_id] = item.selected;
+      productData.forEach((item: Product) => {
+        newSelected[item.product_id] = item.selected || false;
       });
       console.log(newSelected);
+
       setSelected(newSelected);
       setCartproduct(productData);
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchAPI();
-  }, []);
+  // useEffect(() => {
+  //   fetchAPI();
+  //   for (const item of cartproduct) {
+  //     setSelected((prev) => {
+  //       const newSelectedValue = !prev[item.product_id];
+  //       const updateSelected = { ...prev, [item.product_id]: newSelectedValue };
+  //       sentSelectToApi(updateSelected);
+  //       return updateSelected;
+  //     });
+  //   }
+  // }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      // console.log("Cart Screen focus, calling fetchAPT");
+      fetchAPI();
+    }, [])
+  );
 
   const sentSelectToApi = async (selectedState: { [key: string]: boolean }) => {
     try {
@@ -77,11 +101,21 @@ const Cart = () => {
         .filter(([_, selected]) => selected)
         .map(([id]) => id);
       console.log("Sending to API:", { productSelected });
+
       const config2 = await setConfig();
       const response = await selectedCart(config2, productSelected);
       if (response.data.code === 200) {
         console.log(response.data.message);
+
+        //kiểm tra xem backend có update không
+        const test = response.data.updates.filter(
+          (u: { modified: any }) => u.modified
+        ).length;
+        if (test === 0) {
+          console.warn("Sản phẩm không được update ở backend");
+        }
       } else {
+        [];
         console.log(response.data.message);
       }
     } catch (error) {
@@ -98,17 +132,7 @@ const Cart = () => {
     });
   };
 
-  // useEffect(() => {
-  //   const updateCartProduct = async () => {
-  //     const update = cartproduct.map((item) => ({
-  //       ...item,
-  //       selected: !!selected[item.product_id],
-  //     }));
-  //     setCartproduct(update);
-  //   };
-
-  //   updateCartProduct();
-  // }, [selected]);
+  console.log(selected);
 
   const calcQuantity = () => {
     return cartproduct.reduce((sum, item) => {
@@ -158,7 +182,8 @@ const Cart = () => {
         renderItem={({ item }) => (
           <View style={styles.item}>
             <Checkbox
-              value={selected[item.product_id] ?? false}
+              value={selected[item.product_id]}
+              // onChange={() => handleChange(item.product_id)}
               onValueChange={() => sumCheckbox(item.product_id)}
               style={styles.checkbox}
             />

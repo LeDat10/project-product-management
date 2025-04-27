@@ -87,6 +87,7 @@ const DetailProduct = ({ route }: any) => {
         };
 
         const config = await setConfig();
+        // console.log(config);
         const responseCart = await PostCart(
           detail_product!._id,
           config,

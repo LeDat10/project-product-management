@@ -9,10 +9,11 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { FlatList, ScrollView, TextInput } from "react-native-gesture-handler";
-import Footer from "./footer";
 import { Double } from "react-native/Libraries/Types/CodegenTypes";
 import axios from "axios";
 import { getProduct } from "../services/productServices";
+import EvilIcons from "@expo/vector-icons/EvilIcons";
+import Sort from "./sort";
 
 interface Product {
   _id: string;
@@ -67,151 +68,161 @@ const Product = () => {
   }
 
   return (
-    <View>
-      {/* <TextInput
-      style={styles.search}
-      placeholder="Họ"
-      maxLength={25}
-      value={firstname}
-      onChangeText={setFirstname}
-      /> */}
+    <View style={styles.container}>
+      <View style={{ alignItems: "center" }}>
+        <TouchableOpacity
+          style={styles.searchContainer}
+          onPress={() => navigation.navigate("search")}
+        >
+          <EvilIcons
+            name="search"
+            size={24}
+            color="black"
+            style={styles.searchIcon}
+          />
+          <Text style={styles.searchProduct}>Tìm kiếm sản phẩm</Text>
+        </TouchableOpacity>
+      </View>
+
+      <Sort />
+
       <FlatList
         data={product}
         numColumns={2}
         columnWrapperStyle={styles.Row}
         keyExtractor={(item) => item._id}
-        ListHeaderComponent={
-          <View>
-            <Text style={styles.danhmuc}>Danh Mục Sản Phẩm</Text>
-            <View style={styles.listMenu}>
-              {/* Row1 */}
-              <View style={styles.row}>
-                <View style={styles.menu}>
-                  <View style={styles.innerImage}>
-                    <TouchableOpacity
-                      onPress={() => navigation.navigate("Vegetable")}
-                    >
-                      <Image
-                        style={{ width: "100%", height: "100%" }}
-                        source={require("../assets/vegetable.png")}
-                        resizeMode="cover"
-                      />
-                    </TouchableOpacity>
-                  </View>
-                  <Text style={styles.Text}>Rau Củ Quả</Text>
-                </View>
+        // ListHeaderComponent={
+        //   <View>
+        //     <Text style={styles.danhmuc}>Danh Mục Sản Phẩm</Text>
+        //     <View style={styles.listMenu}>
+        //       {/* Row1 */}
+        //       <View style={styles.row}>
+        //         <View style={styles.menu}>
+        //           <View style={styles.innerImage}>
+        //             <TouchableOpacity
+        //               onPress={() => navigation.navigate("Vegetable")}
+        //             >
+        //               <Image
+        //                 style={{ width: "100%", height: "100%" }}
+        //                 source={require("../assets/vegetable.png")}
+        //                 resizeMode="cover"
+        //               />
+        //             </TouchableOpacity>
+        //           </View>
+        //           <Text style={styles.Text}>Rau Củ Quả</Text>
+        //         </View>
 
-                <View style={styles.menu}>
-                  <View style={styles.innerImage}>
-                    <TouchableOpacity
-                      onPress={() => navigation.navigate("Bakery")}
-                    >
-                      <Image
-                        style={{ width: "100%", height: "100%" }}
-                        source={require("../assets/bakery.png")}
-                        resizeMode="cover"
-                      />
-                    </TouchableOpacity>
-                  </View>
-                  <Text style={styles.Text}>Các Loại Bánh</Text>
-                </View>
+        //         <View style={styles.menu}>
+        //           <View style={styles.innerImage}>
+        //             <TouchableOpacity
+        //               onPress={() => navigation.navigate("Bakery")}
+        //             >
+        //               <Image
+        //                 style={{ width: "100%", height: "100%" }}
+        //                 source={require("../assets/bakery.png")}
+        //                 resizeMode="cover"
+        //               />
+        //             </TouchableOpacity>
+        //           </View>
+        //           <Text style={styles.Text}>Các Loại Bánh</Text>
+        //         </View>
 
-                <View style={styles.menu}>
-                  <View style={styles.innerImage}>
-                    <TouchableOpacity
-                      onPress={() => navigation.navigate("Snack")}
-                    >
-                      <Image
-                        style={{ width: "100%", height: "100%" }}
-                        source={require("../assets/snack.png")}
-                        resizeMode="cover"
-                      />
-                    </TouchableOpacity>
-                  </View>
-                  <Text style={styles.Text}>Đồ Ăn Vặt</Text>
-                </View>
+        //         <View style={styles.menu}>
+        //           <View style={styles.innerImage}>
+        //             <TouchableOpacity
+        //               onPress={() => navigation.navigate("Snack")}
+        //             >
+        //               <Image
+        //                 style={{ width: "100%", height: "100%" }}
+        //                 source={require("../assets/snack.png")}
+        //                 resizeMode="cover"
+        //               />
+        //             </TouchableOpacity>
+        //           </View>
+        //           <Text style={styles.Text}>Đồ Ăn Vặt</Text>
+        //         </View>
 
-                <View style={styles.menu}>
-                  <View style={styles.innerImage}>
-                    <TouchableOpacity
-                      onPress={() => navigation.navigate("Milk")}
-                    >
-                      <Image
-                        style={{ width: "100%", height: "100%" }}
-                        source={require("../assets/milk.png")}
-                        resizeMode="cover"
-                      />
-                    </TouchableOpacity>
-                  </View>
-                  <Text style={styles.Text}>Trứng Và Sữa</Text>
-                </View>
-              </View>
+        //         <View style={styles.menu}>
+        //           <View style={styles.innerImage}>
+        //             <TouchableOpacity
+        //               onPress={() => navigation.navigate("Milk")}
+        //             >
+        //               <Image
+        //                 style={{ width: "100%", height: "100%" }}
+        //                 source={require("../assets/milk.png")}
+        //                 resizeMode="cover"
+        //               />
+        //             </TouchableOpacity>
+        //           </View>
+        //           <Text style={styles.Text}>Trứng Và Sữa</Text>
+        //         </View>
+        //       </View>
 
-              {/* Row 2 */}
-              <View style={styles.row}>
-                <View style={styles.menu}>
-                  <View style={styles.innerImage}>
-                    <TouchableOpacity
-                      onPress={() => navigation.navigate("Meat")}
-                    >
-                      <Image
-                        style={{ width: "100%", height: "100%" }}
-                        source={require("../assets/meat.png")}
-                        resizeMode="cover"
-                      />
-                    </TouchableOpacity>
-                  </View>
-                  <Text style={styles.Text}>Các Loại Thịt</Text>
-                </View>
+        //       {/* Row 2 */}
+        //       <View style={styles.row}>
+        //         <View style={styles.menu}>
+        //           <View style={styles.innerImage}>
+        //             <TouchableOpacity
+        //               onPress={() => navigation.navigate("Meat")}
+        //             >
+        //               <Image
+        //                 style={{ width: "100%", height: "100%" }}
+        //                 source={require("../assets/meat.png")}
+        //                 resizeMode="cover"
+        //               />
+        //             </TouchableOpacity>
+        //           </View>
+        //           <Text style={styles.Text}>Các Loại Thịt</Text>
+        //         </View>
 
-                <View style={styles.menu}>
-                  <View style={styles.innerImage}>
-                    <TouchableOpacity
-                      onPress={() => navigation.navigate("Drink")}
-                    >
-                      <Image
-                        style={{ width: "100%", height: "100%" }}
-                        source={require("../assets/drink.png")}
-                        resizeMode="cover"
-                      />
-                    </TouchableOpacity>
-                  </View>
-                  <Text style={styles.Text}>Đồ Uống</Text>
-                </View>
+        //         <View style={styles.menu}>
+        //           <View style={styles.innerImage}>
+        //             <TouchableOpacity
+        //               onPress={() => navigation.navigate("Drink")}
+        //             >
+        //               <Image
+        //                 style={{ width: "100%", height: "100%" }}
+        //                 source={require("../assets/drink.png")}
+        //                 resizeMode="cover"
+        //               />
+        //             </TouchableOpacity>
+        //           </View>
+        //           <Text style={styles.Text}>Đồ Uống</Text>
+        //         </View>
 
-                <View style={styles.menu}>
-                  <View style={styles.innerImage}>
-                    <TouchableOpacity
-                      onPress={() => navigation.navigate("Cleaning")}
-                    >
-                      <Image
-                        style={{ width: "100%", height: "100%" }}
-                        source={require("../assets/cleaning.png")}
-                        resizeMode="cover"
-                      />
-                    </TouchableOpacity>
-                  </View>
-                  <Text style={styles.Text}>Dụng cụ vệ sinh</Text>
-                </View>
+        //         <View style={styles.menu}>
+        //           <View style={styles.innerImage}>
+        //             <TouchableOpacity
+        //               onPress={() => navigation.navigate("Cleaning")}
+        //             >
+        //               <Image
+        //                 style={{ width: "100%", height: "100%" }}
+        //                 source={require("../assets/cleaning.png")}
+        //                 resizeMode="cover"
+        //               />
+        //             </TouchableOpacity>
+        //           </View>
+        //           <Text style={styles.Text}>Dụng cụ vệ sinh</Text>
+        //         </View>
 
-                <View style={styles.menu}>
-                  <View style={styles.innerImage}>
-                    <TouchableOpacity
-                      onPress={() => navigation.navigate("Care")}
-                    >
-                      <Image
-                        style={{ width: "100%", height: "100%" }}
-                        source={require("../assets/care.png")}
-                        resizeMode="cover"
-                      />
-                    </TouchableOpacity>
-                  </View>
-                  <Text style={styles.Text}>Hóa Mỹ Phẩm</Text>
-                </View>
-              </View>
-            </View>
-          </View>
-        }
+        //         <View style={styles.menu}>
+        //           <View style={styles.innerImage}>
+        //             <TouchableOpacity
+        //               onPress={() => navigation.navigate("Care")}
+        //             >
+        //               <Image
+        //                 style={{ width: "100%", height: "100%" }}
+        //                 source={require("../assets/care.png")}
+        //                 resizeMode="cover"
+        //               />
+        //             </TouchableOpacity>
+        //           </View>
+        //           <Text style={styles.Text}>Hóa Mỹ Phẩm</Text>
+        //         </View>
+        //       </View>
+        //     </View>
+        //   </View>
+        // }
         renderItem={({ item }) => (
           <View style={styles.card}>
             <View style={styles.containerCoupon}>
@@ -243,6 +254,10 @@ const Product = () => {
 };
 
 const styles = StyleSheet.create({
+  container: {
+    marginBottom: 500,
+  },
+
   danhmuc: {
     fontSize: 25,
     fontWeight: "500",
@@ -285,14 +300,14 @@ const styles = StyleSheet.create({
 
   Row: {
     justifyContent: "space-between", // Căn đều các item
-    paddingVertical: 5,
+    paddingBottom: 5,
     paddingHorizontal: 10,
   },
 
   card: {
     backgroundColor: "#fff",
     padding: 10,
-    borderRadius: 10,
+    borderRadius: 5,
     alignItems: "center",
     flex: 1,
     margin: 5,
@@ -319,12 +334,13 @@ const styles = StyleSheet.create({
 
   containerCoupon: {
     position: "absolute",
-    top: 5,
-    right: 5,
+    top: 0,
+    right: 0,
     backgroundColor: "#fadbd8",
     paddingVertical: 3,
     paddingHorizontal: 6,
-    borderRadius: 5,
+    borderBottomLeftRadius: 2,
+    borderTopRightRadius: 5,
     zIndex: 10, //  đảm bảo phần giảm giá hiển thị trên thumbnail
   },
 
@@ -344,6 +360,34 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "#fff",
     fontWeight: "bold",
+  },
+
+  searchContainer: {
+    width: "90%",
+    height: 48,
+    flexDirection: "row",
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 10,
+    backgroundColor: "#fff",
+    marginVertical: 10,
+    paddingHorizontal: 12,
+  },
+
+  searchProduct: {
+    color: "rgba(0,0,0,0.5)",
+    fontSize: 16,
+    textAlign: "left",
+    textAlignVertical: "center",
+  },
+
+  searchIcon: {
+    // borderWidth: 1,
+    // borderColor: "red",
+    height: 48,
+    textAlign: "left",
+    textAlignVertical: "center",
+    marginRight: 10,
   },
 });
 
