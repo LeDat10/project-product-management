@@ -1,5 +1,5 @@
 import { NavigationProp, useNavigation } from "@react-navigation/native";
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -9,32 +9,32 @@ import {
   Image,
   Alert,
   ActivityIndicator,
+  ScrollView,
 } from "react-native";
-import { useState } from "react";
-import { ScrollView } from "react-native-gesture-handler";
 import { LoginData } from "../services/accountService";
 import useStore from "../store/myStore";
 
-type LoginScreen = NavigationProp<RootStackParamList, "login">;
+type LoginScreenNavProp = NavigationProp<RootStackParamList, "login">;
 
 interface Props {
-  navigation: LoginScreen;
+  navigation: LoginScreenNavProp;
 }
 
 const LognIn = ({ navigation }: Props) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { login, loading, error, isAuthenticated, clearErrors } = useStore(state => ({
-    login: state.login,
-    loading: state.loading,
-    error: state.error,
-    isAuthenticated: state.isAuthenticated,
-    clearErrors: state.clearErrors,
-  }));
+
+  const login = useStore(state => state.login);
+  const loading = useStore(state => state.loading);
+  const error = useStore(state => state.error);
+  const isAuthenticated = useStore(state => state.isAuthenticated);
+  const clearErrors = useStore(state => state.clearErrors);
 
   React.useEffect(() => {
     clearErrors();
-    return () => clearErrors();
+    return () => {
+      clearErrors();
+    };
   }, [clearErrors]);
 
   React.useEffect(() => {
@@ -47,6 +47,7 @@ const LognIn = ({ navigation }: Props) => {
     if (error) {
       Alert.alert("Lỗi", error || "Đăng nhập thất bại");
     }
+    clearErrors();
   }, [error]);
 
   const handleLogin = async () => {
@@ -62,167 +63,158 @@ const LognIn = ({ navigation }: Props) => {
 
     await login(loginData);
   };
-  
+
   return (
-    <ScrollView>
+    <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.container}>
-        <Image style={styles.logo} source={require("../assets/logo.png")} />
+        <Image
+          style={styles.logo}
+          source={require("../assets/logo.png")}
+          resizeMode="contain"
+        />
         <Text style={styles.dangnhap}>Đăng Nhập Tài Khoản</Text>
-        <Text style={styles.huongdan}>Nhập email và mật khẩu của bạn </Text>
+        <Text style={styles.huongdan}>Nhập email và mật khẩu của bạn</Text>
+
         <TextInput
-          style={styles.input1}
+          style={styles.input}
           placeholder="Email"
           value={email}
           onChangeText={setEmail}
-          maxLength={25}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          maxLength={50}
         />
+
         <TextInput
-          style={styles.input2}
+          style={styles.input}
           placeholder="Mật khẩu"
           value={password}
           onChangeText={setPassword}
-          maxLength={20}
+          maxLength={30}
           secureTextEntry={true}
         />
 
-        <Text style={styles.quenpass}
-          onPress={() => navigation.navigate("forgotpw")}
-        >
-          Bạn đã quên mật khẩu?</Text>
-        
-        <TouchableOpacity 
-            style={styles.button} 
-            onPress={handleLogin}
-            disabled={loading}>
-          <Text style={styles.text3}>
-            {loading ? "Đang xử lý..." : "Đăng Nhập"}
-          </Text>
+        <TouchableOpacity onPress={() => navigation.navigate("forgotpw")}>
+          <Text style={styles.quenpass}>Bạn đã quên mật khẩu?</Text>
         </TouchableOpacity>
 
-        {loading && (
-          <ActivityIndicator 
-            size="small" 
-            color="#007bff" 
-            style={{marginTop: 10}} 
-          />
-        )}
-
-        <View style={styles.rowContainer}>
-          <Text style={styles.row1}>Bạn là khách hàng mới?</Text>
-          <Text
-            style={styles.linkText}
-            onPress={() => navigation.navigate("register")}
-          >
-            Đăng Ký
-          </Text>
-        </View>
-        <Text
-          style={styles.textlink}
-          onPress={() => navigation.navigate("Home")}
+        <TouchableOpacity
+          style={styles.button}
+          onPress={handleLogin}
+          disabled={loading}
         >
-          Quay lại trang chủ
-        </Text>
+          {loading ? (
+            <ActivityIndicator color="#fff" size="small" />
+          ) : (
+            <Text style={styles.buttonText}>Đăng Nhập</Text>
+          )}
+        </TouchableOpacity>
+
+        <View style={styles.registerContainer}>
+          <Text style={styles.registerText}>Bạn là khách hàng mới?</Text>
+          <TouchableOpacity onPress={() => navigation.navigate("register")}>
+            <Text style={styles.registerLink}>Đăng Ký</Text>
+          </TouchableOpacity>
+        </View>
+
+        <TouchableOpacity onPress={() => navigation.navigate("menu")}>
+          <Text style={styles.homeLink}>Quay lại trang chủ</Text>
+        </TouchableOpacity>
       </View>
     </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
+  scrollContainer: {
+    flexGrow: 1,
+    justifyContent: "center",
+  },
   container: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    color: "#000",
+    paddingHorizontal: 20,
+    backgroundColor: "#fff",
   },
   logo: {
-    width: 180,
-    height: 179,
-    alignSelf: "center",
+    width: 150,
+    height: 150,
+    marginBottom: 30,
   },
   dangnhap: {
-    fontSize: 36,
+    fontSize: 28,
     fontWeight: "bold",
-    color: "#000",
-    marginTop: 20,
-    marginBottom: 10,
+    color: "#333",
+    marginBottom: 8,
     textAlign: "center",
   },
   huongdan: {
-    fontSize: 13,
-    color: "#000",
-    marginTop: 5,
-    marginBottom: 10,
+    fontSize: 14,
+    color: "#666",
+    marginBottom: 25,
     textAlign: "center",
   },
-  input1: {
-    width: 300,
-    height: 60,
-    fontFamily: "Istok",
+  input: {
+    width: "100%",
+    height: 50,
     fontSize: 16,
-    borderColor: "#fff",
-    backgroundColor: "#e0e0e0",
+    backgroundColor: "#f0f0f0",
+    borderRadius: 10,
+    paddingHorizontal: 15,
+    marginBottom: 15,
     borderWidth: 1,
-    borderRadius: 15,
-    marginBottom: 0.5,
-    color: "#000",
-  },
-  input2: {
-    width: 300,
-    height: 60,
-    fontFamily: "Istok",
-    borderColor: "#fff",
-    backgroundColor: "#e0e0e0",
-    borderWidth: 1,
-    marginTop: 15,
-    marginBottom: 10,
-    borderRadius: 15,
+    borderColor: '#ddd',
+    color: "#333",
   },
   quenpass: {
     fontSize: 13,
-    color: "blue",
-    marginTop: 5,
-    marginBottom: 10,
-    textAlign: "center",
+    color: "#007bff",
+    marginBottom: 20,
+    textAlign: "right",
+    width: '100%',
+    paddingRight: 5,
   },
   button: {
-    width: 143,
-    height: 45,
-    marginTop: 20,
+    width: "100%",
+    height: 50,
     backgroundColor: "green",
-    borderRadius: 20,
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: 20,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 1,
   },
-  text3: {
+  buttonText: {
     textAlign: "center",
     color: "white",
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: "600",
-    paddingTop: 10,
   },
-  rowContainer: {
+  registerContainer: {
     flexDirection: "row",
     alignItems: "center",
+    marginTop: 15,
+    marginBottom: 10,
   },
-  row1: {
-    textAlign: "center",
-    color: "black",
-    fontSize: 15,
-    fontWeight: "600",
-    paddingTop: 10,
+  registerText: {
+    color: "#666",
+    fontSize: 14,
+    marginRight: 5,
   },
-  linkText: {
-    color: "#006FFF",
-    fontSize: 15,
-    fontWeight: "600",
-    paddingTop: 10,
-    marginLeft: 5,
-    textDecorationLine: "underline",
-  },
-  textlink: {
-    fontSize: 16,
+  registerLink: {
     color: "#007bff",
-    marginTop: 12,
-    fontStyle: "italic",
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  homeLink: {
+    fontSize: 14,
+    color: "#007bff",
+    marginTop: 15,
   },
 });
 

@@ -1,3 +1,4 @@
+import { NavigationProp, useNavigation } from "@react-navigation/native";
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -10,157 +11,185 @@ import {
   ActivityIndicator,
   ScrollView,
 } from "react-native";
-import { NavigationProp } from "@react-navigation/native";
-import accountService, {
-  RegisterData,
-  ConfirmOTPData,
-} from "../services/accountService";
+import { RegisterData } from "../services/accountService";
 import useStore from "../store/myStore";
 
-type RegisterScreen = NavigationProp<RootStackParamList, "register">;
+type RegisterScreenNavProp = NavigationProp<RootStackParamList, "register">;
 
 interface Props {
-  navigation: RegisterScreen;
+  navigation: RegisterScreenNavProp;
 }
 
 const Register = ({ navigation }: Props) => {
-  const [form, setForm] = useState({
-    username: "",
-    password: "",
-    firstname: "",
-    lastname: "",
-    email: "",
-    phone: "",
-  });
-  const [otp, setOtp] = useState("");
-  const [otpModalVisible, setOtpModalVisible] = useState(false);
+  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [firstname, setFirstname] = useState("");
+  const [lastname, setLastname] = useState("");
+  const [phone, setPhone] = useState("");
+  const [registrationSuccess, setRegistrationSuccess] = useState(false);
 
-  const { register, loading, error, clearErrors } = useStore((state) => ({
-    register: state.register,
-    loading: state.loading,
-    error: state.error,
-    clearErrors: state.clearErrors,
-  }));
- 
+  const register = useStore(state => state.register);
+  const loading = useStore(state => state.loading);
+  const error = useStore(state => state.error);
+  const clearErrors = useStore(state => state.clearErrors);
+
   useEffect(() => {
     clearErrors();
-    return () => clearErrors();
+    return () => {
+      clearErrors();
+    };
   }, [clearErrors]);
 
   useEffect(() => {
     if (error) {
       Alert.alert("Lỗi", error || "Đăng ký thất bại");
+      clearErrors();
     }
   }, [error]);
 
-  const handleChange = (field: string, value: string) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
+  useEffect(() => {
+    if (registrationSuccess) {
+      Alert.alert(
+        "Đăng ký thành công", 
+        "Vui lòng kiểm tra email để xác nhận tài khoản của bạn.",
+        [
+          { 
+            text: "Đăng nhập ngay", 
+            onPress: () => navigation.navigate("login") 
+          }
+        ]
+      );
+    }
+  }, [registrationSuccess]);
+
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validatePhone = (phone: string) => {
+    const phoneRegex = /^[0-9]{10}$/;
+    return phoneRegex.test(phone);
   };
 
   const handleRegister = async () => {
-    const { username, password, firstname, lastname, email, phone } = form;
-
-    if (!username || !password || !firstname || !lastname || !email || !phone) {
-      Alert.alert("Thông tin không hợp lệ", "Vui lòng không bỏ trống.");
+    
+    if (!email || !username || !password || !confirmPassword || !firstname || !lastname || !phone) {
+      Alert.alert("Thông tin không hợp lệ", "Vui lòng điền đầy đủ thông tin.");
       return;
     }
 
-    try {
-      const registerData: RegisterData = { ...form };
-      const response = await register(registerData);
-
-      if (response?.code === 200) {
-        setOtpModalVisible(true);
-        Alert.alert(
-          "Đăng ký thành công",
-          response.message || "Vui lòng kiểm tra email để xác thực.",
-          [
-            {
-              text: "Chuyển đến đăng nhập",
-              onPress: () => navigation.navigate("login"),
-            },
-          ]
-        );
-      } else if (response) {
-        Alert.alert(
-          "Đăng ký thất bại",
-          response.message || "Đã xảy ra lỗi."
-        );
-      }
-    } catch (error: any) {
-      Alert.alert("Lỗi", error.message || "Không thể kết nối đến server.");
-    }
-  };
-
-  const handleConfirmOtp = async () => {
-    if (!otp) {
-      Alert.alert("Lỗi", "Vui lòng nhập mã OTP");
+    if (!validateEmail(email)) {
+      Alert.alert("Lỗi", "Email không hợp lệ.");
       return;
     }
 
-    try {
-      const data: ConfirmOTPData = { email: form.email, otp };
-      const otpResponse = await accountService.confirmOTP(data);
+    if (!validatePhone(phone)) {
+      Alert.alert("Lỗi", "Số điện thoại phải có 10 chữ số.");
+      return;
+    }
 
-      if (otpResponse?.code === 200) {
-        setOtpModalVisible(false);
-        Alert.alert("Thành công", otpResponse.message, [
-          { text: "Đăng nhập", onPress: () => navigation.navigate("login") },
-        ]);
-      } else {
-        Alert.alert(
-          "Thông báo",
-          otpResponse.message || "OTP không hợp lệ."
-        );
-      }
-    } catch {
-      Alert.alert("Lỗi", "Không thể xác thực email.");
+    if (password !== confirmPassword) {
+      Alert.alert("Lỗi", "Mật khẩu xác nhận không khớp.");
+      return;
+    }
+
+    if (password.length < 6) {
+      Alert.alert("Lỗi", "Mật khẩu phải có ít nhất 6 ký tự.");
+      return;
+    }
+
+    const registerData: RegisterData = {
+      email,
+      password,
+      username,
+      firstname,
+      lastname,
+      phone,
+    };
+
+    const result = await register(registerData);
+    
+    if (!result || !('error' in result)) {
+      setRegistrationSuccess(true);
     }
   };
 
   return (
-    <ScrollView>
+    <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.container}>
-        <Image style={styles.logo} source={require("../assets/logo.png")} />
+        <Image
+          style={styles.logo}
+          source={require("../assets/logo.png")}
+          resizeMode="contain"
+        />
         <Text style={styles.title}>Đăng Ký Tài Khoản</Text>
+        <Text style={styles.subtitle}>Vui lòng điền đầy đủ thông tin bên dưới</Text>
 
         <TextInput
           style={styles.input}
-          placeholder="Họ"
-          value={form.firstname}
-          onChangeText={(val) => handleChange("firstname", val)}
+          placeholder="Email"
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          maxLength={50}
         />
-        <TextInput
-          style={styles.input}
-          placeholder="Tên"
-          value={form.lastname}
-          onChangeText={(val) => handleChange("lastname", val)}
-        />
+
         <TextInput
           style={styles.input}
           placeholder="Tên đăng nhập"
-          value={form.username}
-          onChangeText={(val) => handleChange("username", val)}
+          value={username}
+          onChangeText={setUsername}
+          autoCapitalize="none"
+          maxLength={30}
         />
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          value={form.email}
-          onChangeText={(val) => handleChange("email", val)}
-          keyboardType="email-address"
-        />
+
+        <View style={styles.nameContainer}>
+          <TextInput
+            style={[styles.input, styles.halfInput]}
+            placeholder="Họ"
+            value={lastname}
+            onChangeText={setLastname}
+            maxLength={20}
+          />
+
+          <TextInput
+            style={[styles.input, styles.halfInput]}
+            placeholder="Tên"
+            value={firstname}
+            onChangeText={setFirstname}
+            maxLength={20}
+          />
+        </View>
+
         <TextInput
           style={styles.input}
           placeholder="Số điện thoại"
-          keyboardType="numeric"
+          value={phone}
+          onChangeText={setPhone}
+          keyboardType="phone-pad"
           maxLength={10}
         />
+
         <TextInput
           style={styles.input}
           placeholder="Mật khẩu"
-          secureTextEntry
-          value={form.password}
-          onChangeText={(val) => handleChange("password", val)}
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry={true}
+          maxLength={30}
+        />
+
+        <TextInput
+          style={styles.input}
+          placeholder="Xác nhận mật khẩu"
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+          secureTextEntry={true}
+          maxLength={30}
         />
 
         <TouchableOpacity
@@ -168,166 +197,120 @@ const Register = ({ navigation }: Props) => {
           onPress={handleRegister}
           disabled={loading}
         >
-          <Text style={styles.buttonText}>
-            {loading ? "Đang xử lý..." : "Đăng Ký"}
-          </Text>
+          {loading ? (
+            <ActivityIndicator color="#fff" size="small" />
+          ) : (
+            <Text style={styles.buttonText}>Đăng Ký</Text>
+          )}
         </TouchableOpacity>
 
-        {loading && (
-          <View style={styles.loadingOverlay}>
-            <ActivityIndicator size="large" color="#007bff" />
-          </View>
-        )}
-
-        <Modal
-          visible={otpModalVisible}
-          transparent
-          animationType="slide"
-          onRequestClose={() => setOtpModalVisible(false)}
-        >
-          <View style={styles.modalContainer}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>Xác thực OTP</Text>
-              <Text style={styles.modalDescription}>
-                Vui lòng nhập mã OTP được gửi đến email của bạn.
-              </Text>
-              <TextInput
-                style={styles.otpInput}
-                keyboardType="numeric"
-                placeholder="Mã OTP"
-                value={otp}
-                onChangeText={setOtp}
-              />
-              <View style={styles.modalButtons}>
-                <Button
-                  title="Hủy"
-                  onPress={() => setOtpModalVisible(false)}
-                  color="#ff4444"
-                />
-                <Button
-                  title="Xác nhận"
-                  onPress={handleConfirmOtp}
-                  color="#007bff"
-                />
-              </View>
-            </View>
-          </View>
-        </Modal>
-
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>Bạn đã có tài khoản?</Text>
-          <Text
-            style={styles.link}
-            onPress={() => navigation.navigate("login")}
-          >
-            Đăng Nhập
-          </Text>
+        <View style={styles.loginContainer}>
+          <Text style={styles.loginText}>Đã có tài khoản?</Text>
+          <TouchableOpacity onPress={() => navigation.navigate("login")}>
+            <Text style={styles.loginLink}>Đăng Nhập</Text>
+          </TouchableOpacity>
         </View>
-        <Text
-          style={styles.backLink}
-          onPress={() => navigation.navigate("Home")}
-        >
-          Quay lại trang chủ
-        </Text>
+
+        <TouchableOpacity onPress={() => navigation.navigate("menu")}>
+          <Text style={styles.homeLink}>Quay lại trang chủ</Text>
+        </TouchableOpacity>
       </View>
     </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
+  scrollContainer: {
+    flexGrow: 1,
+    justifyContent: "center",
+  },
   container: {
     flex: 1,
+    justifyContent: "center",
     alignItems: "center",
-    padding: 20,
+    paddingHorizontal: 20,
+    backgroundColor: "#fff",
+    paddingVertical: 30,
   },
   logo: {
-    width: 180,
-    height: 179,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: "bold",
-    marginVertical: 20,
-  },
-  input: {
-    width: "90%",
-    height: 48,
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 10,
-    backgroundColor: "#f2f2f2",
-    marginBottom: 12,
-    paddingHorizontal: 12,
-    fontSize: 16,
-  },
-  button: {
-    backgroundColor: "green",
-    borderRadius: 10,
-    marginTop: 10,
-  },
-  buttonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16,
-  },
-  loadingOverlay: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "rgba(0,0,0,0.4)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  modalContainer: {
-    flex: 1,
-    justifyContent: "center",
-    backgroundColor: "rgba(0,0,0,0.5)",
-  },
-  modalContent: {
-    backgroundColor: "white",
-    margin: 20,
-    borderRadius: 12,
-    padding: 20,
-    elevation: 10,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 10,
-  },
-  modalDescription: {
-    fontSize: 16,
-    color: "#555",
-    marginBottom: 15,
-  },
-  otpInput: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    padding: 10,
-    backgroundColor: "#f9f9f9",
+    width: 120,
+    height: 120,
     marginBottom: 20,
   },
-  modalButtons: {
-    flexDirection: "row",
-    alignItems: "center",
+  title: {
+    fontSize: 26,
+    fontWeight: "bold",
+    color: "#333",
+    marginBottom: 8,
+    textAlign: "center",
   },
-  footerText: {
-    fontSize: 15,
-    fontWeight: "500",
+  subtitle: {
+    fontSize: 14,
+    color: "#666",
+    marginBottom: 25,
+    textAlign: "center",
+  },
+  input: {
+    width: "100%",
+    height: 50,
+    fontSize: 16,
+    backgroundColor: "#f0f0f0",
+    borderRadius: 10,
+    paddingHorizontal: 15,
+    marginBottom: 15,
+    borderWidth: 1,
+    borderColor: '#ddd',
     color: "#333",
   },
-  link: {
-    fontSize: 15,
-    color: "#0066cc",
+  nameContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+  },
+  halfInput: {
+    width: "48%",
+  },
+  button: {
+    width: "100%",
+    height: 50,
+    backgroundColor: "green",
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 10,
+    marginBottom: 20,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 1,
+  },
+  buttonText: {
+    textAlign: "center",
+    color: "white",
+    fontSize: 16,
     fontWeight: "600",
   },
-  backLink: {
-    fontSize: 16,
+  loginContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 15,
+    marginBottom: 10,
+  },
+  loginText: {
+    color: "#666",
+    fontSize: 14,
+    marginRight: 5,
+  },
+  loginLink: {
     color: "#007bff",
-    marginVertical: 12,
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  homeLink: {
+    fontSize: 14,
+    color: "#007bff",
+    marginTop: 15,
   },
 });
 
