@@ -31,16 +31,8 @@ const Sort = () => {
 
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
-  // const [sortValue, setSortValue] = useState("");
   const [status, setStatus] = useState("");
-  // const [sortKey, setSortKey] = useState("");
   const [options, setOptions] = useState("");
-  // const [items, setItems] = useState([
-  //   { label: "Sắp xếp từ A->Z", value: "az" },
-  //   { label: "Sắp xếp từ Z->A", value: "za" },
-  //   { label: "Giá tăng dần", value: "asc" },
-  //   { label: "Giá giảm dần", value: "desc" },
-  // ]);
 
   const fetchSort = async () => {
     setLoading(true);
@@ -101,7 +93,7 @@ const Sort = () => {
       />
       <Text style={styles.name}> {item.title} </Text>
       <View style={{ flexDirection: "row", alignItems: "center" }}>
-        <Text style={styles.price}> {item.price} VND</Text>
+        <Text style={styles.price}> {item.price} $</Text>
       </View>
       <TouchableOpacity
         style={styles.button}
@@ -125,7 +117,7 @@ const Sort = () => {
         /> */}
 
       <View style={styles.filters}>
-        <View style={styles.status}>
+        {/* <View style={styles.status}>
           <Text style={styles.filterLabel}>Trạng thái:</Text>
           <Picker
             selectedValue={status}
@@ -136,7 +128,7 @@ const Sort = () => {
             <Picker.Item label="Hoạt động" value="active" />
             <Picker.Item label="Không hoạt động" value="inactive" />
           </Picker>
-        </View>
+        </View> */}
 
         <View style={styles.sort}>
           <Text style={styles.filterLabel}>Sắp xếp:</Text>

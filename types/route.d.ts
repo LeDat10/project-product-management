@@ -19,6 +19,7 @@ type RootStackParamList = {
   register: undefined;
   account: undefined;
   search: undefined;
+  order: undefined;
   "detail-product":
     | {
         // id: string;

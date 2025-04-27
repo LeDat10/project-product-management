@@ -236,7 +236,7 @@ const Product = () => {
             />
             <Text style={styles.name}> {item.title} </Text>
             <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <Text style={styles.price}> {item.price} VND</Text>
+              <Text style={styles.price}> {item.price} $</Text>
             </View>
             <TouchableOpacity
               style={styles.button}
@@ -255,7 +255,7 @@ const Product = () => {
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 500,
+    marginBottom: 490,
   },
 
   danhmuc: {

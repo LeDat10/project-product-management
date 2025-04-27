@@ -21,12 +21,14 @@ const TabNavigation = () => {
         options={{
           title: "Trang chủ",
           headerShown: false,
+          tabBarActiveTintColor: "#228654",
+          tabBarInactiveTintColor: "black",
           tabBarIcon: ({ focused, size }) => {
             return (
               <Feather
                 name="home"
                 size={24}
-                color={focused ? "#257cda" : "black"}
+                color={focused ? "#228654" : "black"}
               />
             );
           },
@@ -39,12 +41,14 @@ const TabNavigation = () => {
         options={{
           title: "Giới Thiệu",
           headerShown: false,
+          tabBarActiveTintColor: "#228654",
+          tabBarInactiveTintColor: "black",
           tabBarIcon: ({ focused, size }) => {
             return (
               <MaterialIcons
                 name="people-outline"
                 size={27}
-                color={focused ? "#257cda" : "black"}
+                color={focused ? "#228654" : "black"}
               />
             );
           },
@@ -57,12 +61,14 @@ const TabNavigation = () => {
         options={{
           title: "Sản Phẩm",
           headerShown: false,
+          tabBarActiveTintColor: "#228654",
+          tabBarInactiveTintColor: "black",
           tabBarIcon: ({ focused, size }) => {
             return (
               <Feather
                 name="shopping-bag"
                 size={24}
-                color={focused ? "#257cda" : "black"}
+                color={focused ? "#228654" : "black"}
               />
             );
           },
@@ -75,12 +81,14 @@ const TabNavigation = () => {
         options={{
           title: "Liên Hệ",
           headerShown: false,
+          tabBarActiveTintColor: "#228654",
+          tabBarInactiveTintColor: "black",
           tabBarIcon: ({ focused, size }) => {
             return (
               <Feather
                 name="phone"
                 size={24}
-                color={focused ? "#257cda" : "black"}
+                color={focused ? "#228654" : "black"}
               />
             );
           },
@@ -93,12 +101,14 @@ const TabNavigation = () => {
         options={{
           title: "Tài Khoản",
           headerShown: false,
+          tabBarActiveTintColor: "#228654",
+          tabBarInactiveTintColor: "black",
           tabBarIcon: ({ focused, size }) => {
             return (
               <MaterialCommunityIcons
                 name="account-outline"
                 size={24}
-                color={focused ? "#257cda" : "black"}
+                color={focused ? "#228654" : "black"}
               />
             );
           },

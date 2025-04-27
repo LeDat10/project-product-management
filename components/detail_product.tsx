@@ -155,7 +155,7 @@ const DetailProduct = ({ route }: any) => {
             style={{ width: "100%", height: 300, objectFit: "cover" }}
           />
           <View style={styles.line1}>
-            <Text style={styles.price}>{detail_product.price} VND</Text>
+            <Text style={styles.price}>{detail_product.price} $</Text>
             <Text style={styles.coupon}>
               -{detail_product.discountPercentage}%
             </Text>

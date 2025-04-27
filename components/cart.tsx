@@ -22,7 +22,11 @@ import {
 import { removeData, setConfig } from "../helper/setConfig";
 import { calcPrice } from "../helper/calcPrice";
 import Checkbox from "expo-checkbox";
-import { useFocusEffect } from "@react-navigation/native";
+import {
+  NavigationProp,
+  useFocusEffect,
+  useNavigation,
+} from "@react-navigation/native";
 // import { useCallback } from "react";
 
 interface Product {
@@ -38,9 +42,11 @@ interface Product {
 }
 
 const Cart = () => {
+  const navigation: NavigationProp<RootStackParamList> = useNavigation();
   const [loading, setLoading] = useState(false);
   const [cartproduct, setCartproduct] = useState<Product[]>([]);
   const [selected, setSelected] = useState<{ [key: string]: boolean }>({});
+
   const fetchAPI = async (): Promise<void> => {
     setLoading(true);
     try {
@@ -51,7 +57,7 @@ const Cart = () => {
       }
 
       const productData = response.data.cart["products"];
-      console.log(response.data.cart["products"]);
+      // console.log(response.data.cart["products"]);
 
       const cartId = response.headers["cartid"];
       if (cartId) {
@@ -65,7 +71,7 @@ const Cart = () => {
       productData.forEach((item: Product) => {
         newSelected[item.product_id] = item.selected || false;
       });
-      console.log(newSelected);
+      // console.log(newSelected);
 
       setSelected(newSelected);
       setCartproduct(productData);
@@ -75,18 +81,6 @@ const Cart = () => {
       setLoading(false);
     }
   };
-
-  // useEffect(() => {
-  //   fetchAPI();
-  //   for (const item of cartproduct) {
-  //     setSelected((prev) => {
-  //       const newSelectedValue = !prev[item.product_id];
-  //       const updateSelected = { ...prev, [item.product_id]: newSelectedValue };
-  //       sentSelectToApi(updateSelected);
-  //       return updateSelected;
-  //     });
-  //   }
-  // }, []);
 
   useFocusEffect(
     useCallback(() => {
@@ -132,7 +126,7 @@ const Cart = () => {
     });
   };
 
-  console.log(selected);
+  // console.log(selected);
 
   const calcQuantity = () => {
     return cartproduct.reduce((sum, item) => {
@@ -151,7 +145,7 @@ const Cart = () => {
         );
         return sum + newprice * item.quantity;
       }
-      return sum;
+      return parseFloat(sum.toFixed(2));
     }, 0);
   };
 
@@ -174,6 +168,7 @@ const Cart = () => {
 
   return (
     <View style={styles.container}>
+      {/* <Text>Đơn hàng trên 200000</Text> */}
       <FlatList
         data={cartproduct}
         extraData={cartproduct}
@@ -227,7 +222,7 @@ const Cart = () => {
                               : p
                           );
                           setCartproduct(updatedCart);
-                          console.log(response.data.message);
+                          // console.log(response.data.message);
                         }
                       }
                     }}
@@ -243,7 +238,10 @@ const Cart = () => {
                     style={styles.quantity}
                     onPress={async () => {
                       if (item.quantity >= item.stock) {
-                        Alert.alert("Warning", "Maximum stock reached");
+                        Alert.alert(
+                          "Thông báo",
+                          "Số lượng vượt quá số sản phẩm trong kho!"
+                        );
                         return;
                       }
                       const newQuantity = item.quantity + 1;
@@ -263,7 +261,7 @@ const Cart = () => {
                             : p
                         );
                         setCartproduct(updatedCart);
-                        console.log(response.data.message);
+                        // console.log(response.data.message);
                       }
                     }}
                   >
@@ -273,7 +271,6 @@ const Cart = () => {
 
                 <View>
                   <TouchableOpacity
-                    style={styles.delete}
                     onPress={async () => {
                       try {
                         const config3 = await setConfig();
@@ -286,7 +283,7 @@ const Cart = () => {
                             (p) => p._id !== item._id
                           );
                           setCartproduct(updatedCart2);
-                          console.log(response.data.message);
+                          // console.log(response.data.message);
                         } else {
                           console.log(response.data.message);
                         }
@@ -326,7 +323,10 @@ const Cart = () => {
         </View>
 
         <View style={{ alignItems: "center" }}>
-          <TouchableOpacity style={styles.buttonPayment} onPress={() => <></>}>
+          <TouchableOpacity
+            style={styles.buttonPayment}
+            onPress={() => navigation.navigate("order")}
+          >
             <Text style={styles.textPayment}>THANH TOÁN</Text>
           </TouchableOpacity>
         </View>
@@ -449,12 +449,11 @@ const styles = StyleSheet.create({
     marginRight: 15,
   },
 
-  delete: {},
-
   textDelete: {
     fontSize: 15,
     color: "#257cda",
     fontWeight: "500",
+    paddingRight: 10,
   },
 
   stock: {
@@ -475,7 +474,7 @@ const styles = StyleSheet.create({
 
   payContainer: {
     backgroundColor: "#F2F2F2",
-    height: 228,
+    height: 200,
   },
 
   sumQuantity: {
