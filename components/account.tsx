@@ -1,16 +1,24 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, Button, TouchableOpacity, Alert } from "react-native";
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  TouchableOpacity, 
+  Alert,
+  Image,
+  ActivityIndicator,
+  Modal,
+  TextInput,
+  ScrollView
+} from "react-native";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import Fontisto from "@expo/vector-icons/Fontisto";
 import AntDesign from "@expo/vector-icons/AntDesign";
-import { ScrollView } from "react-native-gesture-handler";
 import {
   NavigationProp,
-  RouteProp,
   useNavigation,
-  useRoute,
 } from "@react-navigation/native";
 import useStore from "../store/myStore";
 
@@ -18,191 +26,675 @@ type RootStackParamList = {
   login: undefined;
   register: undefined;
   menu: undefined;
+  cart: undefined;
+  forgotpw: undefined;
 };
 
 const Account = () => {
   const navigation: NavigationProp<RootStackParamList> = useNavigation();
-  const { user, logout, isAuthenticated } = useStore();
+  const { user, logout, isAuthenticated, fetchCart } = useStore();
   
+  const [modalVisible, setModalVisible] = useState(false);
+  const [editingProfile, setEditingProfile] = useState(false);
+  const [userProfile, setUserProfile] = useState({
+    firstname: user?.firstname || "",
+    lastname: user?.lastname || "",
+    phone: user?.phone || "",
+  });
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchCart();
+    }
+  }, [isAuthenticated, fetchCart]);
+
   const handleLogout = async () => {
     try {
-      logout();
-      Alert.alert("Thành công", "Đăng xuất thành công!");
-      navigation.navigate("menu");
+      Alert.alert(
+        "Xác nhận",
+        "Bạn có chắc chắn muốn đăng xuất?",
+        [
+          { text: "Hủy", style: "cancel" },
+          { 
+            text: "Đăng xuất", 
+            style: "destructive",
+            onPress: () => {
+              logout();
+              Alert.alert("Thành công", "Đăng xuất thành công!");
+              navigation.navigate("menu");
+            }
+          }
+        ]
+      );
     } catch (error) {
       Alert.alert("Lỗi", "Không thể đăng xuất. Vui lòng thử lại sau.");
     }
   };
 
-  return (
-    <ScrollView>
-      <View style={styles.title1}>
-        <View style={styles.icon}>
-          <MaterialCommunityIcons name="account" size={30} color={"black"} />
-        </View>
-        <View style={styles.greeting}>
-          {isAuthenticated && user ? (
-            <>
-              <Text style={styles.userGreeting}>Xin chào, {user.email || "Người dùng"}!</Text>
-              <View style={styles.button}>
-                <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-                  <Text style={{ color: "white", fontSize: 15 }}>Đăng Xuất</Text>
-                </TouchableOpacity>
-              </View>
-            </>
-          ) : (
-            <>
-              <Text style={styles.greeting}>Chào mừng bạn đến với Tempi!!</Text>
-              <View style={styles.button}>
-                <TouchableOpacity
-                  style={styles.button1}
-                  onPress={() => navigation.navigate("login")}
-                >
-                  <Text style={{ color: "#257cda", fontSize: 15 }}>Đăng Nhập</Text>
-                </TouchableOpacity>
+  const handleUpdateProfile = () => {
+    Alert.alert("Thông báo", "Cập nhật thông tin thành công!");
+    setEditingProfile(false);
+  };
 
-                <TouchableOpacity
-                  style={styles.button1}
-                  onPress={() => navigation.navigate("register")}
-                >
-                  <Text style={{ color: "#257cda", fontSize: 15 }}>
-                    Tạo tài khoản
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </>
-          )}
-        </View>
-      </View>
-      <View>
-        <Text style={styles.text3}>Đơn hàng của tôi</Text>
-      </View>
-      <View style={styles.donhang}>
-        <View style={styles.button2}>
-          <TouchableOpacity style={styles.icon1}>
-            <Ionicons name="wallet-outline" size={25} color="black" />
-          </TouchableOpacity>
-          <Text style={styles.text4}>Chờ thanh toán</Text>
-        </View>
-        <View style={styles.button2}>
-          <TouchableOpacity style={styles.icon1}>
-            <Fontisto name="checkbox-passive" size={25} color="black" />
-          </TouchableOpacity>
-          <Text style={styles.text4}>Đang xử lý</Text>
-        </View>
-        <View style={styles.button2}>
-          <TouchableOpacity style={styles.icon1}>
-            <MaterialIcons
-              name="emoji-transportation"
-              size={25}
-              color="black"
+  const renderProfileContent = () => {
+    if (editingProfile) {
+      return (
+        <View style={styles.profileEditContainer}>
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>Họ:</Text>
+            <TextInput
+              style={styles.profileInput}
+              value={userProfile.lastname}
+              onChangeText={(text) => setUserProfile({...userProfile, lastname: text})}
+              placeholder="Nhập họ của bạn"
             />
-          </TouchableOpacity>
-          <Text style={styles.text4}>Đang vận chuyển</Text>
+          </View>
+          
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>Tên:</Text>
+            <TextInput
+              style={styles.profileInput}
+              value={userProfile.firstname}
+              onChangeText={(text) => setUserProfile({...userProfile, firstname: text})}
+              placeholder="Nhập tên của bạn"
+            />
+          </View>
+          
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>Số điện thoại:</Text>
+            <TextInput
+              style={styles.profileInput}
+              value={userProfile.phone}
+              onChangeText={(text) => setUserProfile({...userProfile, phone: text})}
+              placeholder="Nhập số điện thoại"
+              keyboardType="phone-pad"
+            />
+          </View>
+          
+          <View style={styles.profileButtonsContainer}>
+            <TouchableOpacity 
+              style={[styles.profileButton, styles.cancelButton]} 
+              onPress={() => setEditingProfile(false)}
+            >
+              <Text style={styles.cancelButtonText}>Hủy</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={[styles.profileButton, styles.saveButton]} 
+              onPress={handleUpdateProfile}
+            >
+              <Text style={styles.saveButtonText}>Lưu Thay Đổi</Text>
+            </TouchableOpacity>
+          </View>
         </View>
+      );
+    }
 
-        <View style={styles.button2}>
-          <TouchableOpacity style={styles.icon1}>
-            <Fontisto name="checkbox-active" size={25} color="black" />
-          </TouchableOpacity>
-          <Text style={styles.text4}>Đã giao</Text>
+    return (
+      <View style={styles.profileInfoContainer}>
+        <View style={styles.profileInfoItem}>
+          <Text style={styles.profileLabel}>Email:</Text>
+          <Text style={styles.profileValue}>{user?.email}</Text>
         </View>
+        
+        <View style={styles.profileInfoItem}>
+          <Text style={styles.profileLabel}>Tên đăng nhập:</Text>
+          <Text style={styles.profileValue}>{user?.username}</Text>
+        </View>
+        
+        <View style={styles.profileInfoItem}>
+          <Text style={styles.profileLabel}>Họ và tên:</Text>
+          <Text style={styles.profileValue}>
+            {user?.lastname} {user?.firstname}
+          </Text>
+        </View>
+        
+        <View style={styles.profileInfoItem}>
+          <Text style={styles.profileLabel}>Số điện thoại:</Text>
+          <Text style={styles.profileValue}>{user?.phone || "Chưa cập nhật"}</Text>
+        </View>
+        
+        <TouchableOpacity 
+          style={styles.editProfileButton} 
+          onPress={() => setEditingProfile(true)}
+        >
+          <Text style={styles.editProfileButtonText}>Chỉnh Sửa Thông Tin</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
 
-        <View style={styles.button2}>
-          <TouchableOpacity style={styles.icon1}>
-            <AntDesign name="reload1" size={25} color="black" />
-          </TouchableOpacity>
-          <Text style={styles.text4}>Đổi trả</Text>
+  const renderProfileModal = () => {
+    return (
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => {
+          setModalVisible(!modalVisible);
+          setEditingProfile(false);
+        }}
+      >
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Thông Tin Tài Khoản</Text>
+              <TouchableOpacity 
+                onPress={() => {
+                  setModalVisible(!modalVisible);
+                  setEditingProfile(false);
+                }}
+              >
+                <AntDesign name="close" size={22} color="#333" />
+              </TouchableOpacity>
+            </View>
+            
+            {renderProfileContent()}
+          </View>
+        </View>
+      </Modal>
+    );
+  };
+
+  return (
+    <ScrollView style={styles.container}>
+      <View style={styles.headerSection}>
+        <View style={styles.userInfoContainer}>
+          <View style={styles.avatarContainer}>
+            <MaterialCommunityIcons name="account" size={50} color={"white"} />
+          </View>
+          
+          <View style={styles.greeting}>
+            {isAuthenticated && user ? (
+              <>
+                <Text style={styles.userGreeting}>
+                  Xin chào, {user.firstname || user.username || user.email || "Người dùng"}!
+                </Text>
+                <Text style={styles.userEmail}>{user.email}</Text>
+                
+                <View style={styles.accountActions}>
+                  <TouchableOpacity 
+                    style={styles.profileButton} 
+                    onPress={() => setModalVisible(true)}
+                  >
+                    <Text style={styles.profileButtonText}>Xem Hồ Sơ</Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity 
+                    style={styles.logoutButton} 
+                    onPress={handleLogout}
+                  >
+                    <Text style={styles.logoutButtonText}>Đăng Xuất</Text>
+                  </TouchableOpacity>
+                </View>
+              </>
+            ) : (
+              <>
+                <Text style={styles.welcomeText}>Chào mừng bạn đến với Tempi!</Text>
+                <Text style={styles.loginPrompt}>Đăng nhập để truy cập tài khoản và theo dõi đơn hàng của bạn</Text>
+                
+                <View style={styles.authButtons}>
+                  <TouchableOpacity
+                    style={styles.loginButton}
+                    onPress={() => navigation.navigate("login")}
+                  >
+                    <Text style={styles.loginButtonText}>Đăng Nhập</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.registerButton}
+                    onPress={() => navigation.navigate("register")}
+                  >
+                    <Text style={styles.registerButtonText}>Đăng Ký</Text>
+                  </TouchableOpacity>
+                </View>
+              </>
+            )}
+          </View>
         </View>
       </View>
-      <View>
-        <Text>Sản phẩm nổi bật</Text>
+      
+      <View style={styles.sectionContainer}>
+        <Text style={styles.sectionTitle}>Đơn hàng của tôi</Text>
+        
+        <View style={styles.orderStatusSection}>
+          <TouchableOpacity style={styles.orderStatusItem}>
+            <View style={styles.orderIcon}>
+              <Ionicons name="wallet-outline" size={24} color="#4a6ce2" />
+            </View>
+            <Text style={styles.orderStatusText}>Chờ thanh toán</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity style={styles.orderStatusItem}>
+            <View style={styles.orderIcon}>
+              <Fontisto name="checkbox-passive" size={24} color="#f8b646" />
+            </View>
+            <Text style={styles.orderStatusText}>Đang xử lý</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity style={styles.orderStatusItem}>
+            <View style={styles.orderIcon}>
+              <MaterialIcons name="emoji-transportation" size={24} color="#4caf50" />
+            </View>
+            <Text style={styles.orderStatusText}>Đang vận chuyển</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity style={styles.orderStatusItem}>
+            <View style={styles.orderIcon}>
+              <Fontisto name="checkbox-active" size={24} color="#4a6ce2" />
+            </View>
+            <Text style={styles.orderStatusText}>Đã giao</Text>
+          </TouchableOpacity>
+        </View>
       </View>
+      
+      <View style={styles.sectionContainer}>
+        <Text style={styles.sectionTitle}>Dịch vụ</Text>
+        
+        <View style={styles.servicesSection}>
+          <TouchableOpacity 
+            style={styles.serviceItem}
+            onPress={() => navigation.navigate("cart")}
+          >
+            <View style={styles.serviceIcon}>
+              <MaterialCommunityIcons name="cart-outline" size={24} color="#4a6ce2" />
+            </View>
+            <Text style={styles.serviceText}>Giỏ Hàng</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity style={styles.serviceItem}>
+            <View style={styles.serviceIcon}>
+              <MaterialIcons name="favorite-outline" size={24} color="#e74c3c" />
+            </View>
+            <Text style={styles.serviceText}>Yêu Thích</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity style={styles.serviceItem}>
+            <View style={styles.serviceIcon}>
+              <MaterialCommunityIcons name="map-marker-outline" size={24} color="#f8b646" />
+            </View>
+            <Text style={styles.serviceText}>Địa Chỉ</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity style={styles.serviceItem}>
+            <View style={styles.serviceIcon}>
+              <MaterialIcons name="support-agent" size={24} color="#4caf50" />
+            </View>
+            <Text style={styles.serviceText}>Hỗ Trợ</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+      
+      {isAuthenticated ? (
+        <View style={styles.settingsSection}>
+          <TouchableOpacity style={styles.settingItem}>
+            <MaterialIcons name="vpn-key" size={22} color="#555" />
+            <Text style={styles.settingText}>Đổi mật khẩu</Text>
+            <MaterialIcons name="chevron-right" size={22} color="#999" />
+          </TouchableOpacity>
+          
+          <TouchableOpacity style={styles.settingItem}>
+            <MaterialIcons name="notifications-none" size={22} color="#555" />
+            <Text style={styles.settingText}>Thông báo</Text>
+            <MaterialIcons name="chevron-right" size={22} color="#999" />
+          </TouchableOpacity>
+          
+          <TouchableOpacity style={styles.settingItem}>
+            <MaterialIcons name="security" size={22} color="#555" />
+            <Text style={styles.settingText}>Bảo mật tài khoản</Text>
+            <MaterialIcons name="chevron-right" size={22} color="#999" />
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <View style={styles.guestInfoSection}>
+          <MaterialIcons name="info-outline" size={40} color="#4a6ce2" />
+          <Text style={styles.guestInfoTitle}>Đăng nhập để xem thêm</Text>
+          <Text style={styles.guestInfoText}>
+            Tạo tài khoản hoặc đăng nhập để theo dõi đơn hàng, lưu địa chỉ và nhận các ưu đãi đặc biệt.
+          </Text>
+        </View>
+      )}
+      
+      {renderProfileModal()}
     </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
-  title1: {
-    marginVertical: 10,
-    flexDirection: "row",
+  container: {
+    flex: 1,
+    backgroundColor: "#f8f8f8",
   },
-
-  icon: {
-    padding: 20,
-    borderWidth: 1,
-    borderRadius: 50,
-    margin: 15,
-  },
-
-  greeting: {
-    alignItems: "flex-start",
-    justifyContent: "space-around",
-    marginVertical: 20,
-  },
-  
-  userGreeting: {
-    fontSize: 16,
-    fontWeight: "bold",
-    marginBottom: 10,
-  },
-
-  button: {
-    flexDirection: "row",
-    paddingRight: 20,
-  },
-
-  button1: {
-    borderWidth: 1,
-    borderColor: "#257cda",
-    borderRadius: 5,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    marginHorizontal: 5,
-  },
-  
-  logoutButton: {
-    backgroundColor: "red",
-    borderRadius: 5,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    marginHorizontal: 5,
-  },
-
-  text3: {
-    fontSize: 20,
-    fontWeight: "600",
+  headerSection: {
+    backgroundColor: "#4a6ce2",
+    paddingVertical: 25,
     paddingHorizontal: 15,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
   },
-
-  donhang: {
+  userInfoContainer: {
     flexDirection: "row",
-    justifyContent: "space-around",
-    paddingVertical: 15,
-  },
-
-  button2: {
     alignItems: "center",
+  },
+  avatarContainer: {
     width: 70,
     height: 70,
+    borderRadius: 35,
+    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 15,
   },
-
-  text4: {
+  greeting: {
+    flex: 1,
+  },
+  userGreeting: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#fff",
+    marginBottom: 5,
+  },
+  userEmail: {
+    fontSize: 13,
+    color: "rgba(255, 255, 255, 0.8)",
+    marginBottom: 10,
+  },
+  welcomeText: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#fff",
+    marginBottom: 5,
+  },
+  loginPrompt: {
+    fontSize: 13,
+    color: "rgba(255, 255, 255, 0.8)",
+    marginBottom: 10,
     flexWrap: "wrap",
-    textAlign: "center",
-    paddingTop: 5,
   },
-
-  icon1: {
-    backgroundColor: "#d3e1ee",
-    padding: 8,
+  accountActions: {
+    flexDirection: "row",
+    marginTop: 5,
+  },
+  profileButton: {
+    backgroundColor: "#fff",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 5,
+    marginRight: 10,
+  },
+  profileButtonText: {
+    color: "#4a6ce2",
+    fontWeight: "600",
+    fontSize: 13,
+  },
+  logoutButton: {
+    backgroundColor: "#e74c3c",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 5,
+  },
+  logoutButtonText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 13,
+  },
+  authButtons: {
+    flexDirection: "row",
+    marginTop: 10,
+  },
+  loginButton: {
+    backgroundColor: "#fff",
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    borderRadius: 5,
+    marginRight: 10,
+  },
+  loginButtonText: {
+    color: "#4a6ce2",
+    fontWeight: "600",
+    fontSize: 14,
+  },
+  registerButton: {
+    backgroundColor: "transparent",
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: "#fff",
+  },
+  registerButtonText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 14,
+  },
+  sectionContainer: {
+    backgroundColor: "#fff",
+    marginHorizontal: 15,
+    marginTop: 20,
     borderRadius: 10,
-    elevation: 5, 
-    shadowColor: "#000", 
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.5,
-    shadowRadius: 5,
+    padding: 15,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
   },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#333",
+    marginBottom: 15,
+  },
+  orderStatusSection: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  orderStatusItem: {
+    alignItems: "center",
+    width: "22%",
+  },
+  orderIcon: {
+    height: 50,
+    width: 50,
+    borderRadius: 25,
+    backgroundColor: "rgba(74, 108, 226, 0.1)",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  orderStatusText: {
+    fontSize: 12,
+    color: "#666",
+    textAlign: "center",
+  },
+  servicesSection: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  serviceItem: {
+    alignItems: "center",
+    width: "22%",
+  },
+  serviceIcon: {
+    height: 50,
+    width: 50,
+    borderRadius: 25,
+    backgroundColor: "rgba(74, 108, 226, 0.1)",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  serviceText: {
+    fontSize: 12,
+    color: "#666",
+    textAlign: "center",
+  },
+  settingsSection: {
+    backgroundColor: "#fff",
+    marginHorizontal: 15,
+    marginTop: 20,
+    marginBottom: 30,
+    borderRadius: 10,
+    padding: 15,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  settingItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f0f0f0",
+  },
+  settingText: {
+    flex: 1,
+    fontSize: 15,
+    color: "#444",
+    marginLeft: 15,
+  },
+  guestInfoSection: {
+    backgroundColor: "#fff",
+    marginHorizontal: 15,
+    marginTop: 20,
+    marginBottom: 30,
+    borderRadius: 10,
+    padding: 25,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  guestInfoTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#333",
+    marginTop: 15,
+    marginBottom: 10,
+  },
+  guestInfoText: {
+    fontSize: 14,
+    color: "#666",
+    textAlign: "center",
+    lineHeight: 22,
+  },
+  centeredView: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalView: {
+    backgroundColor: "white",
+    borderRadius: 15,
+    width: "90%",
+    padding: 20,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
+    paddingBottom: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f0f0f0",
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#333",
+  },
+  profileInfoContainer: {
+    marginBottom: 20,
+  },
+  profileInfoItem: {
+    flexDirection: "row",
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f0f0f0",
+  },
+  profileLabel: {
+    width: 110,
+    fontSize: 14,
+    color: "#777",
+  },
+  profileValue: {
+    flex: 1,
+    fontSize: 14,
+    color: "#333",
+  },
+  editProfileButton: {
+    backgroundColor: "#4a6ce2",
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: "center",
+    marginTop: 15,
+  },
+  editProfileButtonText: {
+    color: "white",
+    fontWeight: "600",
+    fontSize: 14,
+  },
+  profileEditContainer: {
+    marginBottom: 20,
+  },
+  inputGroup: {
+    marginBottom: 15,
+  },
+  inputLabel: {
+    fontSize: 14,
+    color: "#666",
+    marginBottom: 5,
+  },
+  profileInput: {
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 14,
+    color: "#333",
+    backgroundColor: "#f9f9f9",
+  },
+  profileButtonsContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 15,
+  },
+  cancelButton: {
+    backgroundColor: "#f0f0f0",
+    paddingVertical: 12,
+    borderRadius: 8,
+    width: "48%",
+    alignItems: "center",
+  },
+  cancelButtonText: {
+    color: "#666",
+    fontWeight: "600",
+  },
+  saveButton: {
+    backgroundColor: "#4a6ce2",
+    paddingVertical: 12,
+    borderRadius: 8,
+    width: "48%",
+    alignItems: "center",
+  },
+  saveButtonText: {
+    color: "white",
+    fontWeight: "600",
+  }
 });
 
 export default Account;

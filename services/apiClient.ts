@@ -15,7 +15,6 @@ const apiClient: AxiosInstance = axios.create({
   timeout: 10000,
 });
 
-// Thêm interceptor để debug request và response
 apiClient.interceptors.request.use(
   (config) => {
     console.log("Request Config:", config);
