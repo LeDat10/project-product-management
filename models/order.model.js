@@ -18,6 +18,11 @@ const orderSchema = new mongoose.Schema(
                 priceNew: Number
             }
         ],
+        totalPrice: Number,
+        status: {
+            type: String,
+            default: "pending"
+        }
     },
     {
         timestamps: true

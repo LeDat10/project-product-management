@@ -21,7 +21,6 @@ module.exports.cartId = async (req, res, next) => {
             };
         } else {
             const userId = req.user.id;
-
             const cart = await Cart.findOne({
                 user_id: userId
             });
@@ -30,8 +29,9 @@ module.exports.cartId = async (req, res, next) => {
                 // res.setHeader("cartId", cart.id);
             } else {
                 const cart = new Cart({
-                    user_id: user.id
+                    user_id: userId
                 });
+
                 await cart.save();
 
                 res.setHeader("cartId", cart.id);

@@ -2,19 +2,18 @@ const Order = require("../../models/order.model");
 const Cart = require("../../models/cart.model");
 const Product = require("../../models/product.model");
 
-// const productHelper = require("../../helper/product");
+const productHelper = require("../../helper/product");
 
 // [POST] /api/order/confirm
 module.exports.order = async (req, res) => {
     try {
-        // const cartId = req.cart.id;
         const userInfo = req.body.userInfo;
         const userId = req.user.id;
 
         const cart = await Cart.findOne({
             user_id: userId,
             products: { $elemMatch: { selected: true } }
-        });
+        }).lean();
 
         let productSelects = [];
 
@@ -26,18 +25,23 @@ module.exports.order = async (req, res) => {
                 });
                 product.discountPercentage = productInfo.discountPercentage;
                 product.price = productInfo.price;
+                product.priceNew = productHelper.pricenewProduct(productInfo);
             };
         };
+
+        const totalPrice = productSelects.reduce((sum, product) => sum + product.priceNew * product.quantity, 0);
 
         const objectOrder = {
             cart_id: cart.id,
             user_id: userId,
             userInfo: userInfo,
-            products: productSelects
+            products: productSelects,
+            totalPrice: totalPrice
         };
 
         const order = Order(objectOrder);
         await order.save();
+
         res.json({
             code: 200,
             message: "Đặt hàng thành công!",
@@ -60,7 +64,7 @@ module.exports.orderInfo = async (req, res) => {
         const order = await Order.findOne({
             _id: orderId,
             user_id: req.user.id
-        }).select("cartId userInfo products").lean();
+        }).select("cartId userInfo products totalPrice status").lean();
 
         if (order.products.length > 0) {
             for (const product of order.products) {
@@ -83,4 +87,64 @@ module.exports.orderInfo = async (req, res) => {
             message: "Lấy đơn hàng thất bại!"
         });
     }
-}
+};
+
+// [POST] /api/admin/order/payment
+module.exports.payment = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { orderId, amount } = req.body;
+        const order = await Order.findById(orderId);
+
+        if (!order) {
+            res.json({
+                code: 404,
+                message: "Không tìm thấy đơn hàng!"
+            });
+            return;
+        };
+
+        if (amount < order.totalPrice) {
+            const balance = order.totalPrice - amount;
+
+            res.json({
+                code: 400,
+                message: `Thanh toán thất bại. Bạn còn thiếu ${balance}$!`
+            });
+            return;
+        } else if (amount > order.totalPrice) {
+            const balance = amount - order.totalPrice;
+            res.json({
+                code: 400,
+                message: `Thanh toán thất bại. Bạn đã chuyển dư ${balance}$!`
+            });
+        };
+
+        await Order.updateOne({
+            _id: orderId,
+            status: "paid"
+        });
+
+        await Cart.updateOne(
+            { user_id: userId },
+            {
+                $set: {
+                    "products.$[elem].selected": false
+                }
+            },
+            {
+                arrayFilters: [{ "elem.selected": true }]
+            }
+        );
+
+        res.json({
+            code: 200,
+            message: "Thanh toán thành công!"
+        });
+    } catch (error) {
+        res.json({
+            code: 500,
+            message: "Lỗi khi thanh toán!"
+        });
+    };
+};
