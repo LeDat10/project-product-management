@@ -147,9 +147,9 @@ module.exports.select = async (req, res) => {
             for (const product of productSelected) {
                 const productUpdate = await Cart.updateOne({
                     _id: cartId,
-                    "products.product_id": product
+                    "products.product_id": product.productId
                 }, {
-                    "products.$.selected": true
+                    "products.$.selected": product.selected
                 });
 
                 products.push(productUpdate);
@@ -159,7 +159,6 @@ module.exports.select = async (req, res) => {
         res.json({
             code: 200,
             message: "Chọn sản phẩm thành công!",
-            products: products
         });
     } catch (error) {
         res.json({

@@ -16,8 +16,6 @@ module.exports.order = async (req, res) => {
             products: { $elemMatch: { selected: true } }
         });
 
-        console.log(cart);
-
         let productSelects = [];
 
         if (cart.products.length > 0) {

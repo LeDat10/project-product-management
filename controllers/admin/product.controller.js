@@ -1,6 +1,6 @@
-const { model } = require("mongoose");
 const Product = require("../../models/product.model");
 const ProductCategory = require("../../models/product-category.model");
+const Account = require("../../models/account.model");
 
 // [GET] /api/products
 module.exports.index = async (req, res) => {
@@ -38,7 +38,30 @@ module.exports.index = async (req, res) => {
         }
         // end filter with category
 
-        const products = await Product.find(find).sort(sort);
+        const products = await Product.find(find).sort(sort).lean();
+
+        for (const product of products) {
+            // // Lấy ra thông tin người tạo
+            // const user = await Account.findOne({
+            //     _id: product.createdBy.account_id
+            // }).lean();
+
+            // console.log(user);
+
+            // if (user) {
+            //     product.accountFullName = user.fullName;
+            // };
+
+            // // Lấy ra thông tin người cập nhật gần nhất
+            if (product.updatedBy) {
+                const updatedBy = product.updatedBy[product.updatedBy.length - 1];
+                const userUpdated = await Account.findOne({
+                    _id: updatedBy.account_id
+                }).lean();
+                updatedBy.accountFullName = userUpdated.fullName;
+                product.updatedBy = updatedBy;
+            };
+        };
 
         res.json({
             code: 200,
@@ -57,7 +80,15 @@ module.exports.changeStatus = async (req, res) => {
         const id = req.params.id;
         const status = req.body.status;
 
-        await Product.updateOne({ _id: id }, { status: status });
+        const updatedBy = {
+            account_id: req.account._id,
+            updatedAt: new Date()
+        };
+
+        await Product.updateOne({ _id: id }, {
+            status: status,
+            $push: { updatedBy: updatedBy }
+        });
         res.json({
             code: 200,
             message: "Cập nhật trạng thái sản phẩm thành công!"
@@ -76,7 +107,10 @@ module.exports.delete = async (req, res) => {
         const id = req.params.id;
         await Product.updateOne({ _id: id }, {
             deleted: true,
-            deletedAt: Date.now()
+            deletedBy: {
+                account_id: req.account._id,
+                deletedAt: new Date()
+            }
 
         });
         res.json({
@@ -95,23 +129,33 @@ module.exports.delete = async (req, res) => {
 module.exports.changeMulti = async (req, res) => {
     try {
         const { ids, key } = req.body;
+
+        const updatedBy = {
+            account_id: req.account._id,
+            updatedAt: new Date()
+        };
+
         switch (key) {
             case "active":
                 await Product.updateMany({ _id: { $in: ids } }, {
-                    status: "active"
+                    status: "active",
+                    $push: { updatedBy: updatedBy }
                 });
 
                 res.json({
-                    code: 200
+                    code: 200,
+                    message: "Thay đổi trạng thái sản phẩm thành công!"
                 });
                 break;
             case "inactive":
                 await Product.updateMany({ _id: { $in: ids } }, {
-                    status: "inactive"
+                    status: "inactive",
+                    $push: { updatedBy: updatedBy }
                 });
 
                 res.json({
-                    code: 200
+                    code: 200,
+                    message: "Thay đổi trạng thái hoạt động thành công!"
                 });
                 break;
             case "position":
@@ -121,35 +165,43 @@ module.exports.changeMulti = async (req, res) => {
                         await Product.updateOne({
                             _id: id
                         }, {
-                            position: position
+                            position: position,
+                            $push: { updatedBy: updatedBy }
                         });
                     };
                 };
 
                 res.json({
-                    code: 200
+                    code: 200,
+                    message: "Cập nhật vị trí sản phẩm thành công!"
                 });
                 break;
             case "delete-all":
                 await Product.updateMany({ _id: { $in: ids } }, {
                     deleted: true,
-                    deletedAt: Date.now()
+                    deletedBy: {
+                        account_id: req.account._id,
+                        deletedAt: new Date()
+                    }
                 });
 
                 res.json({
-                    code: 200
+                    code: 200,
+                    message: "Xóa nhiều sản phẩm thành công!"
                 });
                 break;
 
             default:
                 res.json({
-                    code: 400
+                    code: 400,
+                    message: "Cập nhật trạng thái sản phẩm thất bại!"
                 });
                 break;
         }
     } catch (error) {
         res.json({
-            code: 400
+            code: 400,
+            message: "Cập nhật trạng thái sản phẩm thất bại!"
         });
     }
 };
@@ -166,15 +218,22 @@ module.exports.create = async (req, res) => {
             const count = await Product.countDocuments();
             req.body.position = count + 1;
         };
+
+        req.body.createdBy = {
+            account_id: res.account._id
+        };
+
         const product = Product(req.body);
         await product.save();
 
         res.json({
-            code: 200
+            code: 200,
+            message: "Tạo sản phẩm mới thành công!"
         });
     } catch (error) {
         res.json({
-            code: 400
+            code: 400,
+            message: "Tạo sản phẩm mới thất bại!"
         });
     }
 };
@@ -214,7 +273,11 @@ module.exports.edit = async (req, res) => {
     try {
         const id = req.params.id;
 
-        // console.log(req.body);
+        const updatedBy = {
+            account_id: req.account._id,
+            updatedAt: new Date()
+        };
+
 
         req.body.price = parseFloat(req.body.price);
         req.body.discountPercentage = parseFloat(req.body.discountPercentage);
@@ -223,14 +286,19 @@ module.exports.edit = async (req, res) => {
 
         await Product.updateOne({
             _id: id
-        }, req.body);
+        }, {
+            ...req.body,
+            $push: { updatedBy: updatedBy }
+        });
 
         res.json({
-            code: 200
+            code: 200,
+            message: "Chỉnh sửa sản phẩm thành công!"
         });
     } catch (error) {
         res.json({
-            code: 400
+            code: 400,
+            message: "Chỉnh sửa sản phẩm thất bại!"
         });
-    }
+    };
 };

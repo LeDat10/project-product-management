@@ -11,13 +11,6 @@ module.exports.index = async (req, res) => {
             status: "active"
         };
 
-        // Filter
-
-        if (req.query.status) {
-            find.status = req.query.status;
-        }
-        // End Filter
-
         // Sort
         const sort = {};
         if (req.query.sortKey && req.query.sortValue) {

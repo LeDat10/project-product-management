@@ -26,8 +26,7 @@ module.exports.index = async (req, res) => {
         res.json({
             code: 400
         });
-    }
-
+    };
 };
 
 // [POST] /api/accounts/create
@@ -60,14 +59,7 @@ module.exports.create = async (req, res) => {
             code: 400,
             message: "Tạo tài khoản thất bại!"
         });
-    }
-
-
-    try {
-
-    } catch (error) {
-
-    }
+    };
 };
 
 // [PATCH] /api/change-status/:id

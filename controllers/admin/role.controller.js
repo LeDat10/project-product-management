@@ -115,5 +115,5 @@ module.exports.permissions = async (req, res) => {
         res.json({
             code: 400
         });
-    }
+    };
 };
