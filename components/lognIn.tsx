@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { LoginData } from "../services/accountService";
 import useStore from "../store/myStore";
+import { login } from "../src/services/accountServices";
 
 type LoginScreenNavProp = NavigationProp<RootStackParamList, "login">;
 
@@ -24,11 +25,11 @@ const LognIn = ({ navigation }: Props) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const login = useStore(state => state.login);
-  const loading = useStore(state => state.loading);
-  const error = useStore(state => state.error);
-  const isAuthenticated = useStore(state => state.isAuthenticated);
-  const clearErrors = useStore(state => state.clearErrors);
+  const login = useStore((state) => state.login);
+  const loading = useStore((state) => state.loading);
+  const error = useStore((state) => state.error);
+  const isAuthenticated = useStore((state) => state.isAuthenticated);
+  const clearErrors = useStore((state) => state.clearErrors);
 
   React.useEffect(() => {
     clearErrors();
@@ -60,6 +61,9 @@ const LognIn = ({ navigation }: Props) => {
       email: email,
       password: password,
     };
+
+    // const result = await login(loginData);
+    // console.log(result);
 
     await login(loginData);
   };
@@ -164,7 +168,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     marginBottom: 15,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: "#ddd",
     color: "#333",
   },
   quenpass: {
@@ -172,7 +176,7 @@ const styles = StyleSheet.create({
     color: "#007bff",
     marginBottom: 20,
     textAlign: "right",
-    width: '100%',
+    width: "100%",
     paddingRight: 5,
   },
   button: {
@@ -184,7 +188,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 20,
     elevation: 2,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.2,
     shadowRadius: 1,

@@ -7,11 +7,14 @@ import {
   Image,
   TextInput,
   TouchableOpacity,
+  Alert,
 } from "react-native";
 import { setConfig } from "../helper/setConfig";
 import { getCart } from "../services/cartSevices";
 import { FlatList } from "react-native-gesture-handler";
 import { calcPrice } from "../helper/calcPrice";
+import { getConfig } from "../helper/getToken";
+import { postOrder } from "../services/orderServices";
 
 interface Product {
   _id: string; // cartId
@@ -23,6 +26,13 @@ interface Product {
   product_id: string;
   stock: number;
   selected: boolean;
+}
+
+interface Info {
+  fullName: string;
+  number: string;
+  address: string;
+  email: string;
 }
 
 const Order = () => {
@@ -54,6 +64,39 @@ const Order = () => {
     fetchProduct();
   }, []);
 
+  const handleButton = async () => {
+    setLoading(true);
+    try {
+      const userInfo: Info = {
+        fullName: fullName,
+        number: number,
+        address: address,
+        email: email,
+      };
+      const config = await getConfig();
+      const response = await postOrder(config, userInfo);
+      if (response && response.data.code === 200) {
+        Alert.alert(
+          "Thành công",
+          response.data.message,
+          [
+            {
+              text: "Tiếp tục mua sắm",
+              style: "cancel",
+            },
+          ],
+          { cancelable: true }
+        );
+      } else {
+        console.log(response.data.message);
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const calcQuantity = () => {
     return cartProduct.reduce((sum, item) => {
       if (item.selected) {
@@ -77,29 +120,12 @@ const Order = () => {
 
   useEffect(() => {
     const price = totalPrice();
-    if (price > 200000) {
-      setShipping(15000);
+    if (price > 200) {
+      setShipping(1.5);
     } else {
       setShipping(0);
     }
   }, [totalPrice]);
-
-  if (loading) {
-    return (
-      <View
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          justifyContent: "center",
-        }}
-      >
-        <ActivityIndicator size={"large"} color="#007bff" />
-      </View>
-    );
-  }
 
   const renderProduct = ({ item }: { item: Product }) => {
     return (
@@ -125,6 +151,23 @@ const Order = () => {
       </View>
     );
   };
+
+  if (loading) {
+    return (
+      <View
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          justifyContent: "center",
+        }}
+      >
+        <ActivityIndicator size={"large"} color="#007bff" />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -185,12 +228,12 @@ const Order = () => {
 
             <View style={styles.infoTextContainer}>
               <Text style={styles.infoText}>Phí vận chuyển: </Text>
-              <Text style={styles.infoText}>{shipping}</Text>
+              <Text style={styles.infoText}>{shipping}$</Text>
             </View>
 
             <View style={styles.infoTextContainer}>
               <Text style={styles.infoText}>Tổng tiền:</Text>
-              <Text style={styles.infoText}>{totalPrice() + shipping}</Text>
+              <Text style={styles.infoText}>{totalPrice() + shipping}$</Text>
             </View>
             <View>
               <Text style={styles.text}>Phương thức thanh toán </Text>
@@ -199,7 +242,7 @@ const Order = () => {
         }
       />
       <View style={styles.orderContainer}>
-        <TouchableOpacity style={styles.orderButton} onPress={() => <></>}>
+        <TouchableOpacity style={styles.orderButton} onPress={handleButton}>
           <Text style={styles.orderText}>ĐẶT HÀNG</Text>
         </TouchableOpacity>
       </View>

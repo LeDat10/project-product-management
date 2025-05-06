@@ -8,9 +8,9 @@ import { NavigationContainer } from "@react-navigation/native";
 import "react-native-gesture-handler";
 import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import Vegetable from "./components/menu/vegatable";
 import Bakery from "./components/menu/bakery";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
 import Snack from "./components/menu/snack";
 import Milk from "./components/menu/milk";
 import Meat from "./components/menu/meat";
@@ -63,12 +63,12 @@ const App = () => {
             <Stack.Screen name="Cleaning" component={Cleaning} />
             <Stack.Screen name="Care" component={Care} />
             <Stack.Screen name="Snack" component={Snack} />
+            {/* <Stack.Screen name="account" component={Account} /> */}
             <Stack.Screen
               name="cart"
               component={Cart}
               options={{ title: "Giỏ Hàng" }}
             />
-            <Stack.Screen name="account" component={Account} />
             <Stack.Screen
               name="login"
               component={LognIn}
@@ -80,15 +80,15 @@ const App = () => {
               options={{ title: "Tạo Tài Khoản" }}
             />
             <Stack.Screen
-              name="detail-product"
-              component={DetailProduct}
-              options={{ title: "Chi tiết sản phẩm" }}
-            />
-            <Stack.Screen
               name="forgotpw"
               component={ForgotPassword}
               options={{ title: "Quên mật khẩu" }}
             />
+            {/* <Stack.Screen
+              name="detail-product"
+              component={DetailProduct}
+              options={{ title: "Chi tiết sản phẩm" }}
+            /> */}
             <Stack.Screen
               name="search"
               component={Search}

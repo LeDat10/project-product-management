@@ -1,25 +1,22 @@
 import React, { useEffect, useState } from "react";
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  TouchableOpacity, 
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
   Alert,
   Image,
   ActivityIndicator,
   Modal,
   TextInput,
-  ScrollView
+  ScrollView,
 } from "react-native";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import Fontisto from "@expo/vector-icons/Fontisto";
 import AntDesign from "@expo/vector-icons/AntDesign";
-import {
-  NavigationProp,
-  useNavigation,
-} from "@react-navigation/native";
+import { NavigationProp, useNavigation } from "@react-navigation/native";
 import useStore from "../store/myStore";
 
 type RootStackParamList = {
@@ -33,7 +30,7 @@ type RootStackParamList = {
 const Account = () => {
   const navigation: NavigationProp<RootStackParamList> = useNavigation();
   const { user, logout, isAuthenticated, fetchCart } = useStore();
-  
+
   const [modalVisible, setModalVisible] = useState(false);
   const [editingProfile, setEditingProfile] = useState(false);
   const [userProfile, setUserProfile] = useState({
@@ -50,22 +47,18 @@ const Account = () => {
 
   const handleLogout = async () => {
     try {
-      Alert.alert(
-        "Xác nhận",
-        "Bạn có chắc chắn muốn đăng xuất?",
-        [
-          { text: "Hủy", style: "cancel" },
-          { 
-            text: "Đăng xuất", 
-            style: "destructive",
-            onPress: () => {
-              logout();
-              Alert.alert("Thành công", "Đăng xuất thành công!");
-              navigation.navigate("menu");
-            }
-          }
-        ]
-      );
+      Alert.alert("Xác nhận", "Bạn có chắc chắn muốn đăng xuất?", [
+        { text: "Hủy", style: "cancel" },
+        {
+          text: "Đăng xuất",
+          style: "destructive",
+          onPress: () => {
+            logout();
+            Alert.alert("Thành công", "Đăng xuất thành công!");
+            navigation.navigate("menu");
+          },
+        },
+      ]);
     } catch (error) {
       Alert.alert("Lỗi", "Không thể đăng xuất. Vui lòng thử lại sau.");
     }
@@ -85,42 +78,48 @@ const Account = () => {
             <TextInput
               style={styles.profileInput}
               value={userProfile.lastname}
-              onChangeText={(text) => setUserProfile({...userProfile, lastname: text})}
+              onChangeText={(text) =>
+                setUserProfile({ ...userProfile, lastname: text })
+              }
               placeholder="Nhập họ của bạn"
             />
           </View>
-          
+
           <View style={styles.inputGroup}>
             <Text style={styles.inputLabel}>Tên:</Text>
             <TextInput
               style={styles.profileInput}
               value={userProfile.firstname}
-              onChangeText={(text) => setUserProfile({...userProfile, firstname: text})}
+              onChangeText={(text) =>
+                setUserProfile({ ...userProfile, firstname: text })
+              }
               placeholder="Nhập tên của bạn"
             />
           </View>
-          
+
           <View style={styles.inputGroup}>
             <Text style={styles.inputLabel}>Số điện thoại:</Text>
             <TextInput
               style={styles.profileInput}
               value={userProfile.phone}
-              onChangeText={(text) => setUserProfile({...userProfile, phone: text})}
+              onChangeText={(text) =>
+                setUserProfile({ ...userProfile, phone: text })
+              }
               placeholder="Nhập số điện thoại"
               keyboardType="phone-pad"
             />
           </View>
-          
+
           <View style={styles.profileButtonsContainer}>
-            <TouchableOpacity 
-              style={[styles.profileButton, styles.cancelButton]} 
+            <TouchableOpacity
+              style={[styles.profileButton, styles.cancelButton]}
               onPress={() => setEditingProfile(false)}
             >
               <Text style={styles.cancelButtonText}>Hủy</Text>
             </TouchableOpacity>
-            
-            <TouchableOpacity 
-              style={[styles.profileButton, styles.saveButton]} 
+
+            <TouchableOpacity
+              style={[styles.profileButton, styles.saveButton]}
               onPress={handleUpdateProfile}
             >
               <Text style={styles.saveButtonText}>Lưu Thay Đổi</Text>
@@ -136,26 +135,28 @@ const Account = () => {
           <Text style={styles.profileLabel}>Email:</Text>
           <Text style={styles.profileValue}>{user?.email}</Text>
         </View>
-        
+
         <View style={styles.profileInfoItem}>
           <Text style={styles.profileLabel}>Tên đăng nhập:</Text>
           <Text style={styles.profileValue}>{user?.username}</Text>
         </View>
-        
+
         <View style={styles.profileInfoItem}>
           <Text style={styles.profileLabel}>Họ và tên:</Text>
           <Text style={styles.profileValue}>
             {user?.lastname} {user?.firstname}
           </Text>
         </View>
-        
+
         <View style={styles.profileInfoItem}>
           <Text style={styles.profileLabel}>Số điện thoại:</Text>
-          <Text style={styles.profileValue}>{user?.phone || "Chưa cập nhật"}</Text>
+          <Text style={styles.profileValue}>
+            {user?.phone || "Chưa cập nhật"}
+          </Text>
         </View>
-        
-        <TouchableOpacity 
-          style={styles.editProfileButton} 
+
+        <TouchableOpacity
+          style={styles.editProfileButton}
           onPress={() => setEditingProfile(true)}
         >
           <Text style={styles.editProfileButtonText}>Chỉnh Sửa Thông Tin</Text>
@@ -179,7 +180,7 @@ const Account = () => {
           <View style={styles.modalView}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Thông Tin Tài Khoản</Text>
-              <TouchableOpacity 
+              <TouchableOpacity
                 onPress={() => {
                   setModalVisible(!modalVisible);
                   setEditingProfile(false);
@@ -188,7 +189,7 @@ const Account = () => {
                 <AntDesign name="close" size={22} color="#333" />
               </TouchableOpacity>
             </View>
-            
+
             {renderProfileContent()}
           </View>
         </View>
@@ -203,25 +204,30 @@ const Account = () => {
           <View style={styles.avatarContainer}>
             <MaterialCommunityIcons name="account" size={50} color={"white"} />
           </View>
-          
+
           <View style={styles.greeting}>
             {isAuthenticated && user ? (
               <>
                 <Text style={styles.userGreeting}>
-                  Xin chào, {user.firstname || user.username || user.email || "Người dùng"}!
+                  Xin chào,{" "}
+                  {user.firstname ||
+                    user.username ||
+                    user.email ||
+                    "Người dùng"}
+                  !
                 </Text>
                 <Text style={styles.userEmail}>{user.email}</Text>
-                
+
                 <View style={styles.accountActions}>
-                  <TouchableOpacity 
-                    style={styles.profileButton} 
+                  <TouchableOpacity
+                    style={styles.profileButton}
                     onPress={() => setModalVisible(true)}
                   >
                     <Text style={styles.profileButtonText}>Xem Hồ Sơ</Text>
                   </TouchableOpacity>
-                  
-                  <TouchableOpacity 
-                    style={styles.logoutButton} 
+
+                  <TouchableOpacity
+                    style={styles.logoutButton}
                     onPress={handleLogout}
                   >
                     <Text style={styles.logoutButtonText}>Đăng Xuất</Text>
@@ -230,9 +236,13 @@ const Account = () => {
               </>
             ) : (
               <>
-                <Text style={styles.welcomeText}>Chào mừng bạn đến với Tempi!</Text>
-                <Text style={styles.loginPrompt}>Đăng nhập để truy cập tài khoản và theo dõi đơn hàng của bạn</Text>
-                
+                <Text style={styles.welcomeText}>
+                  Chào mừng bạn đến với Tempi!
+                </Text>
+                <Text style={styles.loginPrompt}>
+                  Đăng nhập để truy cập tài khoản và theo dõi đơn hàng của bạn
+                </Text>
+
                 <View style={styles.authButtons}>
                   <TouchableOpacity
                     style={styles.loginButton}
@@ -253,10 +263,10 @@ const Account = () => {
           </View>
         </View>
       </View>
-      
+
       <View style={styles.sectionContainer}>
         <Text style={styles.sectionTitle}>Đơn hàng của tôi</Text>
-        
+
         <View style={styles.orderStatusSection}>
           <TouchableOpacity style={styles.orderStatusItem}>
             <View style={styles.orderIcon}>
@@ -264,21 +274,25 @@ const Account = () => {
             </View>
             <Text style={styles.orderStatusText}>Chờ thanh toán</Text>
           </TouchableOpacity>
-          
+
           <TouchableOpacity style={styles.orderStatusItem}>
             <View style={styles.orderIcon}>
               <Fontisto name="checkbox-passive" size={24} color="#f8b646" />
             </View>
             <Text style={styles.orderStatusText}>Đang xử lý</Text>
           </TouchableOpacity>
-          
+
           <TouchableOpacity style={styles.orderStatusItem}>
             <View style={styles.orderIcon}>
-              <MaterialIcons name="emoji-transportation" size={24} color="#4caf50" />
+              <MaterialIcons
+                name="emoji-transportation"
+                size={24}
+                color="#4caf50"
+              />
             </View>
             <Text style={styles.orderStatusText}>Đang vận chuyển</Text>
           </TouchableOpacity>
-          
+
           <TouchableOpacity style={styles.orderStatusItem}>
             <View style={styles.orderIcon}>
               <Fontisto name="checkbox-active" size={24} color="#4a6ce2" />
@@ -287,35 +301,47 @@ const Account = () => {
           </TouchableOpacity>
         </View>
       </View>
-      
+
       <View style={styles.sectionContainer}>
         <Text style={styles.sectionTitle}>Dịch vụ</Text>
-        
+
         <View style={styles.servicesSection}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.serviceItem}
             onPress={() => navigation.navigate("cart")}
           >
             <View style={styles.serviceIcon}>
-              <MaterialCommunityIcons name="cart-outline" size={24} color="#4a6ce2" />
+              <MaterialCommunityIcons
+                name="cart-outline"
+                size={24}
+                color="#4a6ce2"
+              />
             </View>
             <Text style={styles.serviceText}>Giỏ Hàng</Text>
           </TouchableOpacity>
-          
+
           <TouchableOpacity style={styles.serviceItem}>
             <View style={styles.serviceIcon}>
-              <MaterialIcons name="favorite-outline" size={24} color="#e74c3c" />
+              <MaterialIcons
+                name="favorite-outline"
+                size={24}
+                color="#e74c3c"
+              />
             </View>
             <Text style={styles.serviceText}>Yêu Thích</Text>
           </TouchableOpacity>
-          
+
           <TouchableOpacity style={styles.serviceItem}>
             <View style={styles.serviceIcon}>
-              <MaterialCommunityIcons name="map-marker-outline" size={24} color="#f8b646" />
+              <MaterialCommunityIcons
+                name="map-marker-outline"
+                size={24}
+                color="#f8b646"
+              />
             </View>
             <Text style={styles.serviceText}>Địa Chỉ</Text>
           </TouchableOpacity>
-          
+
           <TouchableOpacity style={styles.serviceItem}>
             <View style={styles.serviceIcon}>
               <MaterialIcons name="support-agent" size={24} color="#4caf50" />
@@ -324,7 +350,7 @@ const Account = () => {
           </TouchableOpacity>
         </View>
       </View>
-      
+
       {isAuthenticated ? (
         <View style={styles.settingsSection}>
           <TouchableOpacity style={styles.settingItem}>
@@ -332,13 +358,13 @@ const Account = () => {
             <Text style={styles.settingText}>Đổi mật khẩu</Text>
             <MaterialIcons name="chevron-right" size={22} color="#999" />
           </TouchableOpacity>
-          
+
           <TouchableOpacity style={styles.settingItem}>
             <MaterialIcons name="notifications-none" size={22} color="#555" />
             <Text style={styles.settingText}>Thông báo</Text>
             <MaterialIcons name="chevron-right" size={22} color="#999" />
           </TouchableOpacity>
-          
+
           <TouchableOpacity style={styles.settingItem}>
             <MaterialIcons name="security" size={22} color="#555" />
             <Text style={styles.settingText}>Bảo mật tài khoản</Text>
@@ -350,11 +376,12 @@ const Account = () => {
           <MaterialIcons name="info-outline" size={40} color="#4a6ce2" />
           <Text style={styles.guestInfoTitle}>Đăng nhập để xem thêm</Text>
           <Text style={styles.guestInfoText}>
-            Tạo tài khoản hoặc đăng nhập để theo dõi đơn hàng, lưu địa chỉ và nhận các ưu đãi đặc biệt.
+            Tạo tài khoản hoặc đăng nhập để theo dõi đơn hàng, lưu địa chỉ và
+            nhận các ưu đãi đặc biệt.
           </Text>
         </View>
       )}
-      
+
       {renderProfileModal()}
     </ScrollView>
   );
@@ -366,7 +393,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#f8f8f8",
   },
   headerSection: {
-    backgroundColor: "#4a6ce2",
+    // backgroundColor: "#4a6ce2",
+    backgroundColor: "#228654",
     paddingVertical: 25,
     paddingHorizontal: 15,
     borderBottomLeftRadius: 20,
@@ -450,7 +478,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   loginButtonText: {
-    color: "#4a6ce2",
+    color: "#228654",
     fontWeight: "600",
     fontSize: 14,
   },
@@ -694,7 +722,7 @@ const styles = StyleSheet.create({
   saveButtonText: {
     color: "white",
     fontWeight: "600",
-  }
+  },
 });
 
 export default Account;

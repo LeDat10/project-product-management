@@ -12,7 +12,6 @@ const apiClient: AxiosInstance = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
-  timeout: 10000,
 });
 
 apiClient.interceptors.request.use(
@@ -44,7 +43,7 @@ const post = async <T, U>(
 ): Promise<AxiosResponse<T>> => {
   try {
     const response = await apiClient.post<T>(path, data, config);
-    return response; 
+    return response;
   } catch (error: any) {
     throw handleApiError(error);
   }

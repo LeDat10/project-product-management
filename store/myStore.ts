@@ -1,8 +1,18 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import accountService, { LoginData, RegisterData, UserResponse } from "../services/accountService";
-import { deleteCart, getCart, PostCart, selectedCart, updateCart } from "../services/cartSevices";
+import accountService, {
+  LoginData,
+  RegisterData,
+  UserResponse,
+} from "../services/accountService";
+import {
+  deleteCart,
+  getCart,
+  PostCart,
+  selectedCart,
+  updateCart,
+} from "../services/cartSevices";
 import { getProduct, detaiProduct } from "../services/productServices";
 import { setConfig } from "../helper/setConfig";
 import { ApiError } from "../services/apiClient";
@@ -22,7 +32,7 @@ interface Product {
 }
 
 interface CartProduct {
-  _id: string; 
+  _id: string;
   titleProduct: string;
   price: number;
   thumbnail: string;
@@ -103,27 +113,27 @@ const useStore = create<StoreState>()(
         set({ loading: true, error: null });
         try {
           const response = await accountService.login(data);
-          if ('user' in response && response.token) {
-            set({ 
-              user: { 
-                ...response.user, 
-                token: response.token 
-              }, 
-              isAuthenticated: true, 
+          if ("token" in response) {
+            set({
+              user: {
+                token: response.token,
+              },
+              isAuthenticated: true,
               loading: false,
-              cartId: response.cartId || null
+              cartId: response.cartId || null,
             });
-            await AsyncStorage.setItem('token', response.token);
+            await AsyncStorage.setItem("token", response.token ?? "");
           } else {
-            set({ 
-              error: 'error' in response ? String(response.error) : 'Lỗi đăng nhập', 
-              loading: false 
+            set({
+              error:
+                "error" in response ? String(response.error) : "Lỗi đăng nhập",
+              loading: false,
             });
           }
         } catch (error) {
-          set({ 
-            error: error instanceof Error ? error.message : 'Lỗi đăng nhập', 
-            loading: false 
+          set({
+            error: error instanceof Error ? error.message : "Lỗi đăng nhập",
+            loading: false,
           });
         }
       },
@@ -135,21 +145,21 @@ const useStore = create<StoreState>()(
           set({ loading: false });
           return response;
         } catch (error) {
-          set({ 
-            error: error instanceof Error ? error.message : 'Lỗi đăng ký', 
-            loading: false 
+          set({
+            error: error instanceof Error ? error.message : "Lỗi đăng ký",
+            loading: false,
           });
         }
       },
 
       logout: () => {
-        AsyncStorage.removeItem('token');
-        AsyncStorage.removeItem('cartId');
-        set({ 
-          user: null, 
-          isAuthenticated: false, 
+        AsyncStorage.removeItem("token");
+        AsyncStorage.removeItem("cartId");
+        set({
+          user: null,
+          isAuthenticated: false,
           cart: [],
-          cartId: null
+          cartId: null,
         });
       },
 
@@ -158,17 +168,20 @@ const useStore = create<StoreState>()(
         try {
           const config = await setConfig();
           const response = await getProduct(config);
-          
+
           if (response.data && response.data.products) {
-            set({ 
+            set({
               products: response.data.products,
-              productsLoading: false
+              productsLoading: false,
             });
           }
         } catch (error) {
-          set({ 
-            productsError: error instanceof Error ? error.message : 'Không thể lấy danh sách sản phẩm', 
-            productsLoading: false 
+          set({
+            productsError:
+              error instanceof Error
+                ? error.message
+                : "Không thể lấy danh sách sản phẩm",
+            productsLoading: false,
           });
         }
       },
@@ -178,17 +191,20 @@ const useStore = create<StoreState>()(
         try {
           const config = await setConfig();
           const response = await detaiProduct(slug, config);
-          
+
           if (response.data && response.data.product) {
-            set({ 
+            set({
               currentProduct: response.data.product,
-              productsLoading: false
+              productsLoading: false,
             });
           }
         } catch (error) {
-          set({ 
-            productsError: error instanceof Error ? error.message : 'Không thể lấy thông tin sản phẩm', 
-            productsLoading: false 
+          set({
+            productsError:
+              error instanceof Error
+                ? error.message
+                : "Không thể lấy thông tin sản phẩm",
+            productsLoading: false,
           });
         }
       },
@@ -199,29 +215,30 @@ const useStore = create<StoreState>()(
         try {
           const config = await setConfig();
           const response = await getCart(config);
-          
+
           if (response.data && response.data.cart) {
             const cartId = response.data.cart._id;
-            await AsyncStorage.setItem('cartId', cartId);
-            
+            await AsyncStorage.setItem("cartId", cartId);
+
             const cartProducts = response.data.cart.products || [];
             const selectedItems: { [key: string]: boolean } = {};
-            
+
             cartProducts.forEach((item: CartProduct) => {
               selectedItems[item.product_id] = item.selected;
             });
-            
-            set({ 
+
+            set({
               cart: cartProducts,
               cartId,
               selectedItems,
-              cartLoading: false
+              cartLoading: false,
             });
           }
         } catch (error) {
-          set({ 
-            cartError: error instanceof Error ? error.message : 'Không thể lấy giỏ hàng', 
-            cartLoading: false 
+          set({
+            cartError:
+              error instanceof Error ? error.message : "Không thể lấy giỏ hàng",
+            cartLoading: false,
           });
         }
       },
@@ -233,9 +250,12 @@ const useStore = create<StoreState>()(
           await PostCart(productId, config, { quantity });
           await get().fetchCart();
         } catch (error) {
-          set({ 
-            cartError: error instanceof Error ? error.message : 'Khong thể thêm sản phẩm vào giỏ hàng', 
-            cartLoading: false 
+          set({
+            cartError:
+              error instanceof Error
+                ? error.message
+                : "Khong thể thêm sản phẩm vào giỏ hàng",
+            cartLoading: false,
           });
         }
       },
@@ -245,21 +265,22 @@ const useStore = create<StoreState>()(
         try {
           const config = await setConfig();
           await updateCart(productId, config, { quantity });
-          
-          const updatedCart = get().cart.map(item => 
-            item.product_id === productId 
-              ? { ...item, quantity } 
-              : item
+
+          const updatedCart = get().cart.map((item) =>
+            item.product_id === productId ? { ...item, quantity } : item
           );
-          
-          set({ 
+
+          set({
             cart: updatedCart,
-            cartLoading: false 
+            cartLoading: false,
           });
         } catch (error) {
-          set({ 
-            cartError: error instanceof Error ? error.message : 'Không thể cập nhật sản phẩm trong giỏ hàng', 
-            cartLoading: false 
+          set({
+            cartError:
+              error instanceof Error
+                ? error.message
+                : "Không thể cập nhật sản phẩm trong giỏ hàng",
+            cartLoading: false,
           });
         }
       },
@@ -269,17 +290,22 @@ const useStore = create<StoreState>()(
         try {
           const config = await setConfig();
           await deleteCart(productId, config);
-          
-          const updatedCart = get().cart.filter(item => item.product_id !== productId);
-          
-          set({ 
+
+          const updatedCart = get().cart.filter(
+            (item) => item.product_id !== productId
+          );
+
+          set({
             cart: updatedCart,
-            cartLoading: false 
+            cartLoading: false,
           });
         } catch (error) {
-          set({ 
-            cartError: error instanceof Error ? error.message : 'Không thể xóa sản phẩm khỏi giỏ hàng', 
-            cartLoading: false 
+          set({
+            cartError:
+              error instanceof Error
+                ? error.message
+                : "Không thể xóa sản phẩm khỏi giỏ hàng",
+            cartLoading: false,
           });
         }
       },
@@ -287,13 +313,19 @@ const useStore = create<StoreState>()(
       toggleSelectCartItem: async (productId: string) => {
         const currentSelectedItems = get().selectedItems;
         const newSelectedValue = !currentSelectedItems[productId];
-        const updatedSelected = { ...currentSelectedItems, [productId]: newSelectedValue };
-        
+        const updatedSelected = {
+          ...currentSelectedItems,
+          [productId]: newSelectedValue,
+        };
+
         try {
           await get().updateSelectedItems(updatedSelected);
         } catch (error) {
-          set({ 
-            cartError: error instanceof Error ? error.message : 'Không thể cập nhật trạng thái chọn sản phẩm', 
+          set({
+            cartError:
+              error instanceof Error
+                ? error.message
+                : "Không thể cập nhật trạng thái chọn sản phẩm",
           });
         }
       },
@@ -304,36 +336,39 @@ const useStore = create<StoreState>()(
           const productSelected = Object.entries(selected)
             .filter(([_, isSelected]) => isSelected)
             .map(([id]) => id);
-          
+
           const config = await setConfig();
           await selectedCart(config, productSelected);
-          const updatedCart = get().cart.map(item => ({
+          const updatedCart = get().cart.map((item) => ({
             ...item,
-            selected: !!selected[item.product_id]
+            selected: !!selected[item.product_id],
           }));
-          
-          set({ 
+
+          set({
             cart: updatedCart,
-            cartLoading: false 
+            cartLoading: false,
           });
         } catch (error) {
-          set({ 
-            cartError: error instanceof Error ? error.message : 'Không thể cập nhật trạng thái chọn sản phẩm', 
-            cartLoading: false 
+          set({
+            cartError:
+              error instanceof Error
+                ? error.message
+                : "Không thể cập nhật trạng thái chọn sản phẩm",
+            cartLoading: false,
           });
         }
       },
 
       clearErrors: () => {
-        set({ 
+        set({
           error: null,
           productsError: null,
-          cartError: null 
+          cartError: null,
         });
       },
     }),
     {
-      name: 'product-management-store',
+      name: "product-management-store",
       storage: createJSONStorage(() => AsyncStorage),
       partialize: (state) => ({
         user: state.user,

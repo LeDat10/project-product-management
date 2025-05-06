@@ -34,14 +34,14 @@ export const updateCart = async (
   return response;
 };
 
-// interface selectedData {
-//   product_id: string;
-//   selected: boolean;
-// }
+interface selectedData {
+  productId: string;
+  selected: boolean;
+}
 
 export const selectedCart = async (
   config: AxiosRequestConfig = {},
-  data: string[]
+  data: selectedData[]
 ): Promise<AxiosResponse> => {
   const response = await patch("/carts/selected", config, {
     productSelected: data,

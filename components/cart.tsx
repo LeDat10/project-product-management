@@ -27,6 +27,7 @@ import {
   useFocusEffect,
   useNavigation,
 } from "@react-navigation/native";
+import { getConfig } from "../helper/getToken";
 // import { useCallback } from "react";
 
 interface Product {
@@ -84,34 +85,21 @@ const Cart = () => {
 
   useFocusEffect(
     useCallback(() => {
-      // console.log("Cart Screen focus, calling fetchAPT");
       fetchAPI();
     }, [])
   );
 
-  const sentSelectToApi = async (selectedState: { [key: string]: boolean }) => {
+  interface selectedData {
+    productId: string;
+    selected: boolean;
+  }
+
+  const sentSelectToApi = async (selectedState: selectedData[]) => {
     try {
-      const productSelected = Object.entries(selectedState)
-        .filter(([_, selected]) => selected)
-        .map(([id]) => id);
-      console.log("Sending to API:", { productSelected });
+      const productSelected = Array.isArray(selectedState) ? selectedState : [];
 
       const config2 = await setConfig();
       const response = await selectedCart(config2, productSelected);
-      if (response.data.code === 200) {
-        console.log(response.data.message);
-
-        //kiểm tra xem backend có update không
-        const test = response.data.updates.filter(
-          (u: { modified: any }) => u.modified
-        ).length;
-        if (test === 0) {
-          console.warn("Sản phẩm không được update ở backend");
-        }
-      } else {
-        [];
-        console.log(response.data.message);
-      }
     } catch (error) {
       console.log(error);
     }
@@ -121,12 +109,16 @@ const Cart = () => {
     setSelected((prev) => {
       const newSelectedValue = !prev[product_id];
       const updateSelected = { ...prev, [product_id]: newSelectedValue };
-      sentSelectToApi(updateSelected);
+      const productSelectedArray = Object.entries(updateSelected).map(
+        ([productId, selected]) => ({
+          productId,
+          selected,
+        })
+      );
+      sentSelectToApi(productSelectedArray);
       return updateSelected;
     });
   };
-
-  // console.log(selected);
 
   const calcQuantity = () => {
     return cartproduct.reduce((sum, item) => {
@@ -325,7 +317,28 @@ const Cart = () => {
         <View style={{ alignItems: "center" }}>
           <TouchableOpacity
             style={styles.buttonPayment}
-            onPress={() => navigation.navigate("order")}
+            onPress={async () => {
+              const token = await AsyncStorage.getItem("token");
+              console.log(token);
+              if (token) {
+                navigation.navigate("order");
+              } else {
+                Alert.alert(
+                  "Thất bại",
+                  "Vui lòng đăng nhập tài khoản để thanh toán",
+                  [
+                    {
+                      text: "Thoát",
+                      style: "cancel",
+                    },
+                    {
+                      text: "Đăng nhập",
+                      onPress: () => navigation.navigate("login"),
+                    },
+                  ]
+                );
+              }
+            }}
           >
             <Text style={styles.textPayment}>THANH TOÁN</Text>
           </TouchableOpacity>

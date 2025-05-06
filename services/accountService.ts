@@ -32,7 +32,9 @@ export interface UserResponse {
   cartId?: string;
 }
 
-const register = async (userData: RegisterData): Promise<UserResponse | ApiError> => {
+const register = async (
+  userData: RegisterData
+): Promise<UserResponse | ApiError> => {
   const response = apiClient.post<UserResponse, RegisterData>(
     `/users/register`,
     userData
@@ -43,11 +45,11 @@ const register = async (userData: RegisterData): Promise<UserResponse | ApiError
 const login = async (
   loginData: LoginData
 ): Promise<UserResponse | ApiError> => {
-  const response = apiClient.post<UserResponse, LoginData>(
-    `/users/login`, 
+  const response = await apiClient.post<UserResponse, LoginData>(
+    `/users/login`,
     loginData
   );
-  return (await response).data;
+  return response.data;
 };
 
 const confirmOTP = async (

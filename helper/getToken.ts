@@ -1,11 +1,11 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-export const setConfig = async () => {
+export const getConfig = async () => {
   const token = await AsyncStorage.getItem("token");
   if (token) {
     return {
       headers: {
-        token: token,
+        authorization: `Bearer ${token}`,
       },
     };
   } else {

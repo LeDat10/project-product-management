@@ -23,7 +23,7 @@ interface Product {
   description: string;
   images: string;
   stock: number;
-  discountPercentage: Double;
+  discountPercentage: number;
   slug: string;
 }
 
