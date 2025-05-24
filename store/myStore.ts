@@ -154,7 +154,7 @@ const useStore = create<StoreState>()(
 
       logout: () => {
         AsyncStorage.removeItem("token");
-        AsyncStorage.removeItem("cartId");
+        // AsyncStorage.removeItem("cartId");
         set({
           user: null,
           isAuthenticated: false,
@@ -333,9 +333,13 @@ const useStore = create<StoreState>()(
       updateSelectedItems: async (selected: { [key: string]: boolean }) => {
         set({ selectedItems: selected, cartLoading: true });
         try {
-          const productSelected = Object.entries(selected)
-            .filter(([_, isSelected]) => isSelected)
-            .map(([id]) => id);
+          // const productSelected = Object.entries(selected)
+          //   .filter(([_, isSelected]) => isSelected)
+          //   .map(([id]) => id);
+
+          const productSelected = Object.entries(selected).map(
+            ([productId, selected]) => ({ productId, selected })
+          );
 
           const config = await setConfig();
           await selectedCart(config, productSelected);

@@ -15,6 +15,7 @@ import { FlatList } from "react-native-gesture-handler";
 import { calcPrice } from "../helper/calcPrice";
 import { getConfig } from "../helper/getToken";
 import { postOrder } from "../services/orderServices";
+import { NavigationProp, useNavigation } from "@react-navigation/native";
 
 interface Product {
   _id: string; // cartId
@@ -36,6 +37,7 @@ interface Info {
 }
 
 const Order = () => {
+  const navigation: NavigationProp<RootStackParamList> = useNavigation();
   const [loading, setLoading] = useState(false);
   const [cartProduct, setCartProduct] = useState<Product[]>([]);
   const [fullName, setFullName] = useState("");
@@ -76,13 +78,14 @@ const Order = () => {
       const config = await getConfig();
       const response = await postOrder(config, userInfo);
       if (response && response.data.code === 200) {
+        console.log(response.data.message);
         Alert.alert(
           "Thành công",
           response.data.message,
           [
             {
               text: "Tiếp tục mua sắm",
-              style: "cancel",
+              onPress: () => navigation.navigate("product"),
             },
           ],
           { cancelable: true }
@@ -120,7 +123,7 @@ const Order = () => {
 
   useEffect(() => {
     const price = totalPrice();
-    if (price > 200) {
+    if (price < 200) {
       setShipping(1.5);
     } else {
       setShipping(0);
