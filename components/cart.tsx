@@ -7,10 +7,10 @@ import {
   StyleSheet,
   Image,
   TouchableOpacity,
+  FlatList,
 } from "react-native";
 import { Double } from "react-native/Libraries/Types/CodegenTypes";
 import axios from "axios";
-import { FlatList } from "react-native-gesture-handler";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   deleteCart,

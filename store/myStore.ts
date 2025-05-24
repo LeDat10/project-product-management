@@ -46,10 +46,9 @@ interface CartProduct {
 interface User {
   _id?: string;
   email?: string;
-  username?: string;
-  firstname?: string;
-  lastname?: string;
+  fullName?: string;
   phone?: string;
+  status?: string;
   token?: string;
 }
 
@@ -333,12 +332,15 @@ const useStore = create<StoreState>()(
       updateSelectedItems: async (selected: { [key: string]: boolean }) => {
         set({ selectedItems: selected, cartLoading: true });
         try {
-          const productSelected = Object.entries(selected)
-            .filter(([_, isSelected]) => isSelected)
-            .map(([id]) => id);
+          const productSelectedArray = Object.entries(selected).map(
+            ([productId, selected]) => ({
+              productId,
+              selected,
+            })
+          );
 
           const config = await setConfig();
-          await selectedCart(config, productSelected);
+          await selectedCart(config, productSelectedArray);
           const updatedCart = get().cart.map((item) => ({
             ...item,
             selected: !!selected[item.product_id],
