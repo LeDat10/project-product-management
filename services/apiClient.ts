@@ -51,16 +51,16 @@ const post = async <T, U>(
 
 const get = async <T>(
   path: string,
-  params?: any,
   config?: AxiosRequestConfig
 ): Promise<AxiosResponse<T>> => {
   try {
-    const response = await apiClient.get<T>(path, { ...config, params });
+    const response = await apiClient.get<T>(path, config);
     return response;
   } catch (error: any) {
     throw handleApiError(error);
   }
 };
+
 
 const patch = async <T, U>(
   path: string,

@@ -18,6 +18,7 @@ import Fontisto from "@expo/vector-icons/Fontisto";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import useStore from "../store/myStore";
+import { getUserInfo, getCachedUserInfo } from "../helper/getToken";
 
 type RootStackParamList = {
   login: undefined;
@@ -34,16 +35,88 @@ const Account = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [editingProfile, setEditingProfile] = useState(false);
   const [userProfile, setUserProfile] = useState({
-    firstname: user?.firstname || "",
-    lastname: user?.lastname || "",
-    phone: user?.phone || "",
+    fullName: "",
+    phone: "",
   });
+  const [userInfo, setUserInfo] = useState<any>(null);
+  const [loadingUser, setLoadingUser] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated) {
       fetchCart();
+      fetchUserInfo();
     }
   }, [isAuthenticated, fetchCart]);
+
+  // Định nghĩa interface cho thông tin người dùng
+  interface UserInfo {
+    _id?: string;
+    email?: string;
+    fullName?: string;
+    phone?: string;
+    status?: string;
+    [key: string]: any;
+  }
+
+  // Hàm để lấy thông tin người dùng từ API
+  const fetchUserInfo = async () => {
+    if (!isAuthenticated) return;
+
+    setLoadingUser(true);
+    // console.log("Bắt đầu lấy thông tin người dùng...");
+    try {
+      // Kiểm tra thông tin cache trước
+      const cachedUser = await getCachedUserInfo();
+      if (cachedUser) {
+        // console.log("Đã lấy thông tin người dùng từ cache:", cachedUser);
+        if (cachedUser.user) {
+          // Nếu dữ liệu người dùng nằm trong thuộc tính user (phù hợp với cấu trúc API thực tế)
+          setUserInfo(cachedUser.user);
+          setUserProfile({
+            fullName: cachedUser.user.fullName || "",
+            phone: cachedUser.user.phone || "",
+          });
+        } else {
+          // Nếu dữ liệu người dùng nằm ở cấp cao nhất (cấu trúc cũ)
+          setUserInfo(cachedUser);
+          setUserProfile({
+            fullName: cachedUser.fullName || "",
+            phone: cachedUser.phone || "",
+          });
+        }
+      }
+
+      // Luôn gọi API để lấy thông tin mới nhất
+      // console.log("Đang gọi API lấy thông tin người dùng...");
+      const apiUserInfo = await getUserInfo();
+      // console.log("Kết quả API:", apiUserInfo);
+
+      if (apiUserInfo && apiUserInfo.user) {
+        // Phân tích thông tin người dùng từ phản hồi API theo cấu trúc thực tế
+        const userData = apiUserInfo.user;
+
+        // Lưu thông tin người dùng
+        setUserInfo(userData);
+
+        setUserProfile({
+          fullName: userData.fullName || "",
+          phone: userData.phone || "",
+        });
+      }
+    } catch (error) {
+      console.log("Lỗi khi lấy thông tin người dùng:", error);
+      // Nếu có lỗi, vẫn sử dụng thông tin từ store nếu có
+      if (user) {
+        setUserProfile({
+          fullName: user.fullName || "",
+          phone: user.phone || "",
+        });
+      }
+    } finally {
+      setLoadingUser(false);
+      // console.log("Hoàn tất quá trình lấy thông tin người dùng");
+    }
+  };
 
   const handleLogout = async () => {
     try {
@@ -52,10 +125,21 @@ const Account = () => {
         {
           text: "Đăng xuất",
           style: "destructive",
-          onPress: () => {
-            logout();
-            Alert.alert("Thành công", "Đăng xuất thành công!");
-            navigation.navigate("menu");
+          onPress: async () => {
+            try {
+              // Xóa thông tin người dùng khỏi state
+              setUserInfo(null);
+              // Xóa thông tin trong AsyncStorage
+              const { clearUserInfo } = require("../helper/getToken");
+              await clearUserInfo();
+              // Đăng xuất từ store
+              logout();
+              Alert.alert("Thành công", "Đăng xuất thành công!");
+              navigation.navigate("menu");
+            } catch (error) {
+              console.log("Lỗi khi đăng xuất:", error);
+              Alert.alert("Lỗi", "Có lỗi xảy ra khi đăng xuất");
+            }
           },
         },
       ]);
@@ -74,26 +158,14 @@ const Account = () => {
       return (
         <View style={styles.profileEditContainer}>
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Họ:</Text>
+            <Text style={styles.inputLabel}>Họ và tên:</Text>
             <TextInput
               style={styles.profileInput}
-              value={userProfile.lastname}
+              value={userProfile.fullName}
               onChangeText={(text) =>
-                setUserProfile({ ...userProfile, lastname: text })
+                setUserProfile({ ...userProfile, fullName: text })
               }
-              placeholder="Nhập họ của bạn"
-            />
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Tên:</Text>
-            <TextInput
-              style={styles.profileInput}
-              value={userProfile.firstname}
-              onChangeText={(text) =>
-                setUserProfile({ ...userProfile, firstname: text })
-              }
-              placeholder="Nhập tên của bạn"
+              placeholder="Nhập họ và tên của bạn"
             />
           </View>
 
@@ -133,25 +205,22 @@ const Account = () => {
       <View style={styles.profileInfoContainer}>
         <View style={styles.profileInfoItem}>
           <Text style={styles.profileLabel}>Email:</Text>
-          <Text style={styles.profileValue}>{user?.email}</Text>
-        </View>
-
-        <View style={styles.profileInfoItem}>
-          <Text style={styles.profileLabel}>Tên đăng nhập:</Text>
-          <Text style={styles.profileValue}>{user?.username}</Text>
+          <Text style={styles.profileValue}>
+            {userInfo?.email || user?.email}
+          </Text>
         </View>
 
         <View style={styles.profileInfoItem}>
           <Text style={styles.profileLabel}>Họ và tên:</Text>
           <Text style={styles.profileValue}>
-            {user?.lastname} {user?.firstname}
+            {userInfo?.fullName || "Chưa cập nhật"}
           </Text>
         </View>
 
         <View style={styles.profileInfoItem}>
           <Text style={styles.profileLabel}>Số điện thoại:</Text>
           <Text style={styles.profileValue}>
-            {user?.phone || "Chưa cập nhật"}
+            {userInfo?.phone || user?.phone || "Chưa cập nhật"}
           </Text>
         </View>
 
@@ -204,35 +273,41 @@ const Account = () => {
           <View style={styles.avatarContainer}>
             <MaterialCommunityIcons name="account" size={50} color={"white"} />
           </View>
-
           <View style={styles.greeting}>
-            {isAuthenticated && user ? (
+            {isAuthenticated ? (
               <>
-                <Text style={styles.userGreeting}>
-                  Xin chào,{" "}
-                  {user.firstname ||
-                    user.username ||
-                    user.email ||
-                    "Người dùng"}
-                  !
-                </Text>
-                <Text style={styles.userEmail}>{user.email}</Text>
+                {loadingUser ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <>
+                    <Text style={styles.userGreeting}>
+                      Xin chào,{" "}
+                      {userInfo?.fullName
+                        ? userInfo.fullName
+                        : userInfo?.email || user?.email || "Người dùng"}
+                      !
+                    </Text>
+                    <Text style={styles.userEmail}>
+                      {userInfo?.email || user?.email}
+                    </Text>
 
-                <View style={styles.accountActions}>
-                  <TouchableOpacity
-                    style={styles.profileButton}
-                    onPress={() => setModalVisible(true)}
-                  >
-                    <Text style={styles.profileButtonText}>Xem Hồ Sơ</Text>
-                  </TouchableOpacity>
+                    <View style={styles.accountActions}>
+                      <TouchableOpacity
+                        style={styles.profileButton}
+                        onPress={() => setModalVisible(true)}
+                      >
+                        <Text style={styles.profileButtonText}>Xem Hồ Sơ</Text>
+                      </TouchableOpacity>
 
-                  <TouchableOpacity
-                    style={styles.logoutButton}
-                    onPress={handleLogout}
-                  >
-                    <Text style={styles.logoutButtonText}>Đăng Xuất</Text>
-                  </TouchableOpacity>
-                </View>
+                      <TouchableOpacity
+                        style={styles.logoutButton}
+                        onPress={handleLogout}
+                      >
+                        <Text style={styles.logoutButtonText}>Đăng Xuất</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </>
+                )}
               </>
             ) : (
               <>
