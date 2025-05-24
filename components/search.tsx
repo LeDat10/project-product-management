@@ -50,7 +50,7 @@ const Search = () => {
       const config = {};
       const response = await search(config, keyword);
       if (response.data.code === 200) {
-        console.log(response.data.message);
+        // console.log(response.data.message);
         setProducts(response.data.product || []);
       } else {
         console.log(response.data.message || "Không tìm thấy sản phẩm");

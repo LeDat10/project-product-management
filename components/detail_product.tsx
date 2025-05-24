@@ -36,7 +36,6 @@ interface AddCarts {
 const DetailProduct = ({ route }: any) => {
   const navigation: NavigationProp<RootStackParamList> = useNavigation();
   const { slug } = route.params;
-  // console.log(id);
   const [inventory, setInventory] = useState(true);
   const [detail_product, setDetailProduct] = useState<Detail_Product | null>(
     null
@@ -87,7 +86,6 @@ const DetailProduct = ({ route }: any) => {
         };
 
         const config = await setConfig();
-        // console.log(config);
         const responseCart = await PostCart(
           detail_product!._id,
           config,

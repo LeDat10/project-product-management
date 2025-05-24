@@ -7,10 +7,11 @@ import {
   StyleSheet,
   Image,
   TouchableOpacity,
+  SafeAreaView,
 } from "react-native";
 import { Double } from "react-native/Libraries/Types/CodegenTypes";
 import axios from "axios";
-import { FlatList } from "react-native-gesture-handler";
+import { FlatList } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   deleteCart,
@@ -28,7 +29,6 @@ import {
   useNavigation,
 } from "@react-navigation/native";
 import { getConfig } from "../helper/getToken";
-// import { useCallback } from "react";
 
 interface Product {
   _id: string; // cartId
@@ -51,31 +51,30 @@ const Cart = () => {
   const fetchAPI = async (): Promise<void> => {
     setLoading(true);
     try {
-      const config = await setConfig();
-      const response = await getCart(config);
-      if (response) {
-        setLoading(false);
+      const token = await AsyncStorage.getItem("token");
+      if (token) {
+        const config = await setConfig();
+        const response = await getCart(config);
+        if (response) {
+          setLoading(false);
+        }
+
+        const productData = response.data.cart["products"];
+        const cartId = response.headers["cartid"];
+        if (cartId) {
+          await AsyncStorage.setItem("cartId", cartId);
+        }
+
+        const newSelected: { [key: string]: boolean } = {};
+        productData.forEach((item: Product) => {
+          newSelected[item.product_id] = item.selected || false;
+        });
+
+        setSelected(newSelected);
+        setCartproduct(productData);
+      } else {
+        const cartId = await removeData("cartId");
       }
-
-      const productData = response.data.cart["products"];
-      // console.log(response.data.cart["products"]);
-
-      const cartId = response.headers["cartid"];
-      if (cartId) {
-        await AsyncStorage.setItem("cartId", cartId);
-      }
-      // await removeData("cartId");
-      // console.log(config);
-      // const cartId = response.data.cart["_id"];
-
-      const newSelected: { [key: string]: boolean } = {};
-      productData.forEach((item: Product) => {
-        newSelected[item.product_id] = item.selected || false;
-      });
-      // console.log(newSelected);
-
-      setSelected(newSelected);
-      setCartproduct(productData);
     } catch (error) {
       console.log(error);
     } finally {
@@ -159,45 +158,92 @@ const Cart = () => {
   }
 
   return (
-    <View style={styles.container}>
-      {/* <Text>Đơn hàng trên 200000</Text> */}
-      <FlatList
-        data={cartproduct}
-        extraData={cartproduct}
-        keyExtractor={(item) => item._id}
-        style={styles.Row}
-        renderItem={({ item }) => (
-          <View style={styles.item}>
-            <Checkbox
-              value={selected[item.product_id]}
-              // onChange={() => handleChange(item.product_id)}
-              onValueChange={() => sumCheckbox(item.product_id)}
-              style={styles.checkbox}
-            />
-            <Image
-              source={{ uri: item.thumbnail }}
-              style={{ width: 100, height: 100 }}
-            />
+    <SafeAreaView style={styles.cardContainer}>
+      <View style={styles.container}>
+        {/* <Text>Đơn hàng trên 200000</Text> */}
+        <FlatList
+          data={cartproduct}
+          extraData={cartproduct}
+          keyExtractor={(item) => item._id}
+          style={styles.Row}
+          renderItem={({ item }) => (
+            <View style={styles.item}>
+              <Checkbox
+                value={selected[item.product_id]}
+                onValueChange={() => sumCheckbox(item.product_id)}
+                style={styles.checkbox}
+              />
+              <Image
+                source={{ uri: item.thumbnail }}
+                style={{ width: 100, height: 100 }}
+              />
 
-            <View style={styles.rowContainer}>
-              <Text style={styles.title}>{item.titleProduct}</Text>
-              <View style={styles.containerDiscount}>
-                <Text style={styles.discount}>-{item.discountPercentage}%</Text>
-              </View>
-              <View style={styles.rowPrice}>
-                <Text style={styles.newPrice}>
-                  {calcPrice(item.price, item.discountPercentage)}$
+              <View style={styles.rowContainer}>
+                <Text
+                  style={styles.title}
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                >
+                  {item.titleProduct}
                 </Text>
-                <Text style={styles.oldPrice}>{item.price}$</Text>
-              </View>
+                <View style={styles.containerDiscount}>
+                  <Text style={styles.discount}>
+                    -{item.discountPercentage}%
+                  </Text>
+                </View>
+                <View style={styles.rowPrice}>
+                  <Text style={styles.newPrice}>
+                    {calcPrice(item.price, item.discountPercentage)}$
+                  </Text>
+                  <Text style={styles.oldPrice}>{item.price}$</Text>
+                </View>
 
-              <View style={styles.counterContainer}>
-                <View style={styles.quantityContainer}>
-                  <TouchableOpacity
-                    style={styles.quantity}
-                    onPress={async () => {
-                      if (item.quantity > 1) {
-                        const newQuantity = item.quantity - 1;
+                <View style={styles.counterContainer}>
+                  <View style={styles.quantityContainer}>
+                    <TouchableOpacity
+                      style={styles.quantity}
+                      onPress={async () => {
+                        if (item.quantity > 1) {
+                          const newQuantity = item.quantity - 1;
+                          const newquantity: updatecart = {
+                            quantity: newQuantity,
+                          };
+                          const config = await setConfig();
+                          const response = await updateCart(
+                            item.product_id,
+                            config,
+                            newquantity
+                          );
+                          if (response.data.code === 200) {
+                            const updatedCart = cartproduct.map((p) =>
+                              p._id === item._id
+                                ? { ...p, quantity: newQuantity }
+                                : p
+                            );
+                            setCartproduct(updatedCart);
+                            // console.log(response.data.message);
+                          }
+                        }
+                      }}
+                    >
+                      <Text style={styles.sign}>-</Text>
+                    </TouchableOpacity>
+
+                    <View style={styles.countText}>
+                      <Text style={styles.count}>{item.quantity}</Text>
+                    </View>
+
+                    <TouchableOpacity
+                      style={styles.quantity}
+                      onPress={async () => {
+                        if (item.quantity >= item.stock) {
+                          Alert.alert(
+                            "Thông báo",
+                            "Số lượng vượt quá số sản phẩm trong kho!"
+                          );
+                          return;
+                        }
+                        const newQuantity = item.quantity + 1;
                         const newquantity: updatecart = {
                           quantity: newQuantity,
                         };
@@ -216,139 +262,123 @@ const Cart = () => {
                           setCartproduct(updatedCart);
                           // console.log(response.data.message);
                         }
-                      }
-                    }}
-                  >
-                    <Text style={styles.sign}>-</Text>
-                  </TouchableOpacity>
-
-                  <View style={styles.countText}>
-                    <Text style={styles.count}>{item.quantity}</Text>
+                      }}
+                    >
+                      <Text style={styles.sign}>+</Text>
+                    </TouchableOpacity>
                   </View>
 
-                  <TouchableOpacity
-                    style={styles.quantity}
-                    onPress={async () => {
-                      if (item.quantity >= item.stock) {
-                        Alert.alert(
-                          "Thông báo",
-                          "Số lượng vượt quá số sản phẩm trong kho!"
-                        );
-                        return;
-                      }
-                      const newQuantity = item.quantity + 1;
-                      const newquantity: updatecart = {
-                        quantity: newQuantity,
-                      };
-                      const config = await setConfig();
-                      const response = await updateCart(
-                        item.product_id,
-                        config,
-                        newquantity
-                      );
-                      if (response.data.code === 200) {
-                        const updatedCart = cartproduct.map((p) =>
-                          p._id === item._id
-                            ? { ...p, quantity: newQuantity }
-                            : p
-                        );
-                        setCartproduct(updatedCart);
-                        // console.log(response.data.message);
-                      }
-                    }}
-                  >
-                    <Text style={styles.sign}>+</Text>
-                  </TouchableOpacity>
-                </View>
-
-                <View>
-                  <TouchableOpacity
-                    onPress={async () => {
-                      try {
-                        const config3 = await setConfig();
-                        const response = await deleteCart(
-                          item.product_id,
-                          config3
-                        );
-                        if (response.data.code === 200) {
-                          const updatedCart2 = cartproduct.filter(
-                            (p) => p._id !== item._id
+                  <View>
+                    <TouchableOpacity
+                      onPress={async () => {
+                        try {
+                          const config3 = await setConfig();
+                          const response = await deleteCart(
+                            item.product_id,
+                            config3
                           );
-                          setCartproduct(updatedCart2);
-                          // console.log(response.data.message);
-                        } else {
-                          console.log(response.data.message);
+                          if (response.data.code === 200) {
+                            const updatedCart2 = cartproduct.filter(
+                              (p) => p._id !== item._id
+                            );
+                            setCartproduct(updatedCart2);
+                            // console.log(response.data.message);
+                          } else {
+                            console.log(response.data.message);
+                          }
+                        } catch (error) {
+                          console.log(error);
                         }
-                      } catch (error) {
-                        console.log(error);
-                      }
-                    }}
-                  >
-                    <Text style={styles.textDelete}>Xóa</Text>
-                  </TouchableOpacity>
+                      }}
+                    >
+                      <Text style={styles.textDelete}>Xóa</Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
+                <Text style={styles.stock}>Còn {item.stock} sản phẩm</Text>
               </View>
-              <Text style={styles.stock}>Còn {item.stock} sản phẩm</Text>
             </View>
+          )}
+          ListEmptyComponent={
+            <View style={styles.cartEmpty}>
+              <Image
+                source={require("../assets/empty_cart-removebg-preview.png")}
+                style={{ width: 350, height: 350 }}
+              />
+              <Text style={styles.textCartEmpty}>Giỏ hàng trống</Text>
+            </View>
+          }
+        />
+
+        <View style={styles.payContainer}>
+          <View style={styles.sumQuantity}>
+            <Text style={styles.textquantity}>Số lượng sản phẩm:</Text>
+            <Text style={styles.calcQuantity}>{calcQuantity()}</Text>
           </View>
-        )}
-        ListEmptyComponent={
-          <View style={styles.cartEmpty}>
-            <Image
-              source={require("../assets/empty_cart-removebg-preview.png")}
-              style={{ width: 350, height: 350 }}
-            />
-            <Text style={styles.textCartEmpty}>Giỏ hàng trống</Text>
+
+          <View style={styles.totalContainer}>
+            <Text style={styles.texttotal}>Tổng tiền:</Text>
+            <Text style={styles.totalPrice}>{totalPrice()}$</Text>
           </View>
-        }
-      />
 
-      <View style={styles.payContainer}>
-        <View style={styles.sumQuantity}>
-          <Text style={styles.textquantity}>Số lượng sản phẩm:</Text>
-          <Text style={styles.calcQuantity}>{calcQuantity()}</Text>
-        </View>
-
-        <View style={styles.totalContainer}>
-          <Text style={styles.texttotal}>Tổng tiền:</Text>
-          <Text style={styles.totalPrice}>{totalPrice()}$</Text>
-        </View>
-
-        <View style={{ alignItems: "center" }}>
-          <TouchableOpacity
-            style={styles.buttonPayment}
-            onPress={async () => {
-              const token = await AsyncStorage.getItem("token");
-              // console.log(token);
-              if (token) {
-                navigation.navigate("order");
-              } else {
-                Alert.alert(
-                  "Thất bại",
-                  "Vui lòng đăng nhập tài khoản để thanh toán",
-                  [
-                    {
-                      text: "Thoát",
-                      style: "cancel",
-                    },
-                    {
-                      text: "Đăng nhập",
-                      onPress: () => navigation.navigate("login"),
-                    },
-                  ]
-                );
-              }
-            }}
-          >
-            <Text style={styles.textPayment}>THANH TOÁN</Text>
-          </TouchableOpacity>
+          <View style={{ alignItems: "center" }}>
+            <TouchableOpacity
+              style={styles.buttonPayment}
+              onPress={async () => {
+                const token = await AsyncStorage.getItem("token");
+                // console.log(token);
+                if (token) {
+                  const hasSelected = Object.values(selected).some(
+                    (x) => x === true
+                  );
+                  if (hasSelected) {
+                    navigation.navigate("order");
+                  } else {
+                    Alert.alert(
+                      "Thất bại",
+                      "Vui lòng chọn ít nhất 1 sản phẩm",
+                      [
+                        {
+                          text: "Thoát",
+                          style: "cancel",
+                        },
+                      ]
+                    );
+                  }
+                } else {
+                  Alert.alert(
+                    "Thất bại",
+                    "Vui lòng đăng nhập tài khoản để thanh toán",
+                    [
+                      {
+                        text: "Thoát",
+                        style: "cancel",
+                      },
+                      {
+                        text: "Đăng nhập",
+                        onPress: () => navigation.navigate("login"),
+                      },
+                    ]
+                  );
+                }
+              }}
+            >
+              <Text style={styles.textPayment}>THANH TOÁN</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  cardContainer: {
+    flex: 1,
+    backgroundColor: "#fff",
+    marginBottom: 10,
+  },
+
   container: {
     flex: 1,
     backgroundColor: "#ddd",
@@ -376,6 +406,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
     marginBottom: 10,
+    width: 180,
   },
 
   rowPrice: {

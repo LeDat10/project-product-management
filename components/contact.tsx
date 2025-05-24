@@ -104,8 +104,6 @@ const Contact = () => {
         đóng góp và sẵn sàng hỗ trợ bạn 24/7. Hãy kết nối với chúng tôi ngay hôm
         nay!{" "}
       </Text>
-
-      {/* <Footer /> */}
     </ScrollView>
   );
 };

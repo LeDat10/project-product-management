@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { getProduct } from "../../services/productServices";
 import Sort from "../sort";
-import { FlatList } from "react-native-gesture-handler";
+import { FlatList } from "react-native";
 
 interface Product {
   _id: string;

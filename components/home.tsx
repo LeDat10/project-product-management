@@ -13,6 +13,7 @@ import React from "react";
 import { ScrollView } from "react-native-gesture-handler";
 import Footer from "./footer";
 import EvilIcons from "@expo/vector-icons/EvilIcons";
+import Vegatable from "./menu/vegatable";
 
 const HomeScreen = () => {
   const navigation: NavigationProp<RootStackParamList> = useNavigation();

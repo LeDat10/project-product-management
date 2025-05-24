@@ -16,7 +16,7 @@ export const setConfig = async () => {
 export const removeData = async (key: string) => {
   try {
     await AsyncStorage.removeItem(key);
-    console.log("Dữ liệu đã được xóa");
+    // console.log("Dữ liệu đã được xóa");
   } catch (error) {
     console.log("Lỗi khi xóa dữ liệu", error);
   }

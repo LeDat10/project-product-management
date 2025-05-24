@@ -8,10 +8,11 @@ import {
   TextInput,
   TouchableOpacity,
   Alert,
+  SafeAreaView,
 } from "react-native";
 import { setConfig } from "../helper/setConfig";
 import { getCart } from "../services/cartSevices";
-import { FlatList } from "react-native-gesture-handler";
+import { FlatList } from "react-native";
 import { calcPrice } from "../helper/calcPrice";
 import { getConfig } from "../helper/getToken";
 import { postOrder } from "../services/orderServices";
@@ -78,7 +79,7 @@ const Order = () => {
       const config = await getConfig();
       const response = await postOrder(config, userInfo);
       if (response && response.data.code === 200) {
-        console.log(response.data.message);
+        // console.log(response.data.message);
         Alert.alert(
           "Thành công",
           response.data.message,
@@ -91,7 +92,7 @@ const Order = () => {
           { cancelable: true }
         );
       } else {
-        console.log(response.data.message);
+        // console.log(response.data.message);
       }
     } catch (error) {
       console.log(error);
@@ -173,87 +174,95 @@ const Order = () => {
   }
 
   return (
-    <View style={styles.container}>
-      <FlatList
-        data={cartProduct}
-        extraData={cartProduct}
-        keyExtractor={(item) => item._id}
-        contentContainerStyle={{ paddingBottom: 20 }}
-        ListHeaderComponent={
-          <View>
-            <Text style={styles.text}>Thông tin khách hàng: </Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Họ và tên"
-              value={fullName}
-              onChangeText={setFullName}
-              maxLength={25}
-            />
-
-            <TextInput
-              style={styles.input}
-              placeholder="Số điện thoại"
-              value={number}
-              onChangeText={setNumber}
-              maxLength={25}
-              keyboardType="numeric"
-            />
-
-            <TextInput
-              style={styles.input}
-              placeholder="Email"
-              value={email}
-              onChangeText={setEmail}
-              maxLength={25}
-              keyboardType="email-address"
-            />
-
-            <TextInput
-              style={styles.input}
-              placeholder="Địa chỉ"
-              value={address}
-              onChangeText={setAddress}
-              maxLength={25}
-            />
-
-            <Text style={styles.text}>Thông tin đơn hàng: </Text>
-          </View>
-        }
-        renderItem={({ item }) => (
-          <View>{item.selected ? renderProduct({ item }) : null}</View>
-        )}
-        ListFooterComponent={
-          <View style={styles.info}>
-            <View style={styles.infoTextContainer}>
-              <Text style={styles.infoText}>Tổng số sản phẩm:</Text>
-              <Text style={styles.infoText}>{calcQuantity()}</Text>
-            </View>
-
-            <View style={styles.infoTextContainer}>
-              <Text style={styles.infoText}>Phí vận chuyển: </Text>
-              <Text style={styles.infoText}>{shipping}$</Text>
-            </View>
-
-            <View style={styles.infoTextContainer}>
-              <Text style={styles.infoText}>Tổng tiền:</Text>
-              <Text style={styles.infoText}>{totalPrice() + shipping}$</Text>
-            </View>
+    <SafeAreaView style={styles.boxOrderContainer}>
+      <View style={styles.container}>
+        <FlatList
+          data={cartProduct}
+          extraData={cartProduct}
+          keyExtractor={(item) => item._id}
+          contentContainerStyle={{ paddingBottom: 20 }}
+          ListHeaderComponent={
             <View>
-              <Text style={styles.text}>Phương thức thanh toán </Text>
+              <Text style={styles.text}>Thông tin khách hàng: </Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Họ và tên"
+                value={fullName}
+                onChangeText={setFullName}
+                maxLength={25}
+              />
+
+              <TextInput
+                style={styles.input}
+                placeholder="Số điện thoại"
+                value={number}
+                onChangeText={setNumber}
+                maxLength={25}
+                keyboardType="numeric"
+              />
+
+              <TextInput
+                style={styles.input}
+                placeholder="Email"
+                value={email}
+                onChangeText={setEmail}
+                maxLength={25}
+                keyboardType="email-address"
+              />
+
+              <TextInput
+                style={styles.input}
+                placeholder="Địa chỉ"
+                value={address}
+                onChangeText={setAddress}
+                maxLength={25}
+              />
+
+              <Text style={styles.text}>Thông tin đơn hàng: </Text>
             </View>
-          </View>
-        }
-      />
-      <View style={styles.orderContainer}>
-        <TouchableOpacity style={styles.orderButton} onPress={handleButton}>
-          <Text style={styles.orderText}>ĐẶT HÀNG</Text>
-        </TouchableOpacity>
+          }
+          renderItem={({ item }) => (
+            <View>{item.selected ? renderProduct({ item }) : null}</View>
+          )}
+          ListFooterComponent={
+            <View style={styles.info}>
+              <View style={styles.infoTextContainer}>
+                <Text style={styles.infoText}>Tổng số sản phẩm:</Text>
+                <Text style={styles.infoText}>{calcQuantity()}</Text>
+              </View>
+
+              <View style={styles.infoTextContainer}>
+                <Text style={styles.infoText}>Phí vận chuyển: </Text>
+                <Text style={styles.infoText}>{shipping}$</Text>
+              </View>
+
+              <View style={styles.infoTextContainer}>
+                <Text style={styles.infoText}>Tổng tiền:</Text>
+                <Text style={styles.infoText}>{totalPrice() + shipping}$</Text>
+              </View>
+
+              <View>
+                <Text style={styles.text}>Phương thức thanh toán </Text>
+              </View>
+            </View>
+          }
+        />
+        <View style={styles.orderContainer}>
+          <TouchableOpacity style={styles.orderButton} onPress={handleButton}>
+            <Text style={styles.orderText}>ĐẶT HÀNG</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  boxOrderContainer: {
+    flex: 1,
+    marginBottom: 40,
+  },
+
   container: {
     flex: 1,
     backgroundColor: "#ddd",
