@@ -6,14 +6,22 @@ const userchema = new mongoose.Schema(
         email: String,
         password: String,
         phone: String,
-        avatar: String,
+        avatar: {
+            type: String,
+            default: "https://res.cloudinary.com/dgzkzwb4z/image/upload/v1745937431/fpp2s2tkgwrrxz3ydiui.jpg"
+        },
         isVerified: {
             type: Boolean,
             default: false
         },
         status: {
             type: String,
+            enum: ["active", "inactive"],
             default: "inactive"
+        },
+        tokenVersion: {
+            type: Number,
+            default: 0
         },
         deleted: {
             type: Boolean,

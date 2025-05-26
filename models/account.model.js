@@ -1,15 +1,43 @@
 const mongoose = require("mongoose");
+const slug = require("mongoose-slug-updater");
+mongoose.plugin(slug);
 
 const accountchema = new mongoose.Schema(
     {
         fullName: String,
-        email: String,
-        password: String,
-        token: String,
+        email: {
+            type: String,
+            required: true,
+            trim: true
+        },
+        password: {
+            type: String,
+            required: true,
+            trim: true
+        },
         phone: String,
-        avatar: String,
-        role_id: String,
-        status: String,
+        avatar: {
+            type: String,
+            default: "https://res.cloudinary.com/dgzkzwb4z/image/upload/v1745937431/fpp2s2tkgwrrxz3ydiui.jpg"
+        },
+        role_id: {
+            type: String,
+            default: ""
+        },
+        status: {
+            type: String,
+            enum: ["active", "inactive"],
+            required: true
+        },
+        slug: {
+            type: String,
+            slug: "fullName",
+            unique: true
+        },
+        tokenVersion: {
+            type: Number,
+            default: 0
+        },
         deleted: {
             type: Boolean,
             default: false

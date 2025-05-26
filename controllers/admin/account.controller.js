@@ -6,25 +6,58 @@ const argon2 = require("argon2");
 // [GET] /api/accounts
 module.exports.index = async (req, res) => {
     try {
-        const accounts = await Account.find({
-            deleted: false
-        }).select("avatar fullName email status role_id").lean();
+        const sort = {};
 
-        for (const account of accounts) {
-            const role = await Role.findOne({
-                _id: account.role_id,
-                deleted: false
-            });
-            account.roleTitle = role.title;
+        // Sort
+        if (req.query.sortKey && req.query.sortValue) {
+            sort[req.query.sortKey] = req.query.sortValue;
+        } else {
+            sort.fullName = "asc";
+        }
+
+        // pagination
+        const objPagination = {
+            currentPage: 1,
+            limit: 5
         };
+
+        if (req.query.page) {
+            objPagination.currentPage = parseInt(req.query.page);
+        };
+
+        if (req.query.limit) {
+            objPagination.limit = parseInt(req.query.limit);
+        }
+
+        objPagination.skip = (objPagination.currentPage - 1) * objPagination.limit;
+        // End pagination
+
+        const accounts = await Account.find({ deleted: false })
+            .sort(sort)
+            .limit(objPagination.limit)
+            .skip(objPagination.skip)
+            .select("avatar fullName email status role_id")
+            .populate({
+                path: "role_id",
+                match: { deleted: false },
+                select: "title"
+            })
+            .lean();
+
+        const totalAccount = await Account.countDocuments({
+            deleted: false
+        });
 
         res.json({
             code: 200,
-            accounts: accounts
+            message: "Lấy danh sách tài khoản thành công!",
+            accounts: accounts,
+            totalAccount: totalAccount
         });
     } catch (error) {
         res.json({
-            code: 400
+            code: 400,
+            message: "Lấy danh sách tài khoản thất bại!",
         });
     };
 };
@@ -43,8 +76,6 @@ module.exports.create = async (req, res) => {
                 message: "Email đã tồn tại!"
             });
         } else {
-            const token = jwt.sign({}, process.env.JWT_SECRET);
-            req.body.token = token;
             delete req.body["confirm-password"];
             req.body.password = await argon2.hash(req.body.password);
             const account = Account(req.body);
@@ -188,7 +219,7 @@ module.exports.login = async (req, res) => {
             deleted: false
         });
 
-        if(!account) {
+        if (!account) {
             res.json({
                 code: 401,
                 message: "Email đăng nhập không tồn tại!"
@@ -198,19 +229,37 @@ module.exports.login = async (req, res) => {
 
         const match = await argon2.verify(account.password, password);
 
-        if(!match) {
+        if (!match) {
             res.json({
                 code: 401,
                 message: "Mật khẩu đăng nhập không đúng!"
             });
             return;
-        }
+        };
 
-        const token = account.token;
+        const role = await Role.findOne({
+            _id: account.role_id
+        });
+
+        const payload = {
+            id: account._id,
+            email: account.email,
+            fullName: account.fullName,
+            tokenVersion: account.tokenVersion,
+            permissions: role.permissions
+        };
+
+        const token = jwt.sign(
+            payload,
+            process.env.JWT_SECRET,
+            {
+                expiresIn: process.env.JWT_EXPIRE
+            }
+        );
 
         res.json({
             code: 200,
-            message: "Đăng nhập tài công!",
+            message: "Đăng nhập thành công!",
             token: token
         });
     } catch (error) {
@@ -218,7 +267,7 @@ module.exports.login = async (req, res) => {
             code: 400,
             message: "Đăng nhập thất bại!"
         });
-    }
+    };
 };
 
 // [GET] /api/accounts/get-role
@@ -238,4 +287,157 @@ module.exports.getRole = async (req, res) => {
             code: 400
         });
     };
-}
+};
+
+// [GET] /api/admin/accounts/trash
+module.exports.trash = async (req, res) => {
+    try {
+        const find = {
+            deleted: true
+        };
+
+        const sort = {};
+
+        // Sort
+        if (req.query.sortKey && req.query.sortValue) {
+            sort[req.query.sortKey] = req.query.sortValue;
+        } else {
+            sort.title = "asc";
+        }
+
+        // pagination
+        const objPagination = {
+            currentPage: 1,
+            limit: 5
+        };
+
+        if (req.query.page) {
+            objPagination.currentPage = parseInt(req.query.page);
+        };
+
+        if (req.query.limit) {
+            objPagination.limit = parseInt(req.query.limit);
+        }
+
+        objPagination.skip = (objPagination.currentPage - 1) * objPagination.limit;
+        // End pagination
+
+        const accounts = await Account.find(find).sort(sort).limit(objPagination.limit).skip(objPagination.skip);
+        const totalAccount = await Account.countDocuments({
+            deleted: true
+        });
+
+        res.json({
+            code: 200,
+            message: "Lấy danh sách tài khoản thành công!",
+            accounts: accounts,
+            totalAccount: totalAccount
+        });
+    } catch (error) {
+        res.json({
+            code: 400,
+            message: "Lấy danh sách tài khoản thất bại!"
+        });
+    };
+};
+
+//[PATCH] /api/admin/accounts/trash/restore
+module.exports.restore = async (req, res) => {
+    try {
+        const accountId = req.body.accountId;
+        await Account.updateOne({
+            _id: accountId
+        }, {
+            deleted: false
+        });
+
+        res.json({
+            code: 200,
+            message: "Khôi phục tài khoản thành công!"
+        });
+
+    } catch (error) {
+        res.json({
+            code: 400,
+            message: "Khôi phục tài khoản thất bại!"
+        });
+    };
+};
+
+//[DELETE] /api/admin/accounts/trash/delete/:accountId
+module.exports.deletePermanently = async (req, res) => {
+    try {
+        const accountId = req.params.accountId;
+        await Account.deleteOne({ _id: accountId });
+        res.json({
+            code: 200,
+            message: "Xóa vĩnh viễn tài khoản thành công!"
+        });
+    } catch (error) {
+        res.json({
+            code: 400,
+            message: "Xóa vĩnh viễn tài khoản thất bại!"
+        });
+    };
+};
+
+//[PATCH] /api/admin/accounts/trash/restore-multi
+module.exports.restoreMulti = async (req, res) => {
+    try {
+        const { ids, key } = req.body;
+        switch (key) {
+            case 'restore':
+                await Account.updateMany({
+                    _id: { $in: ids }
+                }, {
+                    deleted: false
+                });
+                res.json({
+                    code: 200,
+                    message: "Khôi phục tài khoản thành công!"
+                })
+                break;
+            case 'delete':
+                await Account.deleteMany({
+                    _id: { $in: ids }
+                });
+
+                res.json({
+                    code: 200,
+                    message: "Xóa vĩnh viễn tài khoản thành công!"
+                });
+                break;
+            default:
+                res.json({
+                    code: 400,
+                    message: "Khôi phục/xóa tài khoản thất bại!"
+                });
+                break;
+        };
+    } catch (error) {
+        res.json({
+            code: 400,
+            message: "Khôi phục/xóa tài khoản thất bại!"
+        });
+    };
+};
+
+// [GET] /api/admin/accounts/get-roles
+module.exports.getRoles = async (req, res) => {
+    try {
+        const roles = await Role.find({
+            deleted: false
+        });
+
+        res.json({
+            code: 200,
+            message: "Lấy danh sách nhóm quyền thành công!",
+            roles: roles
+        });
+    } catch (error) {
+        res.json({
+            code: 400,
+            message: "Lấy danh sách nhóm quyền thất bại!"
+        });
+    };
+};

@@ -20,6 +20,12 @@ router.get("/detail/:id", controller.detail);
 
 router.patch("/permissions", controller.permissions);
 
+router.get("/trash", controller.trash);
 
+router.patch("/trash/restore", controller.restore);
+
+router.delete("/trash/delete/:roleId", controller.deletePermanently);
+
+router.patch("/trash/restore-multi", controller.restoreMulti);
 
 module.exports = router;

@@ -1,28 +1,50 @@
 const Account = require("../../models/account.model");
+const jwt = require("jsonwebtoken");
 
-module.exports.requireAuth = async(req, res, next) => {
-    if(req.headers.authorization) {
+module.exports.requireAuth = async (req, res, next) => {
+    try {
         const token = req.headers.authorization.split(" ")[1];
 
-        const account = await Account.findOne({
-            token: token,
-            deleted: false
-        }).select("-password");
+        if (!token) {
+            return res.json({
+                code: 401,
+                message: "Không có token nào được cung cấp!"
+            });
+        };
 
-        if(!account) {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+        if (!decoded) {
             res.json({
-                code: 400,
-                message: "Tài khoản không hợp lệ!"
+                code: 401,
+                message: "Token không hợp lệ. Vui lòng đăng nhập lại!"
             });
             return;
-        }
+        };
 
+        const account = await Account.findById(decoded.id);
+        // console.log(account);
+        if (!account) {
+            res.json({
+                code: 401,
+                message: "Tài khoản không tồn tại!"
+            });
+            return;
+        };
+
+        if (account.tokenVersion !== decoded.tokenVersion) {
+            res.json({
+                code: 401,
+                message: "Token không hợp lệ. Vui lòng đăng nhập lại!"
+            });
+            return;
+        };
         req.account = account;
         next();
-    } else {
-        req.json({
+    } catch (error) {
+        res.json({
             code: 400,
-            message: "Vui lòng gửi kèm token!"
+            message: "Lỗi từ server"
         });
     }
 };

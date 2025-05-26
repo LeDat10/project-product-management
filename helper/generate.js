@@ -1,3 +1,5 @@
+const crypto = require('crypto');
+
 module.exports.generateRadomNumber = (length) => {
     const characters = "0123456789";
 
@@ -7,4 +9,9 @@ module.exports.generateRadomNumber = (length) => {
     }
 
     return result;
+}
+
+module.exports.createHmac = (orderId, amount) => {
+  const data = `orderId=${orderId}&amount=${amount}`;
+  return crypto.createHmac('sha256', process.env.HMAC_SECRET).update(data).digest('hex');
 }

@@ -2,7 +2,9 @@ const Order = require("../../models/order.model");
 const Cart = require("../../models/cart.model");
 const Product = require("../../models/product.model");
 
+
 const productHelper = require("../../helper/product");
+const generateHelper = require("../../helper/generate");
 
 // [POST] /api/order/confirm
 module.exports.order = async (req, res) => {
@@ -89,11 +91,48 @@ module.exports.orderInfo = async (req, res) => {
     }
 };
 
-// [POST] /api/admin/order/payment
+//[POST] /api/order/payment-data/:orderId
+module.exports.paymentData = async (req, res) => {
+    try {
+        const orderId = req.params.orderId;
+        const order = Order.findById(orderId);
+
+        if (!order) {
+            return res.json({
+                code: 404,
+                message: "Không tìm thấy đơn hàng!"
+            });
+        };
+
+        if (order.user_id !== req.user._id) {
+            return res.json({
+                code: 403,
+                message: "Bạn không có quyền xem đơn hàng này!"
+            });
+        };
+
+        const hmac = generateHelper.createHmac(order.id, order.totalPrice);
+
+        res.json({
+            code: 200,
+            message: "Lấy thông tin đơn hàng thành công",
+            orderId: order._id,
+            amount: order.totalPrice,
+            hmac: hmac
+        });
+    } catch (error) {
+        res.json({
+            code: 400,
+            message: "Lấy thông tin đơn hàng thất bại!"
+        });
+    };
+};
+
+// [POST] /api/order/payment
 module.exports.payment = async (req, res) => {
     try {
         const userId = req.user.id;
-        const { orderId, amount } = req.body;
+        const { orderId, amount, hmac } = req.body;
         const order = await Order.findById(orderId);
 
         if (!order) {
@@ -102,6 +141,21 @@ module.exports.payment = async (req, res) => {
                 message: "Không tìm thấy đơn hàng!"
             });
             return;
+        };
+
+        if (order.user_id.toString() !== userId) {
+            return res.json({
+                code: 403,
+                message: "Bạn không có quyền thanh toán đơn hàng này!"
+            });
+        };
+
+        const expectedHmac = createHmac(orderId, amount);
+        if (expectedHmac !== hmac) {
+            return res.json({
+                code: 400,
+                message: "Dữ liệu bị sửa đổi hoặc không hợp lệ!"
+            });
         };
 
         if (amount < order.totalPrice) {
@@ -118,10 +172,12 @@ module.exports.payment = async (req, res) => {
                 code: 400,
                 message: `Thanh toán thất bại. Bạn đã chuyển dư ${balance}$!`
             });
+            return;
         };
 
         await Order.updateOne({
             _id: orderId,
+        }, {
             status: "paid"
         });
 

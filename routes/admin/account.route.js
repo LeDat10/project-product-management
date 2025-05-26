@@ -26,6 +26,14 @@ router.post("/login", controller.login);
 
 router.get("/get-role", authMiddleware.requireAuth, controller.getRole);
 
+router.get("/trash", controller.trash);
+
+router.patch("/trash/restore", controller.restore);
+
+router.delete("/trash/delete/:accountId", controller.deletePermanently);
+
+router.patch("/trash/restore-multi", controller.restoreMulti);
 
 
+router.get("/get-roles", controller.getRoles);
 module.exports = router;

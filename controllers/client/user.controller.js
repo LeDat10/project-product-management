@@ -197,7 +197,8 @@ module.exports.login = async (req, res) => {
         const payload = {
             id: user.id,
             email: user.email,
-            fullName: user.fullName
+            fullName: user.fullName,
+            tokenVersion: user.tokenVersion,
         };
 
         const token = jwt.sign(
@@ -208,21 +209,6 @@ module.exports.login = async (req, res) => {
             }
         );
 
-        // const cart = await Cart.findOne({
-        //     user_id: user.id
-        // });
-
-        // let cartId;
-
-
-        // if (!cart) {
-        //     cartId = req.cart.id;
-        //     await Cart.updateOne({
-        //         _id: cartId
-        //     }, {
-        //         user_id: user.id
-        //     });
-        // };
 
         res.json({
             code: 200,
@@ -302,32 +288,30 @@ module.exports.forgot = async (req, res) => {
 // [POST] /api/users/password/otp
 module.exports.otpPassword = async (req, res) => {
     try {
-        const email = req.body.email;
-        const otp = req.body.otp;
+        const { email, otp } = req.body;
 
-        const result = await Confirm.findOne({
+        const userConfirm = await Confirm.findOne({
             email: email,
             otp: otp
         });
 
-        if (!result) {
-            res.json({
+        if (!userConfirm) {
+            return res.json({
                 code: 400,
-                message: "Mã OTP không hợp lệ!"
+                message: "Mã OTP không hợp lệ hoặc đã hết hạn!"
             });
-            return;
         };
 
-        const user = await User.findOne({
-            email: email
-        });
-
-        const token = user.token;
+        const token = jwt.sign(
+            { email: userConfirm.email },
+            process.env.JWT_SECRET,
+            { expiresIn: "15m" }
+        );
 
         res.json({
             code: 200,
             message: "Xác thực email thành công!",
-            token: token
+            tokenReset: token
         });
 
     } catch (error) {
@@ -341,55 +325,77 @@ module.exports.otpPassword = async (req, res) => {
 //[POST] /api/users/password/reset
 module.exports.resetPassword = async (req, res) => {
     try {
-        const token = req.headers.authorization.split(" ")[1];
-        const password = req.body.password;
+        const { token, newPassword } = req.body;
 
-        const user = await User.findOne({
-            token: token
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const user = await User.findOne({ email: decoded.email });
+
+        if (!user) return res.json({
+            code: 400,
+            message: "Người dùng không tồn tại"
         });
 
-        const match = await argon2.verify(user.password, password);
+        const isSame = await argon2.verify(user.password, newPassword);
 
-        if (match) {
-            res.json({
-                code: 409,
-                message: "Mật khẩu mới không thể trùng với mật khẩu cũ!"
+        if (isSame) {
+            return res.json({
+                code: 400,
+                message: "Mật khẩu mới không được trùng mật khẩu cũ"
             });
-            return;
         };
 
-        const newPassword = await argon2.hash(password);
+        const hashedPassword = await argon2.hash(newPassword);
+        user.password = hashedPassword;
+        await user.save();
 
-        await User.updateOne({
-            token: token
-        }, {
-            password: newPassword
-        });
-
-        res.json({
+        return res.json({
             code: 200,
-            message: "Đổi mật khẩu thành công!"
+            message: "Đặt lại mật khẩu thành công"
         });
-
     } catch (error) {
-        res.json({
+        return res.json({
             code: 400,
-            message: "Đổi mật khẩu thất bại!"
+            message: "Token không hợp lệ hoặc đã hết hạn"
         });
     };
 };
 
 module.exports.getInfoUser = async (req, res) => {
     try {
+        const userId = req.user._id;
+        const user = await User.findById(userId).select("fullName avatar phone email isVerified status");
         res.json({
             code: 200,
             message: "Lấy thông tin người dùng thành công!",
-            user: req.user
+            user: user
         });
     } catch (error) {
         res.json({
             code: 400,
             message: "Lấy thông tin người dùng thất bại!"
+        });
+    };
+};
+
+// [POST] /api/users/logout
+module.exports.logout = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        await User.updateOne({
+            _id: userId,
+            deleted: false,
+            isVerified: true,
+            status: "active"
+        }, { $inc: { tokenVersion: 1 } });
+
+        return res.json({
+            code: 200,
+            message: "Đăng xuất tài khoản thành công!"
+        });
+    } catch (error) {
+        return res.json({
+            code: 400,
+            message: "Đăng xuất tài khoản thất bại!"
         });
     };
 };

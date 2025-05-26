@@ -1,5 +1,7 @@
 const ProductCategory = require("../../models/product-category.model");
 
+const convertToSlugHelper = require("../../helper/convertToSlug");
+
 // [GET] /api/products-category
 module.exports.index = async (req, res) => {
     try {
@@ -9,10 +11,15 @@ module.exports.index = async (req, res) => {
 
         // Search
         if (req.query.keyword) {
-            const regex = new RegExp(req.query.keyword, "i");
-            find.title = regex;
-        }
-        // End Search
+            const keywordRegex = new RegExp(req.query.keyword, "i");
+            const stringSlug = convertToSlugHelper.convertToSlug(req.query.keyword);
+            const stringSlugRegex = new RegExp(stringSlug, "i");
+            find["$or"] = [
+                { title: keywordRegex },
+                { slug: stringSlugRegex }
+            ];
+        };
+        //End Search
 
         // Filter
         if (req.query.status) {
@@ -29,15 +36,40 @@ module.exports.index = async (req, res) => {
         }
         // End sort
 
-        const category = await ProductCategory.find(find).sort(sort);
+        // pagination
+        const objPagination = {
+            currentPage: 1,
+            limit: 5
+        };
+
+        if (req.query.page) {
+            objPagination.currentPage = parseInt(req.query.page);
+        };
+
+        if (req.query.limit) {
+            objPagination.limit = parseInt(req.query.limit);
+        }
+
+        objPagination.skip = (objPagination.currentPage - 1) * objPagination.limit;
+        // End pagination
+
+
+        const category = await ProductCategory.find(find).sort(sort).limit(objPagination.limit).skip(objPagination.skip);
+        const totalCategory = await ProductCategory.countDocuments({
+            deleted: false
+        });
 
         res.json({
             code: 200,
-            category: category
+            message: "Lấy danh sách sản phẩm thành công!",
+            category: category,
+            totalCategory: totalCategory
         });
     } catch (error) {
         res.json({
-            code: 400
+            code: 400,
+            message: "Lấy danh sách sản phẩm thất bại!",
+
         });
     };
 };
@@ -205,6 +237,151 @@ module.exports.delete = async (req, res) => {
         res.json({
             code: 400,
             message: "Xóa danh mục thất bại!"
+        });
+    };
+};
+
+// [GET] /api/admin/products-category/trash
+module.exports.trash = async (req, res) => {
+    try {
+        const find = {
+            deleted: true
+        };
+
+        // Search
+        if (req.query.keyword) {
+            const keywordRegex = new RegExp(req.query.keyword, "i");
+            const stringSlug = convertToSlugHelper.convertToSlug(req.query.keyword);
+            const stringSlugRegex = new RegExp(stringSlug, "i");
+            find["$or"] = [
+                { title: keywordRegex },
+                { slug: stringSlugRegex }
+            ];
+        };
+        //End Search
+
+        const sort = {};
+
+        // Sort
+        if (req.query.sortKey && req.query.sortValue) {
+            sort[req.query.sortKey] = req.query.sortValue;
+        } else {
+            sort.title = "asc";
+        }
+
+        // pagination
+        const objPagination = {
+            currentPage: 1,
+            limit: 5
+        };
+
+        if (req.query.page) {
+            objPagination.currentPage = parseInt(req.query.page);
+        };
+
+        if (req.query.limit) {
+            objPagination.limit = parseInt(req.query.limit);
+        }
+
+        objPagination.skip = (objPagination.currentPage - 1) * objPagination.limit;
+        // End pagination
+
+        const category = await ProductCategory.find(find).sort(sort).limit(objPagination.limit).skip(objPagination.skip);
+        const totalCategory = await ProductCategory.countDocuments({
+            deleted: true
+        });
+
+        res.json({
+            code: 200,
+            message: "Lấy danh mục sản phẩm thành công!",
+            category: category,
+            totalCategory: totalCategory
+        });
+    } catch (error) {
+        res.json({
+            code: 400,
+            message: "Lấy danh mục sản phẩm thất bại!"
+        });
+    };
+};
+
+//[PATCH] /api/admin/products-category/trash/restore
+module.exports.restore = async (req, res) => {
+    try {
+        const categoryId = req.body.categoryId;
+        await ProductCategory.updateOne({
+            _id: categoryId
+        }, {
+            deleted: false
+        });
+
+        res.json({
+            code: 200,
+            message: "Khôi phục danh mục sản phẩm thành công!"
+        });
+
+    } catch (error) {
+        res.json({
+            code: 400,
+            message: "Khôi phục danh mục sản phẩm thất bại!"
+        });
+    };
+};
+
+//[DELETE] /api/admin/products-category/trash/delete/:categoryId
+module.exports.deletePermanently = async (req, res) => {
+    try {
+        const categoryId = req.params.categoryId;
+        await ProductCategory.deleteOne({ _id: categoryId });
+        res.json({
+            code: 200,
+            message: "Xóa vĩnh viễn danh mục sản phẩm thành công!"
+        });
+    } catch (error) {
+        res.json({
+            code: 400,
+            message: "Xóa vĩnh viễn danh mục sản phẩm thất bại!"
+        });
+    };
+};
+
+//[PATCH] /api/admin/products-category/trash/restore-multi
+module.exports.restoreMulti = async (req, res) => {
+    try {
+        const { ids, key } = req.body;
+        switch (key) {
+            case 'restore':
+                await ProductCategory.updateMany({
+                    _id: { $in: ids }
+                }, {
+                    deleted: false
+                });
+                res.json({
+                    code: 200,
+                    message: "Khôi phục danh mục sản phẩm thành công!"
+                })
+                break;
+            case 'delete':
+                await ProductCategory.deleteMany({
+                    _id: { $in: ids }
+                });
+
+                res.json({
+                    code: 200,
+                    message: "Xóa vĩnh viễn danh mục sản phẩm thành công!"
+                });
+                break;
+            default:
+                res.json({
+                    code: 400,
+                    message: "Khôi phục/xóa danh mục sản phẩm thất bại!"
+                });
+                break;
+        };
+    } catch (error) {
+        res.json({
+            code: 400,
+            message: "Khôi phục/xóa danh mục sản phẩm thất bại!"
         });
     };
 };

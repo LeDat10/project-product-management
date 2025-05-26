@@ -7,4 +7,5 @@ router.post('/confirm',  controller.order);
 
 router.get('/detail/:orderId', controller.orderInfo);
 
+router.get("/payment-data/:orderId", controller.paymentData);
 module.exports = router;

@@ -22,4 +22,6 @@ router.post("/password/reset", controller.resetPassword);
 
 router.get("/info", authorMiddleware.requireAuth, controller.getInfoUser);
 
+router.post("/logout", controller.logout);
+
 module.exports = router;

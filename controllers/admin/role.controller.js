@@ -1,22 +1,70 @@
 const Role = require("../../models/role.model");
+const Account = require("../../models/account.model");
 
+const convertToSlugHelper = require("../../helper/convertToSlug");
 // [GET] /api/roles
 module.exports.index = async (req, res) => {
 
     try {
-        const roles = await Role.find({
+        const find = {
+            deleted: false
+        };
+
+        // Search
+        if (req.query.keyword) {
+            const keywordRegex = new RegExp(req.query.keyword, "i");
+            const stringSlug = convertToSlugHelper.convertToSlug(req.query.keyword);
+            const stringSlugRegex = new RegExp(stringSlug, "i");
+            find["$or"] = [
+                { title: keywordRegex },
+                { slug: stringSlugRegex }
+            ];
+        };
+        //End Search
+
+        // Sort
+        const sort = {};
+        if (req.query.sortKey && req.query.sortValue) {
+            sort[req.query.sortKey] = req.query.sortValue;
+        } else {
+            sort.title = "asc";
+        }
+        // End sort
+
+        // pagination
+        const objPagination = {
+            currentPage: 1,
+            limit: 5
+        };
+
+        if (req.query.page) {
+            objPagination.currentPage = parseInt(req.query.page);
+        };
+
+        if (req.query.limit) {
+            objPagination.limit = parseInt(req.query.limit);
+        }
+
+        objPagination.skip = (objPagination.currentPage - 1) * objPagination.limit;
+
+        // End pagination
+        const roles = await Role.find(find).sort(sort).limit(objPagination.limit).skip(objPagination.skip);
+        const totalRole = await Role.countDocuments({
             deleted: false
         });
 
         res.json({
             code: 200,
-            roles: roles
+            message: "Lấy danh sách nhóm quyền thành công!",
+            roles: roles,
+            totalRole: totalRole
         });
     } catch (error) {
         res.json({
-            code: 400
+            code: 400,
+            message: "Lấy danh sách nhóm quyền thất bại!"
         });
-    }
+    };
 };
 
 // [post] /api/roles/create
@@ -25,13 +73,15 @@ module.exports.create = async (req, res) => {
         const role = Role(req.body);
         await role.save();
         res.json({
-            code: 200
+            code: 200,
+            message: "Thêm nhóm quyền thành công!"
         });
     } catch (error) {
         res.json({
-            code: 400
+            code: 400,
+            message: "Thêm nhóm quyền thất bại!"
         });
-    }
+    };
 };
 
 // [DELETE] /api/roles/delete/:id
@@ -100,7 +150,7 @@ module.exports.detail = async (req, res) => {
 // [PATCH] /api/roles/permissions
 module.exports.permissions = async (req, res) => {
     try {
-        const {id, permissions} = req.body;
+        const { id, permissions } = req.body;
 
         await Role.updateOne({
             _id: id
@@ -108,12 +158,163 @@ module.exports.permissions = async (req, res) => {
             permissions: permissions
         });
 
+        await Account.updateMany({
+            role_id: id
+        }, { $inc: { tokenVersion: 1 } });
+
         res.json({
-            code: 200
+            code: 200,
+            message: "Cập nhật phân quyền thành công!"
         });
     } catch (error) {
         res.json({
-            code: 400
+            code: 400,
+            message: "Cập nhật phân quyền thất bại!"
+        });
+    };
+};
+
+// [GET] /api/admin/roles/trash
+module.exports.trash = async (req, res) => {
+    try {
+        const find = {
+            deleted: true
+        };
+
+        // Search
+        if (req.query.keyword) {
+            const keywordRegex = new RegExp(req.query.keyword, "i");
+            const stringSlug = convertToSlugHelper.convertToSlug(req.query.keyword);
+            const stringSlugRegex = new RegExp(stringSlug, "i");
+            find["$or"] = [
+                { title: keywordRegex },
+                { slug: stringSlugRegex }
+            ];
+        };
+        //End Search
+
+        const sort = {};
+
+        // Sort
+        if (req.query.sortKey && req.query.sortValue) {
+            sort[req.query.sortKey] = req.query.sortValue;
+        } else {
+            sort.title = "asc";
+        }
+
+        // pagination
+        const objPagination = {
+            currentPage: 1,
+            limit: 5
+        };
+
+        if (req.query.page) {
+            objPagination.currentPage = parseInt(req.query.page);
+        };
+
+        if (req.query.limit) {
+            objPagination.limit = parseInt(req.query.limit);
+        }
+
+        objPagination.skip = (objPagination.currentPage - 1) * objPagination.limit;
+        // End pagination
+
+        const roles = await Role.find(find).sort(sort).limit(objPagination.limit).skip(objPagination.skip);
+        const totalRole = await Role.countDocuments({
+            deleted: true
+        });
+
+        res.json({
+            code: 200,
+            message: "Lấy nhóm quyền thành công!",
+            roles: roles,
+            totalRole: totalRole
+        });
+    } catch (error) {
+        res.json({
+            code: 400,
+            message: "Lấy nhóm quyền thất bại!"
+        });
+    };
+};
+
+//[PATCH] /api/admin/roles/trash/restore
+module.exports.restore = async (req, res) => {
+    try {
+        const roleId = req.body.roleId;
+        await Role.updateOne({
+            _id: roleId
+        }, {
+            deleted: false
+        });
+
+        res.json({
+            code: 200,
+            message: "Khôi phục nhóm quyền thành công!"
+        });
+
+    } catch (error) {
+        res.json({
+            code: 400,
+            message: "Khôi phục nhóm quyền thất bại!"
+        });
+    };
+};
+
+//[DELETE] /api/admin/roles/trash/delete/:roleId
+module.exports.deletePermanently = async (req, res) => {
+    try {
+        const roleId = req.params.roleId;
+        await Role.deleteOne({ _id: roleId });
+        res.json({
+            code: 200,
+            message: "Xóa vĩnh viễn nhóm quyền thành công!"
+        });
+    } catch (error) {
+        res.json({
+            code: 400,
+            message: "Xóa vĩnh viễn nhóm quyền thất bại!"
+        });
+    };
+};
+
+//[PATCH] /api/admin/roles/trash/restore-multi
+module.exports.restoreMulti = async (req, res) => {
+    try {
+        const { ids, key } = req.body;
+        switch (key) {
+            case 'restore':
+                await Role.updateMany({
+                    _id: { $in: ids }
+                }, {
+                    deleted: false
+                });
+                res.json({
+                    code: 200,
+                    message: "Khôi phục nhóm quyền thành công!"
+                })
+                break;
+            case 'delete':
+                await Role.deleteMany({
+                    _id: { $in: ids }
+                });
+
+                res.json({
+                    code: 200,
+                    message: "Xóa vĩnh viễn nhóm quyền thành công!"
+                });
+                break;
+            default:
+                res.json({
+                    code: 400,
+                    message: "Khôi phục/xóa nhóm quyền thất bại!"
+                });
+                break;
+        };
+    } catch (error) {
+        res.json({
+            code: 400,
+            message: "Khôi phục/xóa nhóm quyền thất bại!"
         });
     };
 };

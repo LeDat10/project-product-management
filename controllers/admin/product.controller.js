@@ -2,6 +2,8 @@ const Product = require("../../models/product.model");
 const ProductCategory = require("../../models/product-category.model");
 const Account = require("../../models/account.model");
 
+const convertToSlugHelper = require("../../helper/convertToSlug");
+
 // [GET] /api/products
 module.exports.index = async (req, res) => {
     try {
@@ -11,13 +13,17 @@ module.exports.index = async (req, res) => {
 
         // Search
         if (req.query.keyword) {
-            const regex = new RegExp(req.query.keyword, "i");
-            find.title = regex;
-        }
-        // End Search
+            const keywordRegex = new RegExp(req.query.keyword, "i");
+            const stringSlug = convertToSlugHelper.convertToSlug(req.query.keyword);
+            const stringSlugRegex = new RegExp(stringSlug, "i");
+            find["$or"] = [
+                { title: keywordRegex },
+                { slug: stringSlugRegex }
+            ];
+        };
+        //End Search
 
         // Filter
-
         if (req.query.status) {
             find.status = req.query.status;
         }
@@ -38,40 +44,66 @@ module.exports.index = async (req, res) => {
         }
         // end filter with category
 
-        const products = await Product.find(find).sort(sort).lean();
+        // pagination
+        const objPagination = {
+            currentPage: 1,
+            limit: 5
+        };
 
-        for (const product of products) {
-            // // Lấy ra thông tin người tạo
-            // const user = await Account.findOne({
-            //     _id: product.createdBy.account_id
-            // }).lean();
+        if (req.query.page) {
+            objPagination.currentPage = parseInt(req.query.page);
+        };
 
-            // console.log(user);
+        if (req.query.limit) {
+            objPagination.limit = parseInt(req.query.limit);
+        }
 
-            // if (user) {
-            //     product.accountFullName = user.fullName;
-            // };
+        objPagination.skip = (objPagination.currentPage - 1) * objPagination.limit;
+        // End pagination
 
-            // // Lấy ra thông tin người cập nhật gần nhất
-            if (product.updatedBy) {
+        const products = await Product.find(find).sort(sort).limit(objPagination.limit).skip(objPagination.skip).lean();
+        const totalProduct = await Product.countDocuments({
+            deleted: false
+        });
+        // for (const product of products) {
+        //     // // Lấy ra thông tin người cập nhật gần nhất
+        //     if (product.updatedBy) {
+        //         const updatedBy = product.updatedBy[product.updatedBy.length - 1];
+        //         const userUpdated = await Account.findOne({
+        //             _id: updatedBy.account_id
+        //         }).lean();
+        //         updatedBy.accountFullName = userUpdated.fullName;
+        //         product.updatedBy = updatedBy;
+        //     };
+        // };
+
+        await Promise.all(products.map(async (product) => {
+            if (product.updatedBy?.length) {
                 const updatedBy = product.updatedBy[product.updatedBy.length - 1];
                 const userUpdated = await Account.findOne({
                     _id: updatedBy.account_id
                 }).lean();
-                updatedBy.accountFullName = userUpdated.fullName;
+
+                if (userUpdated) {
+                    updatedBy.accountFullName = userUpdated.fullName;
+                }
+
                 product.updatedBy = updatedBy;
-            };
-        };
+            }
+        }));
 
         res.json({
             code: 200,
-            products: products
+            message: "Lấy danh sách sản phẩm thành công!",
+            products: products,
+            totalProduct: totalProduct
         });
     } catch (error) {
         res.json({
-            code: 400
+            code: 400,
+            message: "Lấy danh sách sản phẩm thất bại!"
         });
-    }
+    };
 };
 
 // [PATCH] /api/products/change-status/:id
@@ -299,6 +331,176 @@ module.exports.edit = async (req, res) => {
         res.json({
             code: 400,
             message: "Chỉnh sửa sản phẩm thất bại!"
+        });
+    };
+};
+
+
+// [GET] /api/admin/products/trash
+module.exports.trash = async (req, res) => {
+    try {
+        const find = {
+            deleted: true
+        };
+
+        // Search
+        if (req.query.keyword) {
+            const keywordRegex = new RegExp(req.query.keyword, "i");
+            const stringSlug = convertToSlugHelper.convertToSlug(req.query.keyword);
+            const stringSlugRegex = new RegExp(stringSlug, "i");
+            find["$or"] = [
+                { title: keywordRegex },
+                { slug: stringSlugRegex }
+            ];
+        };
+        //End Search
+
+        const sort = {};
+
+        // Sort
+        if (req.query.sortKey && req.query.sortValue) {
+            sort[req.query.sortKey] = req.query.sortValue;
+        } else {
+            sort.title = "asc";
+        }
+
+        // pagination
+        const objPagination = {
+            currentPage: 1,
+            limit: 5
+        };
+
+        if (req.query.page) {
+            objPagination.currentPage = parseInt(req.query.page);
+        };
+
+        if (req.query.limit) {
+            objPagination.limit = parseInt(req.query.limit);
+        }
+
+        objPagination.skip = (objPagination.currentPage - 1) * objPagination.limit;
+        // End pagination
+
+        const products = await Product.find(find).sort(sort).limit(objPagination.limit).skip(objPagination.skip);
+        const totalProduct = await Product.countDocuments({
+            deleted: true
+        });
+
+        res.json({
+            code: 200,
+            message: "Lấy sản phẩm thành công!",
+            products: products,
+            totalProduct: totalProduct
+        });
+    } catch (error) {
+        res.json({
+            code: 400,
+            message: "Lấy sản phẩm thất bại!"
+        });
+    };
+};
+
+//[PATCH] /api/admin/products/trash/restore
+module.exports.restore = async (req, res) => {
+    try {
+        const productId = req.body.productId;
+        await Product.updateOne({
+            _id: productId
+        }, {
+            deleted: false
+        });
+
+        res.json({
+            code: 200,
+            message: "Khôi phục sản phẩm thành công!"
+        });
+
+    } catch (error) {
+        res.json({
+            code: 400,
+            message: "Khôi phục sản phẩm thất bại!"
+        });
+    };
+};
+
+//[DELETE] /api/admin/products/trash/delete/:productId
+module.exports.deletePermanently = async (req, res) => {
+    try {
+        const productId = req.params.productId;
+        await Product.deleteOne({ _id: productId });
+        res.json({
+            code: 200,
+            message: "Xóa vĩnh viễn sản phẩm thành công!"
+        });
+    } catch (error) {
+        res.json({
+            code: 400,
+            message: "Xóa vĩnh viễn sản phẩm thất bại!"
+        });
+    };
+};
+
+//[PATCH] /api/admin/products/trash/restore-multi
+module.exports.restoreMulti = async (req, res) => {
+    try {
+        const { ids, key } = req.body;
+        switch (key) {
+            case 'restore':
+                await Product.updateMany({
+                    _id: { $in: ids }
+                }, {
+                    deleted: false
+                });
+                res.json({
+                    code: 200,
+                    message: "Khôi phục sản phẩm thành công!"
+                })
+                break;
+            case 'delete':
+                await Product.deleteMany({
+                    _id: { $in: ids }
+                });
+
+                res.json({
+                    code: 200,
+                    message: "Xóa vĩnh viễn sản phẩm thành công!"
+                });
+                break;
+            default:
+                res.json({
+                    code: 400,
+                    message: "Khôi phục/xóa sản phẩm thất bại!"
+                });
+                break;
+        };
+    } catch (error) {
+        res.json({
+            code: 400,
+            message: "Khôi phục/xóa sản phẩm thất bại!"
+        });
+    };
+};
+
+
+// [GET] /api/admin/products/category
+module.exports.getCategory = async (req, res) => {
+    try {
+        const category = await ProductCategory.find({
+            deleted: false,
+            status: "active"
+        }).select("title").sort({
+            position: "desc"
+        });
+
+        res.json({
+            code: 200,
+            message: "Lấy danh mục sản phẩm thành công!",
+            category: category
+        });
+    } catch (error) {
+        res.json({
+            code: 400,
+            message: "Lấy danh mục sản phẩm thất bại!",
         });
     };
 };
