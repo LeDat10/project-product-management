@@ -65,6 +65,18 @@ module.exports.order = async (req, res) => {
         const order = Order(objectOrder);
         await order.save();
 
+        await Cart.updateOne(
+            { user_id: userId },
+            {
+                $set: {
+                    "products.$[elem].selected": false
+                }
+            },
+            {
+                arrayFilters: [{ "elem.selected": true }]
+            }
+        );
+
         res.json({
             code: 200,
             message: "Đặt hàng thành công!",
@@ -202,18 +214,6 @@ module.exports.payment = async (req, res) => {
             status: "confirmed",
             payment: true
         });
-
-        await Cart.updateOne(
-            { user_id: userId },
-            {
-                $set: {
-                    "products.$[elem].selected": false
-                }
-            },
-            {
-                arrayFilters: [{ "elem.selected": true }]
-            }
-        );
 
         res.json({
             code: 200,

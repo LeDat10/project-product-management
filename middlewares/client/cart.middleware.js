@@ -20,7 +20,7 @@ module.exports.cartId = async (req, res, next) => {
                 req.cart = cart;
             };
         } else {
-            const userId = req.user.id;
+            const userId = req.user._id;
             const cart = await Cart.findOne({
                 user_id: userId
             });

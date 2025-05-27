@@ -1,6 +1,5 @@
 const User = require("../../models/user.model");
 const Confirm = require("../../models/confirm.model");
-const Cart = require("../../models/cart.model");
 const jwt = require("jsonwebtoken");
 const argon2 = require("argon2");
 
@@ -398,4 +397,27 @@ module.exports.logout = async (req, res) => {
             message: "Đăng xuất tài khoản thất bại!"
         });
     };
+};
+
+// [PATCH] /api/users/edit
+module.exports.edit = async (req, res) => {
+    try {
+        const id = req.user._id;
+        if (req.body.password) {
+            req.body.password = await argon2.hash(req.body.password);
+        };
+
+        await User.updateOne({
+            _id: id
+        }, req.body);
+        res.json({
+            code: 200,
+            message: "Chỉnh sửa tài khoản thành công!"
+        });
+    } catch (error) {
+        res.json({
+            code: 400,
+            message: "Chỉnh sửa tài khoản thất bại!"
+        });
+    }
 };

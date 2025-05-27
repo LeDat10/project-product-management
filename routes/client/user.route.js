@@ -1,12 +1,13 @@
 const express = require("express");
 const router = express.Router();
+const multer = require("multer");
+const upload = multer();
 
 const controller = require("../../controllers/client/user.controller");
 
-// const cartMiddleware = require("../../middlewares/client/cart.middleware");
-// const authenMiddeware = require("../../middlewares/client/authenticateToken.middleware");
+const authenMiddeware = require("../../middlewares/client/authenticateToken.middleware");
 
-const authorMiddleware = require("../../middlewares/client/author.middlware");
+const uploadToCloudHelper = require("../../helper/uploadToCloudinary");
 
 router.post("/register", controller.register);
 
@@ -20,8 +21,10 @@ router.post("/password/otp", controller.otpPassword);
 
 router.post("/password/reset", controller.resetPassword);
 
-router.get("/info", authorMiddleware.requireAuth, controller.getInfoUser);
+router.get("/info", authenMiddeware.authenticateToken, controller.getInfoUser);
 
 router.post("/logout", controller.logout);
+
+router.post("/edit", authenMiddeware.authenticateToken, upload.single("avatar"), uploadToCloudHelper.uploadToCloud, controller.edit);
 
 module.exports = router;

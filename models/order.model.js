@@ -27,7 +27,21 @@ const orderSchema = new mongoose.Schema(
             type: String,
             default: "pending",
             enum: ["pending", "confirmed", "shipping", "delivered", "cancelled", "refunded"],
-        }
+        },
+        deleted: {
+            type: Boolean,
+            default: false
+        },
+        deletedBy: {
+            account_id: String,
+            deletedAt: Date
+        },
+        updatedBy: [
+            {
+                account_id: String,
+                updatedAt: Date
+            }
+        ]
     },
     {
         timestamps: true
