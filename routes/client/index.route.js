@@ -20,5 +20,5 @@ module.exports = (app) => {
 
     app.use(version + "/users", userRoutes);
 
-    app.use(version + "/order", authenMiddeware.authenticateToken, orderRoutes);
+    app.use(version + "/order", authorMiddleware.requireAuth, orderRoutes);
 };
