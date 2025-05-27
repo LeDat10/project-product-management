@@ -48,10 +48,25 @@ module.exports.index = async (req, res) => {
         objPagination.skip = (objPagination.currentPage - 1) * objPagination.limit;
 
         // End pagination
-        const roles = await Role.find(find).sort(sort).limit(objPagination.limit).skip(objPagination.skip);
+        const roles = await Role.find(find).sort(sort).limit(objPagination.limit).skip(objPagination.skip).lean();
         const totalRole = await Role.countDocuments({
             deleted: false
         });
+
+        await Promise.all(roles.map(async (role) => {
+            if (role.updatedBy?.length) {
+                const updatedBy = role.updatedBy[role.updatedBy.length - 1];
+                const userUpdated = await Account.findOne({
+                    _id: updatedBy.account_id
+                }).lean();
+
+                if (userUpdated) {
+                    updatedBy.accountFullName = userUpdated.fullName;
+                }
+
+                role.updatedBy = updatedBy;
+            }
+        }));
 
         res.json({
             code: 200,
@@ -70,6 +85,9 @@ module.exports.index = async (req, res) => {
 // [post] /api/roles/create
 module.exports.create = async (req, res) => {
     try {
+        req.body.createdBy = {
+            account_id: req.account._id
+        };
         const role = Role(req.body);
         await role.save();
         res.json({
@@ -88,11 +106,12 @@ module.exports.create = async (req, res) => {
 module.exports.delete = async (req, res) => {
     try {
         const id = req.params.id;
-        await Role.updateOne({
-            _id: id
-        }, {
+        await Role.updateOne({ _id: id }, {
             deleted: true,
-            deletedAt: Date.now()
+            deletedBy: {
+                account_id: req.account._id,
+                deletedAt: new Date()
+            }
         });
 
         res.json({
@@ -112,16 +131,26 @@ module.exports.edit = async (req, res) => {
     try {
         const id = req.params.id;
 
+        const updatedBy = {
+            account_id: req.account._id,
+            updatedAt: new Date()
+        };
+
         await Role.updateOne({
-            _id: id,
-        }, req.body);
+            _id: id
+        }, {
+            ...req.body,
+            $push: { updatedBy: updatedBy }
+        });
 
         res.json({
-            code: 200
+            code: 200,
+            message: "Chỉnh sửa nhóm quyền thành công!"
         });
     } catch (error) {
         res.json({
-            code: 400
+            code: 400,
+            message: "Chỉnh sửa nhóm quyền thất bại!"
         });
     }
 };
@@ -152,10 +181,16 @@ module.exports.permissions = async (req, res) => {
     try {
         const { id, permissions } = req.body;
 
+        const updatedBy = {
+            account_id: req.account._id,
+            updatedAt: new Date()
+        };
+
         await Role.updateOne({
             _id: id
         }, {
-            permissions: permissions
+            permissions: permissions,
+            $push: { updatedBy: updatedBy }
         });
 
         await Account.updateMany({

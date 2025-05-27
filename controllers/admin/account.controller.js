@@ -36,13 +36,28 @@ module.exports.index = async (req, res) => {
             .sort(sort)
             .limit(objPagination.limit)
             .skip(objPagination.skip)
-            .select("avatar fullName email status role_id")
+            .select("avatar fullName email status role_id updatedBy")
             .populate({
                 path: "role_id",
                 match: { deleted: false },
                 select: "title"
             })
             .lean();
+
+        await Promise.all(accounts.map(async (account) => {
+            if (account.updatedBy?.length) {
+                const updatedBy = account.updatedBy[account.updatedBy.length - 1];
+                const userUpdated = await Account.findOne({
+                    _id: updatedBy.account_id
+                }).lean();
+
+                if (userUpdated) {
+                    updatedBy.accountFullName = userUpdated.fullName;
+                }
+
+                account.updatedBy = updatedBy;
+            }
+        }));
 
         const totalAccount = await Account.countDocuments({
             deleted: false
@@ -78,6 +93,9 @@ module.exports.create = async (req, res) => {
         } else {
             delete req.body["confirm-password"];
             req.body.password = await argon2.hash(req.body.password);
+            req.body.createdBy = {
+                account_id: req.account._id
+            };
             const account = Account(req.body);
             await account.save();
             res.json({
@@ -98,10 +116,14 @@ module.exports.changeStatus = async (req, res) => {
     try {
         const id = req.params.id;
         const status = req.body.status;
-        await Account.updateOne({
-            _id: id
-        }, {
-            status: status
+        const updatedBy = {
+            account_id: req.account._id,
+            updatedAt: new Date()
+        };
+
+        await Account.updateOne({ _id: id }, {
+            status: status,
+            $push: { updatedBy: updatedBy }
         });
 
         res.json({
@@ -121,11 +143,12 @@ module.exports.delete = async (req, res) => {
     try {
         const id = req.params.id;
 
-        await Account.updateOne({
-            _id: id
-        }, {
+        await Account.updateOne({ _id: id }, {
             deleted: true,
-            deletedAt: Date.now()
+            deletedBy: {
+                account_id: req.account._id,
+                deletedAt: new Date()
+            }
         });
 
         res.json({
@@ -163,6 +186,7 @@ module.exports.detail = async (req, res) => {
 // [PATCH] /api/accounts/edit/:id
 module.exports.edit = async (req, res) => {
     try {
+        const id = req.params.id;
         if (req.body.password) {
             req.body.password = await argon2.hash(req.body.password);
         } else {
@@ -171,42 +195,29 @@ module.exports.edit = async (req, res) => {
 
         delete req.body["confirm-password"];
 
+        const updatedBy = {
+            account_id: req.account._id,
+            updatedAt: new Date()
+        };
+
         await Account.updateOne({
-            _id: req.params.id
-        }, req.body);
+            _id: id
+        }, {
+            ...req.body,
+            $push: { updatedBy: updatedBy }
+        });
         res.json({
-            code: 200
+            code: 200,
+            message: "Chỉnh sửa tài khoản thành công!"
         });
     } catch (error) {
         res.json({
-            code: 400
+            code: 400,
+            message: "Chỉnh sửa tài khoản thất bại!"
         });
     }
 };
 
-// [PATCH] /api/accounts/edit/:id
-module.exports.edit = async (req, res) => {
-    try {
-        if (req.body.password) {
-            req.body.password = await argon2.hash(req.body.password);
-        } else {
-            delete req.body.password;
-        }
-
-        delete req.body["confirm-password"];
-
-        await Account.updateOne({
-            _id: req.params.id
-        }, req.body);
-        res.json({
-            code: 200
-        });
-    } catch (error) {
-        res.json({
-            code: 400
-        });
-    }
-};
 
 // [POST] /api/accounts/login
 module.exports.login = async (req, res) => {

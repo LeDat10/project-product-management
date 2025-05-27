@@ -65,17 +65,6 @@ module.exports.index = async (req, res) => {
         const totalProduct = await Product.countDocuments({
             deleted: false
         });
-        // for (const product of products) {
-        //     // // Lấy ra thông tin người cập nhật gần nhất
-        //     if (product.updatedBy) {
-        //         const updatedBy = product.updatedBy[product.updatedBy.length - 1];
-        //         const userUpdated = await Account.findOne({
-        //             _id: updatedBy.account_id
-        //         }).lean();
-        //         updatedBy.accountFullName = userUpdated.fullName;
-        //         product.updatedBy = updatedBy;
-        //     };
-        // };
 
         await Promise.all(products.map(async (product) => {
             if (product.updatedBy?.length) {
@@ -143,7 +132,6 @@ module.exports.delete = async (req, res) => {
                 account_id: req.account._id,
                 deletedAt: new Date()
             }
-
         });
         res.json({
             code: 200,
@@ -241,6 +229,7 @@ module.exports.changeMulti = async (req, res) => {
 // [POST] /api/products/create
 module.exports.create = async (req, res) => {
     try {
+        console.log(req.body);
         req.body.price = parseFloat(req.body.price);
         req.body.discountPercentage = parseFloat(req.body.discountPercentage);
         req.body.stock = parseInt(req.body.stock);
@@ -252,7 +241,7 @@ module.exports.create = async (req, res) => {
         };
 
         req.body.createdBy = {
-            account_id: res.account._id
+            account_id: req.account._id
         };
 
         const product = Product(req.body);

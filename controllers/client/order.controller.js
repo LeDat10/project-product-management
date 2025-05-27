@@ -6,11 +6,32 @@ const Product = require("../../models/product.model");
 const productHelper = require("../../helper/product");
 const generateHelper = require("../../helper/generate");
 
+// [GET] /api/order
+module.exports.index = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const orders = await Order.findOne({
+            user_id: userId
+        }).select("status payment totalPrice products userInfo");
+
+        return res.json({
+            code: 200,
+            message: "Lấy danh sách đơn hàng thành công!",
+            orders: orders
+        });
+    } catch (error) {
+        return res.json({
+            code: 400,
+            message: "Lấy danh sách đơn hàng thất bại!"
+        });
+    };
+};
+
 // [POST] /api/order/confirm
 module.exports.order = async (req, res) => {
     try {
         const userInfo = req.body.userInfo;
-        const userId = req.user.id;
+        const userId = req.user._id;
 
         const cart = await Cart.findOne({
             user_id: userId,
@@ -31,7 +52,7 @@ module.exports.order = async (req, res) => {
             };
         };
 
-        const totalPrice = productSelects.reduce((sum, product) => sum + product.priceNew * product.quantity, 0);
+        const totalPrice = Math.ceil(productSelects.reduce((sum, product) => sum + product.priceNew * product.quantity, 0));
 
         const objectOrder = {
             cart_id: cart.id,
@@ -91,7 +112,7 @@ module.exports.orderInfo = async (req, res) => {
     }
 };
 
-//[POST] /api/order/payment-data/:orderId
+//[get] /api/order/payment-data/:orderId
 module.exports.paymentData = async (req, res) => {
     try {
         const orderId = req.params.orderId;
@@ -178,7 +199,8 @@ module.exports.payment = async (req, res) => {
         await Order.updateOne({
             _id: orderId,
         }, {
-            status: "paid"
+            status: "confirmed",
+            payment: true
         });
 
         await Cart.updateOne(
