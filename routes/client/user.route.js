@@ -22,6 +22,6 @@ router.get("/info", authorMiddleware.requireAuth, controller.getInfoUser);
 
 router.post("/logout", controller.logout);
 
-router.post("/edit", authorMiddleware.requireAuth, upload.single("avatar"), uploadToCloudHelper.uploadToCloud, controller.edit);
+router.patch("/edit", authorMiddleware.requireAuth, upload.single("avatar"), uploadToCloudHelper.uploadToCloud, controller.edit);
 
 module.exports = router;
