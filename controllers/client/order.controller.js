@@ -153,7 +153,7 @@ module.exports.paymentData = async (req, res) => {
         res.json({
             code: 200,
             message: "Lấy thông tin đơn hàng thành công",
-            paymenData: {
+            paymentData: {
                 orderId: order._id,
                 amount: order.totalPrice,
                 hmac: hmac
