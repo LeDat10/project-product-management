@@ -171,8 +171,8 @@ module.exports.paymentData = async (req, res) => {
 module.exports.payment = async (req, res) => {
     try {
         const userId = req.user.id;
+        req.body.amount = Number(req.body.amount);
         const { orderId, amount, hmac } = req.body;
-        amount = parseFloat(amount);
         const order = await Order.findOne({
             _id: orderId,
             deleted: false
