@@ -6,6 +6,10 @@ const argon2 = require("argon2");
 // [GET] /api/accounts
 module.exports.index = async (req, res) => {
     try {
+
+        const find = {
+            deleted:false
+        };
         const sort = {};
 
         // Sort
@@ -14,6 +18,12 @@ module.exports.index = async (req, res) => {
         } else {
             sort.fullName = "asc";
         }
+
+        // Filter
+        if (req.query.status) {
+            find.status = req.query.status;
+        }
+        // End Filter
 
         // pagination
         const objPagination = {
@@ -32,7 +42,7 @@ module.exports.index = async (req, res) => {
         objPagination.skip = (objPagination.currentPage - 1) * objPagination.limit;
         // End pagination
 
-        const accounts = await Account.find({ deleted: false })
+        const accounts = await Account.find(find)
             .sort(sort)
             .limit(objPagination.limit)
             .skip(objPagination.skip)

@@ -12,6 +12,12 @@ module.exports.index = async (req, res) => {
             find._id = req.query.orderId
         };
 
+        // Filter
+        if (req.query.status) {
+            find.status = req.query.status;
+        }
+        // End Filter
+
         // pagination
         const objPagination = {
             currentPage: 1,
