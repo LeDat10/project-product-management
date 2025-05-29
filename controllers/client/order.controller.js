@@ -153,9 +153,11 @@ module.exports.paymentData = async (req, res) => {
         res.json({
             code: 200,
             message: "Lấy thông tin đơn hàng thành công",
-            orderId: order._id,
-            amount: order.totalPrice,
-            hmac: hmac
+            paymenData: {
+                orderId: order._id,
+                amount: order.totalPrice,
+                hmac: hmac
+            }
         });
     } catch (error) {
         res.json({
@@ -170,6 +172,7 @@ module.exports.payment = async (req, res) => {
     try {
         const userId = req.user.id;
         const { orderId, amount, hmac } = req.body;
+        amount = parseFloat(amount);
         const order = await Order.findOne({
             _id: orderId,
             deleted: false
