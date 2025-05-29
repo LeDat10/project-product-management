@@ -148,7 +148,7 @@ module.exports.paymentData = async (req, res) => {
             });
         };
 
-        const hmac = generateHelper.createHmac(order.id, order.totalPrice);
+        const hmac = generateHelper.createHmac(order.id);
 
         res.json({
             code: 200,
@@ -190,7 +190,7 @@ module.exports.payment = async (req, res) => {
             });
         };
 
-        const expectedHmac = generateHelper.createHmac(orderId, amount);
+        const expectedHmac = generateHelper.createHmac(orderId);
         if (expectedHmac !== hmac) {
             return res.json({
                 code: 400,

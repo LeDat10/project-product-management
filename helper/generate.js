@@ -11,7 +11,7 @@ module.exports.generateRadomNumber = (length) => {
     return result;
 }
 
-module.exports.createHmac = (orderId, amount) => {
-  const data = `orderId=${orderId}&amount=${amount}`;
+module.exports.createHmac = (orderId) => {
+  const data = `orderId=${orderId}`;
   return crypto.createHmac('sha256', process.env.HMAC_SECRET).update(data).digest('hex');
 }
