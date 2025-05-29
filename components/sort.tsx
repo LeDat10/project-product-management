@@ -12,7 +12,7 @@ import DropDownPicker from "react-native-dropdown-picker";
 import { sort } from "../services/productServices";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { Picker } from "@react-native-picker/picker";
-import { FlatList } from "react-native-gesture-handler";
+import { FlatList } from "react-native";
 
 interface Product {
   _id: string;
@@ -64,10 +64,10 @@ const Sort = () => {
 
       const response = await sort({}, sortKey, sortValue, status);
       if (response.data.code === 200) {
-        console.log("Lấy sản phẩm thành công");
+        // console.log("Lấy sản phẩm thành công");
         setProducts(response.data.products);
       } else {
-        console.log("Lấy sản phẩm không thành công");
+        // console.log("Lấy sản phẩm không thành công");
       }
     } catch (error) {
       console.log(error);

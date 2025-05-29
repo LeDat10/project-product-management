@@ -13,6 +13,7 @@ import React from "react";
 import { ScrollView } from "react-native-gesture-handler";
 import Footer from "./footer";
 import EvilIcons from "@expo/vector-icons/EvilIcons";
+import Vegatable from "./menu/vegatable";
 
 const HomeScreen = () => {
   const navigation: NavigationProp<RootStackParamList> = useNavigation();
@@ -212,16 +213,19 @@ const HomeScreen = () => {
           <Text style={styles.deal2}>DEAL OF THE WEEK</Text>
           <Text style={styles.textCoupon}>30% OFF</Text>
           <Text style={styles.textDrink}>SOFT DRINK BRANDS</Text>
-        </View>
-
-        {/* shop fresh finds */}
-        <View style={styles.areaFresh}>
-          <Text style={styles.fresh}>Shop Fresh Finds</Text>
+          <View style={styles.Button3}>
+            <TouchableOpacity
+              style={styles.buttonImgClean3}
+              onPress={() => navigation.navigate("Drink")}
+            >
+              <Text style={styles.textButton3}>Mua Sắm Ngay</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* giới thiệu ngắn */}
-        <View style={{ paddingVertical: 130 }}>
-          <View style={{ alignItems: "center" }}>
+        <View style={styles.shortIntroduce}>
+          <View style={styles.icon}>
             <Image
               source={require("../assets/tick.png")}
               style={{
@@ -398,9 +402,35 @@ const styles = StyleSheet.create({
     paddingTop: 13,
   },
 
+  Button3: {
+    alignItems: "center",
+    marginTop: 15,
+  },
+
+  textButton3: {
+    paddingTop: 13,
+    textAlign: "center",
+    color: "white",
+    fontSize: 20,
+    fontWeight: "600",
+  },
+
+  buttonImgClean3: {
+    width: 180,
+    height: 55,
+    backgroundColor: "#FFB13F",
+    borderRadius: 20,
+    elevation: 5, // Độ nổi cho Android
+    shadowColor: "#000", // Độ bóng cho iOS
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 5,
+  },
+
   areaDeal2: {
-    paddingTop: 70,
-    height: 700,
+    paddingVertical: 40,
+    height: 350,
+    backgroundColor: "#fff",
   },
 
   deal2: {
@@ -419,17 +449,13 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
 
-  areaFresh: {
-    height: 600,
-    backgroundColor: "#228654",
+  shortIntroduce: {
+    height: 500,
+    paddingVertical: 50,
   },
 
-  fresh: {
-    textAlign: "center",
-    color: "white",
-    fontSize: 27,
-    fontWeight: "bold",
-    paddingTop: 30,
+  icon: {
+    alignItems: "center",
   },
 
   paragraph: {

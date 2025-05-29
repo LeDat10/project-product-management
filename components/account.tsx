@@ -247,6 +247,9 @@ const Account = () => {
           <Text style={styles.profileValue}>
             {userInfo?.email || user?.email || "Chưa cập nhật"}
           </Text>
+          <Text style={styles.profileValue}>
+            {userInfo?.email || user?.email}
+          </Text>
         </View>
 
         <View style={styles.profileInfoItem}>
@@ -394,9 +397,9 @@ const Account = () => {
         <View style={styles.orderStatusSection}>
           <TouchableOpacity style={styles.orderStatusItem}>
             <View style={styles.orderIcon}>
-              <Ionicons name="wallet-outline" size={24} color="#4a6ce2" />
+              <Ionicons name="receipt-outline" size={24} color="#4a6ce2" />
             </View>
-            <Text style={styles.orderStatusText}>Chờ thanh toán</Text>
+            <Text style={styles.orderStatusText}>Danh sách đơn hàng</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.orderStatusItem}>

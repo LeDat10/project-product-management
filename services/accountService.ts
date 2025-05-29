@@ -21,7 +21,8 @@ export interface LoginData {
 }
 
 export interface ResetPasswordData {
-  password: string;
+  newPassword: string;
+  token: string;
 }
 
 export interface UserResponse {
@@ -30,6 +31,7 @@ export interface UserResponse {
   user?: any;
   token?: string;
   cartId?: string;
+  tokenReset?: string;
 }
 
 const register = async (
@@ -56,7 +58,7 @@ const confirmOTP = async (
   otpData: ConfirmOTPData
 ): Promise<UserResponse | ApiError> => {
   const response = apiClient.post<UserResponse, ConfirmOTPData>(
-    `/users/register/confirmOTP`,
+    `/users/register/confirm`,
     otpData
   );
   return (await response).data;
@@ -83,24 +85,37 @@ const otpPassword = async (
 };
 
 const resetPassword = async (
-  passwordData: ResetPasswordData,
-  token: string
+  passwordData: ResetPasswordData
 ): Promise<UserResponse | ApiError> => {
   const response = apiClient.post<UserResponse, ResetPasswordData>(
     `/users/password/reset`,
-    passwordData,
+    passwordData
+  );
+  return (await response).data;
+};
+
+export interface UpdateProfileData {
+  fullName?: string;
+  phone?: string;
+}
+
+const updateProfile = async (
+  profileData: UpdateProfileData,
+  token: string
+): Promise<UserResponse | ApiError> => {
+  return apiClient.patch<UserResponse, UpdateProfileData>(
+    `/users/edit`,
+    profileData,
     {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     }
   );
-  return (await response).data;
 };
 
-const userService = {
-  getUserData: async (token: string): Promise<UserResponse> => {
-    const response = await axios.get(`/user/profile`, {
+const userService = {  getUserData: async (token: string): Promise<UserResponse> => {
+    const response = await axios.get(`/users/info`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -116,5 +131,6 @@ export default {
   forgotPassword,
   otpPassword,
   resetPassword,
+  updateProfile,
   getUserData: userService.getUserData,
 };

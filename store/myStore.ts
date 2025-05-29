@@ -332,15 +332,12 @@ const useStore = create<StoreState>()(
       updateSelectedItems: async (selected: { [key: string]: boolean }) => {
         set({ selectedItems: selected, cartLoading: true });
         try {
-          const productSelectedArray = Object.entries(selected).map(
-            ([productId, selected]) => ({
-              productId,
-              selected,
-            })
+          const productSelected = Object.entries(selected).map(
+            ([productId, selected]) => ({ productId, selected })
           );
 
           const config = await setConfig();
-          await selectedCart(config, productSelectedArray);
+          await selectedCart(config, productSelected);
           const updatedCart = get().cart.map((item) => ({
             ...item,
             selected: !!selected[item.product_id],
