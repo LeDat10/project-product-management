@@ -13,6 +13,15 @@ module.exports.index = async (req, res) => {
         }
         // End Filter
 
+        const sort = {};
+
+        // Sort
+        if (req.query.sortKey && req.query.sortValue) {
+            sort[req.query.sortKey] = req.query.sortValue;
+        } else {
+            sort.fullName = "asc";
+        }
+
         // pagination
         const objPagination = {
             currentPage: 1,
@@ -31,7 +40,7 @@ module.exports.index = async (req, res) => {
         // End pagination
 
 
-        const users = await User.find(find).limit(objPagination.limit).skip(objPagination.skip).select("-password");
+        const users = await User.find(find).sort(sort).limit(objPagination.limit).skip(objPagination.skip).select("-password");
         const totalUser = await User.countDocuments({
             deleted: false
         });
@@ -172,6 +181,13 @@ module.exports.detail = async (req, res) => {
             _id: id
         }).select("-password").lean();
 
+        if (!user) {
+            return res.json({
+                code: 400,
+                message: "Không tìm thấy người dùng!"
+            });
+        };
+
         if (user.updatedBy?.length) {
             for (const item of user.updatedBy) {
                 const userUpdated = await Account.findOne({
@@ -194,13 +210,148 @@ module.exports.detail = async (req, res) => {
             };
         };
 
-        if (!user) {
-            return res.json({
-                code: 400,
-                message: "Không tìm thấy người dùng!"
-            });
+        return res.json({
+            code: 200,
+            message: "Lấy chi tiết người dùng thành công!",
+            user: user
+        })
+    } catch (error) {
+        return res.json({
+            code: 400,
+            message: "Lấy chi tiết người dùng thất bại!",
+        });
+    };
+};
+
+// [GET] /api/admin/user/trash
+module.exports.trash = async (req, res) => {
+    try {
+        const find = {
+            deleted: true
+        };
+
+        const sort = {};
+
+        // Sort
+        if (req.query.sortKey && req.query.sortValue) {
+            sort[req.query.sortKey] = req.query.sortValue;
+        } else {
+            sort.fullName = "asc";
+        }
+
+        // pagination
+        const objPagination = {
+            currentPage: 1,
+            limit: 5
+        };
+
+        if (req.query.page) {
+            objPagination.currentPage = parseInt(req.query.page);
+        };
+
+        if (req.query.limit) {
+            objPagination.limit = parseInt(req.query.limit);
+        }
+
+        objPagination.skip = (objPagination.currentPage - 1) * objPagination.limit;
+        // End pagination
+
+        const users = await User.find(find).sort(sort).limit(objPagination.limit).skip(objPagination.skip).select("-password");
+        const totalUser = await User.countDocuments({
+            deleted: true
+        });
+
+        res.json({
+            code: 200,
+            message: "Lấy người dùng thành công!",
+            users: users,
+            totalUser: totalUser
+        });
+    } catch (error) {
+        res.json({
+            code: 400,
+            message: "Lấy người dùng thất bại!"
+        });
+    };
+};
+
+//[PATCH] /api/admin/user/trash/restore
+module.exports.restore = async (req, res) => {
+    try {
+        const userId = req.body.userId;
+        await User.updateOne({
+            _id: userId
+        }, {
+            deleted: false
+        });
+
+        res.json({
+            code: 200,
+            message: "Khôi phục người dùng thành công!"
+        });
+
+    } catch (error) {
+        res.json({
+            code: 400,
+            message: "Khôi phục người dùng thất bại!"
+        });
+    };
+};
+
+//[DELETE] /api/admin/user/trash/delete/:userId
+module.exports.deletePermanently = async (req, res) => {
+    try {
+        const userId = req.params.userId;
+        await User.deleteOne({ _id: userId });
+        res.json({
+            code: 200,
+            message: "Xóa vĩnh viễn người dùng thành công!"
+        });
+    } catch (error) {
+        res.json({
+            code: 400,
+            message: "Xóa vĩnh viễn người dùng thất bại!"
+        });
+    };
+};
+
+//[PATCH] /api/admin/user/trash/restore-multi
+module.exports.restoreMulti = async (req, res) => {
+    try {
+        const { ids, key } = req.body;
+        switch (key) {
+            case 'restore':
+                await User.updateMany({
+                    _id: { $in: ids }
+                }, {
+                    deleted: false
+                });
+                res.json({
+                    code: 200,
+                    message: "Khôi phục người dùng thành công!"
+                })
+                break;
+            case 'delete':
+                await User.deleteMany({
+                    _id: { $in: ids }
+                });
+
+                res.json({
+                    code: 200,
+                    message: "Xóa vĩnh viễn người dùng thành công!"
+                });
+                break;
+            default:
+                res.json({
+                    code: 400,
+                    message: "Khôi phục/xóa người dùng thất bại!"
+                });
+                break;
         };
     } catch (error) {
-
-    }
-}
+        res.json({
+            code: 400,
+            message: "Khôi phục/xóa người dùng thất bại!"
+        });
+    };
+};

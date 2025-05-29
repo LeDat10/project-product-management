@@ -536,7 +536,16 @@ module.exports.infoAccount = async (req, res) => {
             _id: accountId,
             deleted: false,
             status: "active"
-        }).select("fullName email avatar phone");
+        }).select("fullName email avatar phone status role_id createdAt").lean();
+
+        const role = await Role.findOne({
+            _id: account.role_id,
+            deleted: false
+        });
+
+        if (role) {
+            account.roleTitle = role.title
+        };
 
         if (!account) {
             return res.json({
