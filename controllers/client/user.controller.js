@@ -193,6 +193,13 @@ module.exports.login = async (req, res) => {
             return;
         };
 
+        if(user.status === "inactive") {
+            return res.json({
+                code: 400,
+                message: "Tài khoản này đã bị khóa. Không thể đăng nhập!"
+            });
+        };
+
         const payload = {
             id: user.id,
             email: user.email,

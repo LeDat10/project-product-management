@@ -310,6 +310,13 @@ module.exports.login = async (req, res) => {
             return;
         };
 
+        if(account.status === "inactive") {
+            return res.json({
+                code: 400,
+                message: "Tài khoản này đã bị khóa. Không thể đăn nhập!"
+            });
+        };
+
         const role = await Role.findOne({
             _id: account.role_id
         });
