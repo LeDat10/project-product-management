@@ -278,6 +278,38 @@ module.exports.detail = async (req, res) => {
                 product["categoryTitle"] = category.title
             }
         };
+
+        if (product.updatedBy?.length) {
+            for (const item of product.updatedBy) {
+                const userUpdated = await Account.findOne({
+                    _id: item.account_id
+                }).lean();
+
+                if (userUpdated) {
+                    item.accountFullName = userUpdated.fullName;
+                };
+            };
+        };
+
+        if (product.createdBy) {
+            const userCreated = await Account.findOne({
+                _id: product.createdBy.account_id
+            }).lean();
+
+            if (userCreated) {
+                product.createdBy.accountFullName = userCreated.fullName;
+            };
+        };
+
+        if (product.deletedBy) {
+            const userDeleted = await Account.findOne({
+                _id: product.deletedBy.account_id
+            }).lean();
+
+            if (userDeleted) {
+                product.deletedBy.accountFullName = userDeleted.fullName;
+            };
+        };
         res.json({
             code: 200,
             product: product

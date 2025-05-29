@@ -26,14 +26,14 @@ router.post("/login", controller.login);
 
 router.get("/get-role", authMiddleware.requireAuth, controller.getRole);
 
-router.get("/trash", controller.trash);
+router.get("/trash", authMiddleware.requireAuth, controller.trash);
 
-router.patch("/trash/restore", controller.restore);
+router.patch("/trash/restore", authMiddleware.requireAuth, controller.restore);
 
-router.delete("/trash/delete/:accountId", controller.deletePermanently);
+router.delete("/trash/delete/:accountId", authMiddleware.requireAuth, controller.deletePermanently);
 
-router.patch("/trash/restore-multi", controller.restoreMulti);
+router.patch("/trash/restore-multi", authMiddleware.requireAuth, controller.restoreMulti);
 
+router.get("/get-roles", authMiddleware.requireAuth, controller.getRoles);
 
-router.get("/get-roles", controller.getRoles);
 module.exports = router;

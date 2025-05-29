@@ -228,17 +228,51 @@ module.exports.detail = async (req, res) => {
 
         const category = await ProductCategory.findOne({
             _id: id
-        });
+        }).lean();
+
+        if (category.updatedBy?.length) {
+            for (const item of category.updatedBy) {
+                const userUpdated = await Account.findOne({
+                    _id: item.account_id
+                }).lean();
+
+                if (userUpdated) {
+                    item.accountFullName = userUpdated.fullName;
+                };
+            };
+        };
+
+        if (category.createdBy) {
+            const userCreated = await Account.findOne({
+                _id: category.createdBy.account_id
+            }).lean();
+
+            if (userCreated) {
+                category.createdBy.accountFullName = userCreated.fullName;
+            };
+        };
+
+        if (category.deletedBy) {
+            const userDeleted = await Account.findOne({
+                _id: category.deletedBy.account_id
+            }).lean();
+
+            if (userDeleted) {
+                category.deletedBy.accountFullName = userDeleted.fullName;
+            };
+        };
 
         res.json({
             code: 200,
-            category: category
+            category: category,
+            message: "Lấy chi tiết danh mục thành công!"
         });
     } catch (error) {
         res.json({
-            code: 400
+            code: 400,
+            message: "Lấy chi tiết danh mục thất bại!"
         });
-    }
+    };
 };
 
 // [PATCH] /api/products-category/edit/:id

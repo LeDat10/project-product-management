@@ -11,7 +11,8 @@ module.exports.index = async (req, res) => {
     try {
         const userId = req.user._id;
         const orders = await Order.findOne({
-            user_id: userId
+            user_id: userId,
+            deleted: false
         }).select("status payment totalPrice products userInfo");
 
         return res.json({
@@ -31,8 +32,7 @@ module.exports.index = async (req, res) => {
 module.exports.order = async (req, res) => {
     try {
         const userInfo = req.body.userInfo;
-        const userId = req.user._id;
-
+        const userId = req.user.id;
         const cart = await Cart.findOne({
             user_id: userId,
             products: { $elemMatch: { selected: true } }
@@ -98,7 +98,8 @@ module.exports.orderInfo = async (req, res) => {
 
         const order = await Order.findOne({
             _id: orderId,
-            user_id: req.user.id
+            user_id: req.user.id,
+            deleted: false
         }).select("cartId userInfo products totalPrice status").lean();
 
         if (order.products.length > 0) {
@@ -128,7 +129,10 @@ module.exports.orderInfo = async (req, res) => {
 module.exports.paymentData = async (req, res) => {
     try {
         const orderId = req.params.orderId;
-        const order = Order.findById(orderId);
+        const order = await Order.findOne({
+            _id: orderId,
+            deleted: false
+        });
 
         if (!order) {
             return res.json({
@@ -137,7 +141,7 @@ module.exports.paymentData = async (req, res) => {
             });
         };
 
-        if (order.user_id !== req.user._id) {
+        if (order.user_id !== req.user.id) {
             return res.json({
                 code: 403,
                 message: "Bạn không có quyền xem đơn hàng này!"
@@ -166,7 +170,10 @@ module.exports.payment = async (req, res) => {
     try {
         const userId = req.user.id;
         const { orderId, amount, hmac } = req.body;
-        const order = await Order.findById(orderId);
+        const order = await Order.findOne({
+            _id: orderId,
+            deleted: false
+        });
 
         if (!order) {
             res.json({

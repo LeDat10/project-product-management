@@ -163,15 +163,49 @@ module.exports.detail = async (req, res) => {
         const role = await Role.findOne({
             _id: id,
             deleted: false
-        });
+        }).lean();
+
+        if (role.updatedBy?.length) {
+            for (const item of role.updatedBy) {
+                const userUpdated = await Account.findOne({
+                    _id: item.account_id
+                }).lean();
+
+                if (userUpdated) {
+                    item.accountFullName = userUpdated.fullName;
+                };
+            };
+        };
+
+        if (role.createdBy) {
+            const userCreated = await Account.findOne({
+                _id: role.createdBy.account_id
+            }).lean();
+
+            if (userCreated) {
+                role.createdBy.accountFullName = userCreated.fullName;
+            };
+        };
+
+        if (role.deletedBy) {
+            const userDeleted = await Account.findOne({
+                _id: role.deletedBy.account_id
+            }).lean();
+
+            if (userDeleted) {
+                role.deletedBy.accountFullName = userDeleted.fullName;
+            };
+        };
 
         res.json({
             code: 200,
-            role: role
+            role: role,
+            message: "Lấy chi tiết nhóm quyền thành công!"
         });
     } catch (error) {
         res.json({
-            code: 400
+            code: 400,
+            message: "Lấy chi tiết nhóm quyền thất bại!"
         });
     }
 };

@@ -10,17 +10,6 @@ module.exports.index = async (req, res) => {
 
         const orders = await Order.find(find).lean();
 
-        // await Promise.all(orders.map(async (order) => {
-        //     const userInfo = await User.findOne({
-        //         _id: order.user_id
-        //     }).lean();
-        //     if (userInfo) {
-        //         order.userFullName = userInfo.fullName;
-        //     }
-        // }));
-
-        // console.log(orders);
-
         return res.json({
             code: 200,
             message: "Lấy danh sách đơn hàng thành công!",

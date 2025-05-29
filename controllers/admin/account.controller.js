@@ -37,12 +37,18 @@ module.exports.index = async (req, res) => {
             .limit(objPagination.limit)
             .skip(objPagination.skip)
             .select("avatar fullName email status role_id updatedBy")
-            .populate({
-                path: "role_id",
-                match: { deleted: false },
-                select: "title"
-            })
             .lean();
+
+        for (const account of accounts) {
+            const role = await Role.findOne({
+                _id: account.role_id,
+                deleted: false
+            });
+
+            if (role) {
+                account.roleTitle = role.title
+            };
+        };
 
         await Promise.all(accounts.map(async (account) => {
             if (account.updatedBy?.length) {
@@ -170,15 +176,61 @@ module.exports.detail = async (req, res) => {
         const account = await Account.findOne({
             _id: id,
             deleted: false
-        }).select("-password");
+        })
+            .select("avatar fullName email status role_id updatedBy deletedBy createdBy")
+            .lean();
+
+        const role = await Role.findOne({
+            _id: account.role_id,
+            deleted: false
+        });
+
+        if (role) {
+            account.roleTitle = role.title
+        };
+
+
+        if (account.updatedBy?.length) {
+            for (const item of account.updatedBy) {
+                const userUpdated = await Account.findOne({
+                    _id: item.account_id
+                }).lean();
+
+                if (userUpdated) {
+                    item.accountFullName = userUpdated.fullName;
+                };
+            };
+        };
+
+        if (account.createdBy) {
+            const userCreated = await Account.findOne({
+                _id: account.createdBy.account_id
+            }).lean();
+
+            if (userCreated) {
+                account.createdBy.accountFullName = userCreated.fullName;
+            };
+        };
+
+        if (account.deletedBy) {
+            const userDeleted = await Account.findOne({
+                _id: account.deletedBy.account_id
+            }).lean();
+
+            if (userDeleted) {
+                account.deletedBy.accountFullName = userDeleted.fullName;
+            };
+        };
 
         res.json({
             code: 200,
-            account: account
+            account: account,
+            message: "Lấy chi tiết tài khoản thành công!"
         });
     } catch (error) {
         res.json({
-            code: 400
+            code: 400,
+            message: "Lấy chi tiết tài khoản thất bại`!"
         });
     };
 };
