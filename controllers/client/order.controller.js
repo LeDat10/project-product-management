@@ -183,14 +183,14 @@ module.exports.payment = async (req, res) => {
             return;
         };
 
-        if (order.user_id.toString() !== userId) {
+        if (order.user_id !== userId) {
             return res.json({
                 code: 403,
                 message: "Bạn không có quyền thanh toán đơn hàng này!"
             });
         };
 
-        const expectedHmac = createHmac(orderId, amount);
+        const expectedHmac = generateHelper.createHmac(orderId, amount);
         if (expectedHmac !== hmac) {
             return res.json({
                 code: 400,
