@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   Alert,
   useWindowDimensions,
+  SafeAreaView,
 } from "react-native";
 import { FlatList, ScrollView } from "react-native-gesture-handler";
 import { Double } from "react-native/Libraries/Types/CodegenTypes";
@@ -109,14 +110,15 @@ const DetailProduct = ({ route }: any) => {
             { cancelable: true }
           );
         } else {
-          Alert.alert("Thất bại", responseCart.data.message);
+          Alert.alert("Thất bại", "Thêm sản phẩm thất bại, vui lòng thử lại");
+          console.log(responseCart.data.message);
         }
       } catch (error: any) {
         console.error("Registration error:", error);
-        Alert.alert(
-          "Lỗi",
-          error.message || "Không thể kết nối đến server. Vui lòng thử lại."
-        );
+        // Alert.alert(
+        //   "Lỗi",
+        //   error.message || "Không thể kết nối đến server. Vui lòng thử lại."
+        // );
       } finally {
         setLoading2(true);
       }
@@ -145,92 +147,114 @@ const DetailProduct = ({ route }: any) => {
   }
 
   return (
-    <View>
-      <ScrollView>
-        <View>
-          <Image
-            source={{ uri: detail_product.thumbnail }}
-            style={{ width: "100%", height: 300, objectFit: "cover" }}
-          />
-          <View style={styles.line1}>
-            <Text style={styles.price}>{detail_product.price} $</Text>
-            <Text style={styles.coupon}>
-              -{detail_product.discountPercentage}%
+    <SafeAreaView style={styles.productContainer}>
+      <View>
+        <ScrollView>
+          <View>
+            <View style={styles.imgContainer}>
+              <Image
+                source={{ uri: detail_product.thumbnail }}
+                style={styles.img}
+                resizeMode="stretch"
+              />
+            </View>
+            <View style={styles.line1}>
+              <Text style={styles.price}>{detail_product.price} $</Text>
+              <View style={styles.containerDiscount}>
+                <Text style={styles.discount}>
+                  -{detail_product.discountPercentage}%
+                </Text>
+              </View>
+            </View>
+            <Text style={styles.title}>{detail_product.title}</Text>
+            <Text style={styles.stock}>
+              Tình trạng:{" "}
+              {inventory ? (
+                <Text style={styles.inventory}>Còn hàng</Text>
+              ) : (
+                <Text style={styles.inventory}>Hết hàng</Text>
+              )}
+            </Text>
+            <Text style={styles.detail}>Mô tả chi tiết: </Text>
+            <Text style={styles.description}>
+              <RenderHtml
+                contentWidth={width}
+                source={{ html: detail_product.description }}
+              />
             </Text>
           </View>
-          <Text style={styles.title}>{detail_product.title}</Text>
-          <Text style={styles.stock}>
-            Tình trạng:{" "}
-            {inventory ? (
-              <Text style={styles.inventory}>Còn hàng</Text>
-            ) : (
-              <Text style={styles.inventory}>Hết hàng</Text>
-            )}
-          </Text>
-          <Text style={styles.detail}>Mô tả chi tiết: </Text>
-          <Text style={styles.description}>
-            <RenderHtml
-              contentWidth={width}
-              source={{ html: detail_product.description }}
-            />
-          </Text>
-        </View>
+        </ScrollView>
 
-        {/* <View style={{ paddingBottom: 70 }}></View> */}
-      </ScrollView>
+        <View style={styles.container}>
+          <View style={styles.counterContainer}>
+            <TouchableOpacity
+              style={styles.quantity}
+              onPress={() => setQuantity(Math.max(0, quantity - 1))}
+            >
+              <Text style={styles.sign}>-</Text>
+            </TouchableOpacity>
 
-      <View style={styles.container}>
-        <View style={styles.counterContainer}>
-          <TouchableOpacity
-            style={styles.quantity}
-            onPress={() => setQuantity(Math.max(0, quantity - 1))}
-          >
-            <Text style={styles.sign}>-</Text>
-          </TouchableOpacity>
+            <View style={styles.countText}>
+              <Text style={styles.count}>{quantity}</Text>
+            </View>
 
-          <View style={styles.countText}>
-            <Text style={styles.count}>{quantity}</Text>
+            <TouchableOpacity
+              style={styles.quantity}
+              onPress={() =>
+                setQuantity(Math.min(detail_product.stock || 0, quantity + 1))
+              }
+            >
+              <Text style={styles.sign}>+</Text>
+            </TouchableOpacity>
           </View>
 
           <TouchableOpacity
-            style={styles.quantity}
-            onPress={() =>
-              setQuantity(Math.min(detail_product.stock || 0, quantity + 1))
-            }
+            style={[styles.button, !inventory && styles.disbutton]}
+            disabled={!inventory}
+            onPress={handleButton}
           >
-            <Text style={styles.sign}>+</Text>
+            <Text style={styles.text}>Thêm vào giỏ hàng</Text>
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity
-          style={[styles.button, !inventory && styles.disbutton]}
-          disabled={!inventory}
-          onPress={handleButton}
-        >
-          <Text style={styles.text}>Thêm vào giỏ hàng</Text>
-        </TouchableOpacity>
+        {!loading2 && (
+          <View
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              justifyContent: "center",
+              backgroundColor: "rgba(0,0,0,0.4)",
+            }}
+          >
+            <ActivityIndicator size={"large"} color="#007bff" />
+          </View>
+        )}
       </View>
-
-      {!loading2 && (
-        <View
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            justifyContent: "center",
-            backgroundColor: "rgba(0,0,0,0.4)",
-          }}
-        >
-          <ActivityIndicator size={"large"} color="#007bff" />
-        </View>
-      )}
-    </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  productContainer: {
+    flex: 1,
+    backgroundColor: "#fff",
+    marginBottom: 45,
+  },
+
+  imgContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  img: {
+    width: 380,
+    height: 380,
+  },
+
   line1: {
     paddingHorizontal: 20,
     flexDirection: "row",
@@ -239,18 +263,24 @@ const styles = StyleSheet.create({
   },
 
   price: {
+    color: "red",
     fontSize: 32,
     fontWeight: "600",
   },
 
-  coupon: {
-    backgroundColor: "red",
-    color: "white",
-    fontSize: 16,
+  containerDiscount: {
+    backgroundColor: "#fadbd8",
+    paddingVertical: 3,
+    marginHorizontal: 5,
+    borderRadius: 5,
+    width: 50,
+  },
+
+  discount: {
+    color: "red",
+    fontSize: 15,
     fontWeight: "600",
     textAlign: "center",
-    justifyContent: "center",
-    padding: 3,
   },
 
   title: {
@@ -292,17 +322,12 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     padding: 10,
-    backgroundColor: "white",
+    backgroundColor: "#fff",
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     borderTopWidth: 1,
     borderTopColor: "#eee",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 5,
   },
 
   button: {

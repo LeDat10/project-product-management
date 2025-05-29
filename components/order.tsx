@@ -34,7 +34,7 @@ interface Info {
   fullName: string;
   number: string;
   address: string;
-  email: string;
+  // email: string;
 }
 
 const Order = () => {
@@ -74,25 +74,48 @@ const Order = () => {
         fullName: fullName,
         number: number,
         address: address,
-        email: email,
+        // email: email,
       };
-      const config = await getConfig();
-      const response = await postOrder(config, userInfo);
-      if (response && response.data.code === 200) {
-        // console.log(response.data.message);
+      if (
+        userInfo.address === "" ||
+        // userInfo.email === "" ||
+        userInfo.fullName === "" ||
+        userInfo.number === ""
+      ) {
         Alert.alert(
-          "Thành công",
-          response.data.message,
+          "Thất bại",
+          "Yêu cầu nhập đầy đủ thông tin khách hàng",
           [
             {
-              text: "Tiếp tục mua sắm",
-              onPress: () => navigation.navigate("product"),
+              text: "Tiếp tục",
+              style: "cancel",
             },
           ],
           { cancelable: true }
         );
       } else {
-        // console.log(response.data.message);
+        const config = await getConfig();
+        const response = await postOrder(config, userInfo);
+        if (response && response.data.code === 200) {
+          console.log(response.data.message);
+          Alert.alert(
+            "Thành công",
+            response.data.message,
+            [
+              {
+                text: "Thanh toán đơn hàng",
+                onPress: () =>
+                  (navigation as any).navigate("bank", {
+                    orderId: response.data.orderId,
+                  }),
+              },
+            ],
+            { cancelable: true }
+          );
+        } else {
+          Alert.alert("Thất bại", response.data.message);
+          console.log(response.data.message);
+        }
       }
     } catch (error) {
       console.log(error);
@@ -203,15 +226,6 @@ const Order = () => {
 
               <TextInput
                 style={styles.input}
-                placeholder="Email"
-                value={email}
-                onChangeText={setEmail}
-                maxLength={25}
-                keyboardType="email-address"
-              />
-
-              <TextInput
-                style={styles.input}
                 placeholder="Địa chỉ"
                 value={address}
                 onChangeText={setAddress}
@@ -241,9 +255,11 @@ const Order = () => {
                 <Text style={styles.infoText}>{totalPrice() + shipping}$</Text>
               </View>
 
-              <View>
-                <Text style={styles.text}>Phương thức thanh toán </Text>
-              </View>
+              {/* <View style={styles.paymentContainer}>
+                <TouchableOpacity style={styles.paymentButton} onPress={}>
+                  <Text style={styles.paymentText}>THANH TOÁN</Text>
+                </TouchableOpacity>
+              </View> */}
             </View>
           }
         />

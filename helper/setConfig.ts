@@ -2,14 +2,20 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export const setConfig = async () => {
   const cartId = await AsyncStorage.getItem("cartId");
-  if (cartId) {
+  const token = await AsyncStorage.getItem("token");
+  if (token) {
+    return {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        cartId: cartId,
+      },
+    };
+  } else {
     return {
       headers: {
         cartId: cartId,
       },
     };
-  } else {
-    return {};
   }
 };
 

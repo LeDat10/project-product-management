@@ -27,6 +27,7 @@ import DetailProduct from "./components/detail_product";
 import ForgotPassword from "./components/forgotpw";
 import Search from "./components/search";
 import Order from "./components/order";
+import Bank from "./components/bank";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -116,11 +117,11 @@ const App = () => {
               component={ForgotPassword}
               options={{ title: "Quên mật khẩu" }}
             />
-            {/* <Stack.Screen
+            <Stack.Screen
               name="detail-product"
               component={DetailProduct}
               options={{ title: "Chi tiết sản phẩm" }}
-            /> */}
+            />
             <Stack.Screen
               name="search"
               component={Search}
@@ -130,6 +131,11 @@ const App = () => {
               name="order"
               component={Order}
               options={{ title: "Đơn Hàng" }}
+            />
+            <Stack.Screen
+              name="bank"
+              component={Bank}
+              options={{ title: "Thanh toán" }}
             />
           </Stack.Navigator>
         </NavigationContainer>

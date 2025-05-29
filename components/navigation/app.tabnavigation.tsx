@@ -38,7 +38,7 @@ function HomeStackScreen() {
       <Stack.Screen name="Cleaning" component={Cleaning} />
       <Stack.Screen name="Care" component={Care} />
       <Stack.Screen name="Snack" component={Snack} /> */}
-      <Stack.Screen name="detail-product" component={DetailProduct} />
+      {/* <Stack.Screen name="detail-product" component={DetailProduct} /> */}
       <Stack.Screen name="account" component={Account} />
     </Stack.Navigator>
   );
