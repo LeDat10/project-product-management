@@ -29,6 +29,8 @@ import {
   useNavigation,
 } from "@react-navigation/native";
 import { getConfig } from "../helper/getToken";
+import TextTicker from "react-native-text-ticker";
+import useStore from "../store/myStore";
 
 interface Product {
   _id: string; // cartId
@@ -51,30 +53,30 @@ const Cart = () => {
   const fetchAPI = async (): Promise<void> => {
     setLoading(true);
     try {
-      const token = await AsyncStorage.getItem("token");
-      if (token) {
-        const config = await setConfig();
-        const response = await getCart(config);
-        if (response) {
-          setLoading(false);
-        }
+      // const token = await AsyncStorage.getItem("token");
+      // if (isAuthenticated) {
+      const config = await setConfig();
+      const response = await getCart(config);
 
-        const productData = response.data.cart["products"];
-        const cartId = response.headers["cartid"];
-        if (cartId) {
-          await AsyncStorage.setItem("cartId", cartId);
-        }
-
-        const newSelected: { [key: string]: boolean } = {};
-        productData.forEach((item: Product) => {
-          newSelected[item.product_id] = item.selected || false;
-        });
-
-        setSelected(newSelected);
-        setCartproduct(productData);
-      } else {
-        const cartId = await removeData("cartId");
+      if (response) {
+        setLoading(false);
       }
+
+      const productData = response.data.cart["products"];
+      const cartId = response.headers["cartid"];
+      if (cartId) {
+        await AsyncStorage.setItem("cartId", cartId);
+      }
+
+      const newSelected: { [key: string]: boolean } = {};
+      productData.forEach((item: Product) => {
+        newSelected[item.product_id] = item.selected || false;
+      });
+
+      setSelected(newSelected);
+      setCartproduct(productData);
+      // } else {
+      // }
     } catch (error) {
       console.log(error);
     } finally {
@@ -160,7 +162,6 @@ const Cart = () => {
   return (
     <SafeAreaView style={styles.cardContainer}>
       <View style={styles.container}>
-        {/* <Text>Đơn hàng trên 200000</Text> */}
         <FlatList
           data={cartproduct}
           extraData={cartproduct}
@@ -311,6 +312,12 @@ const Cart = () => {
         />
 
         <View style={styles.payContainer}>
+          <View style={styles.shipping}>
+            <Text style={styles.textShipping} numberOfLines={1}>
+              Đơn hàng trên 200$ sẽ được miễn phí vận chuyển!!!
+            </Text>
+          </View>
+
           <View style={styles.sumQuantity}>
             <Text style={styles.textquantity}>Số lượng sản phẩm:</Text>
             <Text style={styles.calcQuantity}>{calcQuantity()}</Text>
@@ -339,7 +346,7 @@ const Cart = () => {
                       "Vui lòng chọn ít nhất 1 sản phẩm",
                       [
                         {
-                          text: "Thoát",
+                          text: "Tiếp tục",
                           style: "cancel",
                         },
                       ]
@@ -376,7 +383,7 @@ const styles = StyleSheet.create({
   cardContainer: {
     flex: 1,
     backgroundColor: "#fff",
-    marginBottom: 10,
+    marginBottom: 15,
   },
 
   container: {
@@ -516,9 +523,20 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
 
+  shipping: {
+    marginTop: 10,
+  },
+
+  textShipping: {
+    color: "red",
+    fontSize: 15,
+    fontWeight: "600",
+    textAlign: "center",
+  },
+
   payContainer: {
     backgroundColor: "#F2F2F2",
-    height: 200,
+    height: 250,
   },
 
   sumQuantity: {

@@ -20,6 +20,7 @@ type RootStackParamList = {
   account: undefined;
   search: undefined;
   order: undefined;
+  bank: undefined;
   "detail-product":
     | {
         // id: string;
