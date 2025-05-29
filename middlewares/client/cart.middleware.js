@@ -3,6 +3,7 @@ const Cart = require("../../models/cart.model");
 module.exports.cartId = async (req, res, next) => {
     try {
         const cartId = req.headers.cartid;
+
         // Nếu chưa đăng nhập
         if (!req.user) {
             if (!cartId) {
@@ -23,25 +24,33 @@ module.exports.cartId = async (req, res, next) => {
         // Nếu đã đăng nhập
         else {
             const userId = req.user._id;
+            let cart = null;
 
-            let cart;
             if (cartId) {
-                cart = await Cart.findOne({ _id: cartId });
+                const foundCart = await Cart.findOne({ _id: cartId });
 
-                if (cart && !cart.user_id) {
-                    // Gán cart ẩn danh cho user
-                    cart.user_id = userId;
-                    await cart.save();
+                if (foundCart) {
+                    // Nếu cart chưa gán user → gán cho user hiện tại
+                    if (!foundCart.user_id) {
+                        foundCart.user_id = userId;
+                        await foundCart.save();
+                        cart = foundCart;
+                    }
+                    // Nếu cart đã thuộc user hiện tại → dùng luôn
+                    else if (foundCart.user_id.toString() === userId.toString()) {
+                        cart = foundCart;
+                    }
+                    // Nếu cart thuộc user khác → bỏ qua
                 }
             }
 
+            // Nếu chưa có cart hợp lệ từ cartId → tìm theo user_id
             if (!cart) {
-                // Nếu cartId không có hoặc cart đã có user_id khác
                 cart = await Cart.findOne({ user_id: userId });
             }
 
+            // Nếu vẫn chưa có cart → tạo mới
             if (!cart) {
-                // Nếu không có cart nào, tạo mới
                 cart = new Cart({ user_id: userId });
                 await cart.save();
                 res.setHeader("cartId", cart.id);
@@ -50,11 +59,11 @@ module.exports.cartId = async (req, res, next) => {
             req.cart = cart;
         }
 
-        next()
+        next();
     } catch (error) {
         res.json({
             code: 400,
             message: "Không thể tìm thấy giỏ hàng!"
         });
-    };
+    }
 };
