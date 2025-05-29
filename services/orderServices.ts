@@ -3,16 +3,15 @@ import { get, post } from "../utils/request";
 
 interface Info {
   fullName: string;
-  number: string;
+  phone: string;
   address: string;
-  // email: string;
 }
 
 export const postOrder = async (
   config: AxiosRequestConfig = {},
   userinfo: Info
 ): Promise<AxiosResponse> => {
-  const response = await post("/order/confirm", config, userinfo);
+  const response = await post("/order/confirm", config, { userInfo: userinfo });
   return response;
 };
 

@@ -32,9 +32,8 @@ interface Product {
 
 interface Info {
   fullName: string;
-  number: string;
+  phone: string;
   address: string;
-  // email: string;
 }
 
 const Order = () => {
@@ -42,9 +41,8 @@ const Order = () => {
   const [loading, setLoading] = useState(false);
   const [cartProduct, setCartProduct] = useState<Product[]>([]);
   const [fullName, setFullName] = useState("");
-  const [number, setNumber] = useState("");
+  const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
-  const [email, setEmail] = useState("");
   const [shipping, setShipping] = useState(0);
 
   const fetchProduct = async () => {
@@ -72,15 +70,13 @@ const Order = () => {
     try {
       const userInfo: Info = {
         fullName: fullName,
-        number: number,
+        phone: phone,
         address: address,
-        // email: email,
       };
       if (
         userInfo.address === "" ||
-        // userInfo.email === "" ||
         userInfo.fullName === "" ||
-        userInfo.number === ""
+        userInfo.phone === ""
       ) {
         Alert.alert(
           "Thất bại",
@@ -218,8 +214,8 @@ const Order = () => {
               <TextInput
                 style={styles.input}
                 placeholder="Số điện thoại"
-                value={number}
-                onChangeText={setNumber}
+                value={phone}
+                onChangeText={setPhone}
                 maxLength={25}
                 keyboardType="numeric"
               />
