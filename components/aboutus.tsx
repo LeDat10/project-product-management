@@ -6,7 +6,6 @@ import { ScrollView } from "react-native-gesture-handler";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import SimpleLineIcons from "@expo/vector-icons/SimpleLineIcons";
-import Footer from "./footer";
 
 const AboutUs = () => {
   const navigation: NavigationProp<RootStackParamList> = useNavigation();

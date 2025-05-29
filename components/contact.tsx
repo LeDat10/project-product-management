@@ -6,7 +6,6 @@ import AntDesign from "@expo/vector-icons/AntDesign";
 import Feather from "@expo/vector-icons/Feather";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import Footer from "./footer";
 
 const Contact = () => {
   const navigation: NavigationProp<RootStackParamList> = useNavigation();

@@ -21,6 +21,8 @@ type RootStackParamList = {
   search: undefined;
   order: undefined;
   bank: undefined;
+  "list-order": undefined;
+  "detail-list-order": undefined;
   "detail-product":
     | {
         // id: string;

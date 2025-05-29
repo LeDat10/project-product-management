@@ -9,8 +9,6 @@ import {
   TouchableOpacity,
   SafeAreaView,
 } from "react-native";
-import { Double } from "react-native/Libraries/Types/CodegenTypes";
-import axios from "axios";
 import { FlatList } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
@@ -28,16 +26,13 @@ import {
   useFocusEffect,
   useNavigation,
 } from "@react-navigation/native";
-import { getConfig } from "../helper/getToken";
-import TextTicker from "react-native-text-ticker";
-import useStore from "../store/myStore";
 
 interface Product {
   _id: string; // cartId
   titleProduct: string;
   price: number;
   thumbnail: string;
-  discountPercentage: Double;
+  discountPercentage: number;
   quantity: number;
   product_id: string;
   stock: number;
@@ -53,8 +48,6 @@ const Cart = () => {
   const fetchAPI = async (): Promise<void> => {
     setLoading(true);
     try {
-      // const token = await AsyncStorage.getItem("token");
-      // if (isAuthenticated) {
       const config = await setConfig();
       const response = await getCart(config);
 
@@ -75,8 +68,6 @@ const Cart = () => {
 
       setSelected(newSelected);
       setCartproduct(productData);
-      // } else {
-      // }
     } catch (error) {
       console.log(error);
     } finally {
@@ -370,7 +361,7 @@ const Cart = () => {
                 }
               }}
             >
-              <Text style={styles.textPayment}>THANH TOÁN</Text>
+              <Text style={styles.textPayment}>ĐẶT HÀNG</Text>
             </TouchableOpacity>
           </View>
         </View>

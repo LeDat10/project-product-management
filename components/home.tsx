@@ -11,7 +11,6 @@ import {
 import ImageSlide from "./imageSlide";
 import React from "react";
 import { ScrollView } from "react-native-gesture-handler";
-import Footer from "./footer";
 import EvilIcons from "@expo/vector-icons/EvilIcons";
 import Vegatable from "./menu/vegatable";
 
@@ -176,11 +175,6 @@ const HomeScreen = () => {
               <Text style={styles.Text}>Hóa Mỹ Phẩm</Text>
             </View>
           </View>
-        </View>
-
-        {/* Best Saller */}
-        <View style={styles.areaBL}>
-          <Text style={styles.textbestseller}>Best Seller</Text>
         </View>
 
         {/* deal of the week: cleaning */}

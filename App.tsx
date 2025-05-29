@@ -28,6 +28,8 @@ import ForgotPassword from "./components/forgotpw";
 import Search from "./components/search";
 import Order from "./components/order";
 import Bank from "./components/bank";
+import ListOrder from "./components/listOrder";
+import DetailListOrder from "./components/detailListOrder";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -136,6 +138,16 @@ const App = () => {
               name="bank"
               component={Bank}
               options={{ title: "Thanh toán" }}
+            />
+            <Stack.Screen
+              name="list-order"
+              component={ListOrder}
+              options={{ title: "Danh sách đơn hàng" }}
+            />
+            <Stack.Screen
+              name="detail-list-order"
+              component={DetailListOrder}
+              options={{ title: "Chi tiết đơn hàng" }}
             />
           </Stack.Navigator>
         </NavigationContainer>

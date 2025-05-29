@@ -20,14 +20,10 @@ interface InfoPayment {
 
 const Bank = ({ route }: any) => {
   const navigation: NavigationProp<RootStackParamList> = useNavigation();
-  // const [amount, setAmount] = useState();
-  // const [hmac, setHmac] = useState("");
   const [payment, setPayment] = useState<InfoPayment | null>(null);
   const { orderId } = route.params;
   const [loading, setLoading] = useState(false);
   const [money, setMoney] = useState<number | undefined>();
-
-  // console.log("orderId", orderId);
 
   const fetchAPI = async () => {
     setLoading(true);

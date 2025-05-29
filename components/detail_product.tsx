@@ -14,7 +14,6 @@ import {
 import { FlatList, ScrollView } from "react-native-gesture-handler";
 import { Double } from "react-native/Libraries/Types/CodegenTypes";
 import RenderHtml from "react-native-render-html";
-import axios, { AxiosError } from "axios";
 import { setConfig } from "../helper/setConfig";
 import { PostCart } from "../services/cartSevices";
 import { detaiProduct } from "../services/productServices";

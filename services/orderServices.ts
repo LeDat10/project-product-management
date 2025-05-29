@@ -29,11 +29,17 @@ export const postPayment = async (
   hmac: string,
   config: AxiosRequestConfig = {}
 ): Promise<AxiosResponse> => {
-  // console.log(money);
   const response = await post("/order/payment", config, {
     orderId: orderId,
     amount: money,
     hmac: hmac,
   });
+  return response;
+};
+
+export const getListOrder = async (
+  config: AxiosRequestConfig = {}
+): Promise<AxiosResponse> => {
+  const response = await get("/order", config);
   return response;
 };

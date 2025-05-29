@@ -108,28 +108,7 @@ const Sort = () => {
 
   return (
     <View style={styles.container}>
-      {/* <View style={styles.sortContainer}> */}
-      {/* <FontAwesome
-          name="sort"
-          size={24}
-          color="black"
-          style={styles.sortIcon}
-        /> */}
-
       <View style={styles.filters}>
-        {/* <View style={styles.status}>
-          <Text style={styles.filterLabel}>Trạng thái:</Text>
-          <Picker
-            selectedValue={status}
-            style={styles.picker}
-            onValueChange={(value) => setStatus(value)}
-          >
-            <Picker.Item label="Tất cả" value="" />
-            <Picker.Item label="Hoạt động" value="active" />
-            <Picker.Item label="Không hoạt động" value="inactive" />
-          </Picker>
-        </View> */}
-
         <View style={styles.sort}>
           <Text style={styles.filterLabel}>Sắp xếp:</Text>
           <Picker
@@ -145,7 +124,6 @@ const Sort = () => {
           </Picker>
         </View>
       </View>
-      {/* </View> */}
 
       {loading && <ActivityIndicator size="large" color="#0000ff" />}
       <FlatList
@@ -154,11 +132,6 @@ const Sort = () => {
         columnWrapperStyle={styles.Row}
         keyExtractor={(item) => item._id}
         renderItem={renderProduct}
-        // ListEmptyComponent={
-        //   <View>
-        //     <Text style={styles.emptyProduct}>Không tìm thấy sản phẩm</Text>
-        //   </View>
-        // }
       />
     </View>
   );

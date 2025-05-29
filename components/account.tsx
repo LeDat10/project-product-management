@@ -20,13 +20,13 @@ import { NavigationProp, useNavigation } from "@react-navigation/native";
 import useStore from "../store/myStore";
 import { getUserInfo, getCachedUserInfo } from "../helper/getToken";
 
-type RootStackParamList = {
-  login: undefined;
-  register: undefined;
-  menu: undefined;
-  cart: undefined;
-  forgotpw: undefined;
-};
+// type RootStackParamList = {
+//   login: undefined;
+//   register: undefined;
+//   menu: undefined;
+//   cart: undefined;
+//   forgotpw: undefined;
+// };
 
 const Account = () => {
   const navigation: NavigationProp<RootStackParamList> = useNavigation();
@@ -47,7 +47,7 @@ const Account = () => {
       fetchUserInfo();
     }
   }, [isAuthenticated, fetchCart]);
-  
+
   // Định nghĩa interface cho thông tin người dùng
   interface UserInfo {
     _id?: string;
@@ -57,11 +57,11 @@ const Account = () => {
     status?: string;
     [key: string]: any;
   }
-  
+
   // Hàm để lấy thông tin người dùng từ API
   const fetchUserInfo = async () => {
     if (!isAuthenticated) return;
-    
+
     setLoadingUser(true);
     console.log("Bắt đầu lấy thông tin người dùng...");
     try {
@@ -85,19 +85,19 @@ const Account = () => {
           });
         }
       }
-      
+
       // Luôn gọi API để lấy thông tin mới nhất
       console.log("Đang gọi API lấy thông tin người dùng...");
       const apiUserInfo = await getUserInfo();
       console.log("Kết quả API:", apiUserInfo);
-      
+
       if (apiUserInfo && apiUserInfo.user) {
         // Phân tích thông tin người dùng từ phản hồi API theo cấu trúc thực tế
         const userData = apiUserInfo.user;
-        
+
         // Lưu thông tin người dùng
         setUserInfo(userData);
-        
+
         setUserProfile({
           fullName: userData.fullName || "",
           phone: userData.phone || "",
@@ -151,33 +151,36 @@ const Account = () => {
       // Import service cập nhật thông tin người dùng
       const accountService = require("../services/accountService").default;
       const { getAuthConfig } = require("../helper/getToken");
-      
+
       // Lấy token từ AuthConfig
       const authConfig = await getAuthConfig();
       const token = authConfig.headers?.authorization?.split(" ")[1];
-      
+
       if (!token) {
         Alert.alert("Lỗi", "Bạn cần đăng nhập lại để thực hiện thao tác này!");
         return;
       }
-      
+
       // Chuẩn bị dữ liệu cập nhật
       const updatedData = {
         fullName: userProfile.fullName,
-        phone: userProfile.phone
+        phone: userProfile.phone,
       };
-      
+
       // Gọi API cập nhật thông tin
       const result = await accountService.updateProfile(updatedData, token);
-      
+
       if (result) {
         // Cập nhật thông tin người dùng sau khi cập nhật thành công
         await fetchUserInfo();
-        
+
         Alert.alert("Thông báo", "Cập nhật thông tin thành công!");
         setEditingProfile(false);
       } else {
-        Alert.alert("Lỗi", "Không thể cập nhật thông tin. Vui lòng thử lại sau!");
+        Alert.alert(
+          "Lỗi",
+          "Không thể cập nhật thông tin. Vui lòng thử lại sau!"
+        );
       }
     } catch (error) {
       console.log("Lỗi khi cập nhật thông tin:", error);
@@ -223,7 +226,7 @@ const Account = () => {
             >
               <Text style={styles.cancelButtonText}>Hủy</Text>
             </TouchableOpacity>
-            
+
             <TouchableOpacity
               style={[styles.profileButton, styles.saveButton]}
               onPress={handleUpdateProfile}
@@ -310,10 +313,10 @@ const Account = () => {
 
   // Function to safely render greeting text
   const renderUserGreeting = () => {
-    const displayName = userInfo?.fullName 
+    const displayName = userInfo?.fullName
       ? userInfo.fullName
       : userInfo?.email || user?.email || "Người dùng";
-    
+
     return `Xin chào, ${displayName}!`;
   };
 
@@ -339,9 +342,7 @@ const Account = () => {
                     <Text style={styles.userGreeting}>
                       {renderUserGreeting()}
                     </Text>
-                    <Text style={styles.userEmail}>
-                      {renderUserEmail()}
-                    </Text>
+                    <Text style={styles.userEmail}>{renderUserEmail()}</Text>
 
                     <View style={styles.accountActions}>
                       <TouchableOpacity
@@ -395,7 +396,10 @@ const Account = () => {
         <Text style={styles.sectionTitle}>Đơn hàng của tôi</Text>
 
         <View style={styles.orderStatusSection}>
-          <TouchableOpacity style={styles.orderStatusItem}>
+          <TouchableOpacity
+            style={styles.orderStatusItem}
+            onPress={() => navigation.navigate("list-order")}
+          >
             <View style={styles.orderIcon}>
               <Ionicons name="receipt-outline" size={24} color="#4a6ce2" />
             </View>
