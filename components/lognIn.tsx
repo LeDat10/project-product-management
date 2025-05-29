@@ -61,10 +61,6 @@ const LognIn = ({ navigation }: Props) => {
       email: email,
       password: password,
     };
-
-    // const result = await login(loginData);
-    // console.log(result);
-
     await login(loginData);
   };
 

@@ -332,13 +332,8 @@ const useStore = create<StoreState>()(
       updateSelectedItems: async (selected: { [key: string]: boolean }) => {
         set({ selectedItems: selected, cartLoading: true });
         try {
-          // const productSelected = Object.entries(selected)
-          //   .filter(([_, isSelected]) => isSelected)
-          //   .map(([id]) => id);
-
           const productSelected = Object.entries(selected).map(
             ([productId, selected]) => ({ productId, selected })
-            // >>>>>>> 6edefb790acea2dd163ed90e8d8385a4956469e8
           );
 
           const config = await setConfig();

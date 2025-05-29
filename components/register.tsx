@@ -10,8 +10,10 @@ import {
   Alert,
   ActivityIndicator,
   ScrollView,
+  Modal,
+  Button,
 } from "react-native";
-import { RegisterData } from "../services/accountService";
+import { RegisterData, ConfirmOTPData } from "../services/accountService";
 import useStore from "../store/myStore";
 
 type RegisterScreenNavProp = NavigationProp<RootStackParamList, "register">;
@@ -29,11 +31,15 @@ const Register = ({ navigation }: Props) => {
   const [lastname, setLastname] = useState("");
   const [phone, setPhone] = useState("");
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
+  const [otpModalVisible, setOtpModalVisible] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [registeredEmail, setRegisteredEmail] = useState("");
+  const [otpLoading, setOtpLoading] = useState(false);
 
-  const register = useStore(state => state.register);
-  const loading = useStore(state => state.loading);
-  const error = useStore(state => state.error);
-  const clearErrors = useStore(state => state.clearErrors);
+  const register = useStore((state) => state.register);
+  const loading = useStore((state) => state.loading);
+  const error = useStore((state) => state.error);
+  const clearErrors = useStore((state) => state.clearErrors);
 
   useEffect(() => {
     clearErrors();
@@ -51,18 +57,10 @@ const Register = ({ navigation }: Props) => {
 
   useEffect(() => {
     if (registrationSuccess) {
-      Alert.alert(
-        "Đăng ký thành công", 
-        "Vui lòng kiểm tra email để xác nhận tài khoản của bạn.",
-        [
-          { 
-            text: "Đăng nhập ngay", 
-            onPress: () => navigation.navigate("login") 
-          }
-        ]
-      );
+      setRegisteredEmail(email);
+      setOtpModalVisible(true);
     }
-  }, [registrationSuccess]);
+  }, [registrationSuccess, email]);
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -75,8 +73,15 @@ const Register = ({ navigation }: Props) => {
   };
 
   const handleRegister = async () => {
-    
-    if (!email || !username || !password || !confirmPassword || !firstname || !lastname || !phone) {
+    if (
+      !email ||
+      !username ||
+      !password ||
+      !confirmPassword ||
+      !firstname ||
+      !lastname ||
+      !phone
+    ) {
       Alert.alert("Thông tin không hợp lệ", "Vui lòng điền đầy đủ thông tin.");
       return;
     }
@@ -111,9 +116,53 @@ const Register = ({ navigation }: Props) => {
     };
 
     const result = await register(registerData);
-    
-    if (!result || !('error' in result)) {
+
+    if (!result || !("error" in result)) {
       setRegistrationSuccess(true);
+    }
+  };
+
+  const handleConfirmOtp = async () => {
+    if (!otp || otp.length < 6) {
+      Alert.alert("Lỗi", "Vui lòng nhập mã OTP hợp lệ.");
+      return;
+    }    try {
+      setOtpLoading(true);
+      const otpData: ConfirmOTPData = {
+        email: registeredEmail,
+        otp: otp,
+      };
+
+      const accountService = require("../services/accountService").default;
+      const result = await accountService.confirmOTP(otpData);
+
+      if (result && !("error" in result)) {
+        setOtpModalVisible(false);
+        Alert.alert(
+          "Xác thực thành công",
+          "Tài khoản của bạn đã được xác thực thành công.",
+          [
+            {
+              text: "Đăng nhập ngay",
+              onPress: () => navigation.navigate("login"),
+            },
+          ]
+        );
+      } else {
+        Alert.alert(
+          "Lỗi",
+          "message" in result ? result.message : "Xác thực không thành công"
+        );
+      }
+    } catch (error) {
+      Alert.alert(
+        "Lỗi",
+        error instanceof Error
+          ? error.message
+          : "Đã xảy ra lỗi khi xác thực OTP"
+      );
+    } finally {
+      setOtpLoading(false);
     }
   };
 
@@ -126,7 +175,9 @@ const Register = ({ navigation }: Props) => {
           resizeMode="contain"
         />
         <Text style={styles.title}>Đăng Ký Tài Khoản</Text>
-        <Text style={styles.subtitle}>Vui lòng điền đầy đủ thông tin bên dưới</Text>
+        <Text style={styles.subtitle}>
+          Vui lòng điền đầy đủ thông tin bên dưới
+        </Text>
 
         <TextInput
           style={styles.input}
@@ -214,6 +265,41 @@ const Register = ({ navigation }: Props) => {
         <TouchableOpacity onPress={() => navigation.navigate("menu")}>
           <Text style={styles.homeLink}>Quay lại trang chủ</Text>
         </TouchableOpacity>
+        
+        {/* OTP Verification Modal */}
+        <Modal visible={otpModalVisible} transparent animationType="slide">
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Xác thực OTP</Text>
+              <Text style={styles.modalSubtitle}>
+                Vui lòng nhập mã OTP đã được gửi đến email của bạn
+              </Text>              <TextInput
+                style={styles.otpInput}
+                placeholder="Nhập mã OTP"
+                value={otp}
+                onChangeText={setOtp}
+                keyboardType="number-pad"
+                maxLength={6}
+                autoFocus={true}
+                textAlign="center"
+              />
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  style={[styles.modalButton, styles.cancelButton]}
+                  onPress={() => setOtpModalVisible(false)}
+                >
+                  <Text style={styles.cancelButtonText}>Hủy</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.modalButton, styles.confirmButton]}
+                  onPress={handleConfirmOtp}
+                >
+                  <Text style={styles.confirmButtonText}>Xác nhận</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
       </View>
     </ScrollView>
   );
@@ -259,7 +345,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     marginBottom: 15,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: "#ddd",
     color: "#333",
   },
   nameContainer: {
@@ -280,12 +366,11 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 20,
     elevation: 2,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.2,
     shadowRadius: 1,
-  },
-  buttonText: {
+  },  buttonText: {
     textAlign: "center",
     color: "white",
     fontSize: 16,
@@ -311,6 +396,69 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#007bff",
     marginTop: 15,
+  },
+  
+  // Modal styles
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    backgroundColor: "rgba(0,0,0,0.5)",
+  },  modalContent: {
+    backgroundColor: "white",
+    margin: 20,
+    borderRadius: 12,
+    padding: 20,
+    elevation: 10,
+  },
+  modalTitle: { 
+    fontSize: 20, 
+    fontWeight: "bold", 
+    marginBottom: 10 
+  },
+  modalSubtitle: { 
+    fontSize: 16,
+    color: "#555",
+    marginBottom: 15
+  },
+  otpInput: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 8,
+    padding: 10,
+    backgroundColor: "#f9f9f9",
+    marginBottom: 20,
+    textAlign: "center",
+    letterSpacing: 5,
+    fontSize: 16,
+  },
+  modalButtons: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  
+  modalButton: {
+    paddingVertical: 12,
+    borderRadius: 10,
+    width: "48%",
+    alignItems: "center",
+  },
+  cancelButton: {
+    backgroundColor: "#f0f0f0",
+    borderWidth: 1,
+    borderColor: "#ddd",
+  },
+  cancelButtonText: {
+    color: "#666",
+    fontWeight: "600",
+    fontSize: 16,
+  },
+  confirmButton: {
+    backgroundColor: "green",
+  },
+  confirmButtonText: {
+    color: "white",
+    fontWeight: "600",
+    fontSize: 16,
   },
 });
 

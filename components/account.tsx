@@ -47,7 +47,7 @@ const Account = () => {
       fetchUserInfo();
     }
   }, [isAuthenticated, fetchCart]);
-
+  
   // Định nghĩa interface cho thông tin người dùng
   interface UserInfo {
     _id?: string;
@@ -57,18 +57,18 @@ const Account = () => {
     status?: string;
     [key: string]: any;
   }
-
+  
   // Hàm để lấy thông tin người dùng từ API
   const fetchUserInfo = async () => {
     if (!isAuthenticated) return;
-
+    
     setLoadingUser(true);
-    // console.log("Bắt đầu lấy thông tin người dùng...");
+    console.log("Bắt đầu lấy thông tin người dùng...");
     try {
       // Kiểm tra thông tin cache trước
       const cachedUser = await getCachedUserInfo();
       if (cachedUser) {
-        // console.log("Đã lấy thông tin người dùng từ cache:", cachedUser);
+        console.log("Đã lấy thông tin người dùng từ cache:", cachedUser);
         if (cachedUser.user) {
           // Nếu dữ liệu người dùng nằm trong thuộc tính user (phù hợp với cấu trúc API thực tế)
           setUserInfo(cachedUser.user);
@@ -85,19 +85,19 @@ const Account = () => {
           });
         }
       }
-
+      
       // Luôn gọi API để lấy thông tin mới nhất
-      // console.log("Đang gọi API lấy thông tin người dùng...");
+      console.log("Đang gọi API lấy thông tin người dùng...");
       const apiUserInfo = await getUserInfo();
-      // console.log("Kết quả API:", apiUserInfo);
-
+      console.log("Kết quả API:", apiUserInfo);
+      
       if (apiUserInfo && apiUserInfo.user) {
         // Phân tích thông tin người dùng từ phản hồi API theo cấu trúc thực tế
         const userData = apiUserInfo.user;
-
+        
         // Lưu thông tin người dùng
         setUserInfo(userData);
-
+        
         setUserProfile({
           fullName: userData.fullName || "",
           phone: userData.phone || "",
@@ -114,7 +114,7 @@ const Account = () => {
       }
     } finally {
       setLoadingUser(false);
-      // console.log("Hoàn tất quá trình lấy thông tin người dùng");
+      console.log("Hoàn tất quá trình lấy thông tin người dùng");
     }
   };
 
@@ -127,12 +127,9 @@ const Account = () => {
           style: "destructive",
           onPress: async () => {
             try {
-              // Xóa thông tin người dùng khỏi state
               setUserInfo(null);
-              // Xóa thông tin trong AsyncStorage
               const { clearUserInfo } = require("../helper/getToken");
               await clearUserInfo();
-              // Đăng xuất từ store
               logout();
               Alert.alert("Thành công", "Đăng xuất thành công!");
               navigation.navigate("menu");
@@ -148,9 +145,46 @@ const Account = () => {
     }
   };
 
-  const handleUpdateProfile = () => {
-    Alert.alert("Thông báo", "Cập nhật thông tin thành công!");
-    setEditingProfile(false);
+  const handleUpdateProfile = async () => {
+    try {
+      setLoadingUser(true);
+      // Import service cập nhật thông tin người dùng
+      const accountService = require("../services/accountService").default;
+      const { getAuthConfig } = require("../helper/getToken");
+      
+      // Lấy token từ AuthConfig
+      const authConfig = await getAuthConfig();
+      const token = authConfig.headers?.authorization?.split(" ")[1];
+      
+      if (!token) {
+        Alert.alert("Lỗi", "Bạn cần đăng nhập lại để thực hiện thao tác này!");
+        return;
+      }
+      
+      // Chuẩn bị dữ liệu cập nhật
+      const updatedData = {
+        fullName: userProfile.fullName,
+        phone: userProfile.phone
+      };
+      
+      // Gọi API cập nhật thông tin
+      const result = await accountService.updateProfile(updatedData, token);
+      
+      if (result) {
+        // Cập nhật thông tin người dùng sau khi cập nhật thành công
+        await fetchUserInfo();
+        
+        Alert.alert("Thông báo", "Cập nhật thông tin thành công!");
+        setEditingProfile(false);
+      } else {
+        Alert.alert("Lỗi", "Không thể cập nhật thông tin. Vui lòng thử lại sau!");
+      }
+    } catch (error) {
+      console.log("Lỗi khi cập nhật thông tin:", error);
+      Alert.alert("Lỗi", "Không thể cập nhật thông tin. Vui lòng thử lại sau!");
+    } finally {
+      setLoadingUser(false);
+    }
   };
 
   const renderProfileContent = () => {
@@ -189,12 +223,17 @@ const Account = () => {
             >
               <Text style={styles.cancelButtonText}>Hủy</Text>
             </TouchableOpacity>
-
+            
             <TouchableOpacity
               style={[styles.profileButton, styles.saveButton]}
               onPress={handleUpdateProfile}
+              disabled={loadingUser}
             >
-              <Text style={styles.saveButtonText}>Lưu Thay Đổi</Text>
+              {loadingUser ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Text style={styles.saveButtonText}>Lưu Thay Đổi</Text>
+              )}
             </TouchableOpacity>
           </View>
         </View>
@@ -205,6 +244,9 @@ const Account = () => {
       <View style={styles.profileInfoContainer}>
         <View style={styles.profileInfoItem}>
           <Text style={styles.profileLabel}>Email:</Text>
+          <Text style={styles.profileValue}>
+            {userInfo?.email || user?.email || "Chưa cập nhật"}
+          </Text>
           <Text style={styles.profileValue}>
             {userInfo?.email || user?.email}
           </Text>
@@ -266,6 +308,20 @@ const Account = () => {
     );
   };
 
+  // Function to safely render greeting text
+  const renderUserGreeting = () => {
+    const displayName = userInfo?.fullName 
+      ? userInfo.fullName
+      : userInfo?.email || user?.email || "Người dùng";
+    
+    return `Xin chào, ${displayName}!`;
+  };
+
+  // Function to safely render user email
+  const renderUserEmail = () => {
+    return userInfo?.email || user?.email || "";
+  };
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.headerSection}>
@@ -281,14 +337,10 @@ const Account = () => {
                 ) : (
                   <>
                     <Text style={styles.userGreeting}>
-                      Xin chào,{" "}
-                      {userInfo?.fullName
-                        ? userInfo.fullName
-                        : userInfo?.email || user?.email || "Người dùng"}
-                      !
+                      {renderUserGreeting()}
                     </Text>
                     <Text style={styles.userEmail}>
-                      {userInfo?.email || user?.email}
+                      {renderUserEmail()}
                     </Text>
 
                     <View style={styles.accountActions}>
@@ -345,9 +397,9 @@ const Account = () => {
         <View style={styles.orderStatusSection}>
           <TouchableOpacity style={styles.orderStatusItem}>
             <View style={styles.orderIcon}>
-              <Ionicons name="wallet-outline" size={24} color="#4a6ce2" />
+              <Ionicons name="receipt-outline" size={24} color="#4a6ce2" />
             </View>
-            <Text style={styles.orderStatusText}>Chờ thanh toán</Text>
+            <Text style={styles.orderStatusText}>Danh sách đơn hàng</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.orderStatusItem}>
@@ -461,14 +513,12 @@ const Account = () => {
     </ScrollView>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f8f8f8",
   },
   headerSection: {
-    // backgroundColor: "#4a6ce2",
     backgroundColor: "#228654",
     paddingVertical: 25,
     paddingHorizontal: 15,
