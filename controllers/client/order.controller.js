@@ -9,8 +9,8 @@ const generateHelper = require("../../helper/generate");
 // [GET] /api/order
 module.exports.index = async (req, res) => {
     try {
-        const userId = req.user._id;
-        const orders = await Order.findOne({
+        const userId = req.user.id;
+        const orders = await Order.find({
             user_id: userId,
             deleted: false
         }).select("status payment totalPrice products userInfo cartId").lean();
