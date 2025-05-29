@@ -13,7 +13,19 @@ module.exports.index = async (req, res) => {
         const orders = await Order.findOne({
             user_id: userId,
             deleted: false
-        }).select("status payment totalPrice products userInfo");
+        }).select("status payment totalPrice products userInfo cartId").lean();
+
+        for (const order of orders) {
+            if (order.products.length > 0) {
+                for (const product of order.products) {
+                    const productInfo = await Product.findOne({
+                        _id: product.product_id
+                    });
+                    product.titleProduct = productInfo.title;
+                    product.thumbnail = productInfo.thumbnail;
+                };
+            };
+        };
 
         return res.json({
             code: 200,
@@ -100,7 +112,7 @@ module.exports.orderInfo = async (req, res) => {
             _id: orderId,
             user_id: req.user.id,
             deleted: false
-        }).select("cartId userInfo products totalPrice status").lean();
+        }).select("cartId userInfo products totalPrice status payment").lean();
 
         if (order.products.length > 0) {
             for (const product of order.products) {
@@ -171,12 +183,12 @@ module.exports.paymentData = async (req, res) => {
 module.exports.payment = async (req, res) => {
     try {
         const userId = req.user.id;
-        if(req.body.amount) {
+        if (req.body.amount) {
             req.body.amount = Number(req.body.amount);
         }
         const { orderId, amount, hmac } = req.body;
 
-        if(!amount || !orderId || !hmac) {
+        if (!amount || !orderId || !hmac) {
             return res.json({
                 code: 400,
                 message: "Dữ liệu gửi lên không đủ!"

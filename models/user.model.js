@@ -27,7 +27,16 @@ const userchema = new mongoose.Schema(
             type: Boolean,
             default: false
         },
-        deletedAt: Date
+        deletedBy: {
+            account_id: String,
+            deletedAt: Date
+        },
+        updatedBy: [
+            {
+                account_id: String,
+                updatedAt: Date
+            }
+        ]
     },
     {
         timestamps: true

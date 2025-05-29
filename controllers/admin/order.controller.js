@@ -8,12 +8,36 @@ module.exports.index = async (req, res) => {
             deleted: false
         };
 
-        const orders = await Order.find(find).lean();
+        if (req.query.orderId) {
+            find._id = req.query.orderId
+        };
 
+        // pagination
+        const objPagination = {
+            currentPage: 1,
+            limit: 5
+        };
+
+        if (req.query.page) {
+            objPagination.currentPage = parseInt(req.query.page);
+        };
+
+        if (req.query.limit) {
+            objPagination.limit = parseInt(req.query.limit);
+        }
+
+        objPagination.skip = (objPagination.currentPage - 1) * objPagination.limit;
+        // End pagination
+
+        const orders = await Order.find(find).limit(objPagination.limit).skip(objPagination.skip).lean();
+        const totalOrder = await Order.countDocuments({
+            deleted: false
+        });
         return res.json({
             code: 200,
             message: "Lấy danh sách đơn hàng thành công!",
-            orders: orders
+            orders: orders,
+            totalOrder: totalOrder
         });
     } catch (error) {
         return res.json({
@@ -130,3 +154,129 @@ module.exports.detail = async (req, res) => {
     };
 };
 
+// [GET] /api/admin/order/trash
+module.exports.trash = async (req, res) => {
+    try {
+        const find = {
+            deleted: true
+        };
+
+        if (req.query.orderId) {
+            find._id = req.query.orderId
+        };
+
+        // pagination
+        const objPagination = {
+            currentPage: 1,
+            limit: 5
+        };
+
+        if (req.query.page) {
+            objPagination.currentPage = parseInt(req.query.page);
+        };
+
+        if (req.query.limit) {
+            objPagination.limit = parseInt(req.query.limit);
+        }
+
+        objPagination.skip = (objPagination.currentPage - 1) * objPagination.limit;
+        // End pagination
+
+        const orders = await Order.find(find).limit(objPagination.limit).skip(objPagination.skip).lean();
+        const totalOrder = await Order.countDocuments({
+            deleted: true
+        });
+        return res.json({
+            code: 200,
+            message: "Lấy danh sách đơn hàng thành công!",
+            orders: orders,
+            totalOrder: totalOrder
+        });
+    } catch (error) {
+        return res.json({
+            code: 400,
+            message: "Lấy danh sách đơn hàng thất bại!"
+        });
+    };
+};
+
+//[PATCH] /api/admin/order/trash/restore
+module.exports.restore = async (req, res) => {
+    try {
+        const orderId = req.body.orderId;
+        await Order.updateOne({
+            _id: orderId
+        }, {
+            deleted: false
+        });
+
+        res.json({
+            code: 200,
+            message: "Khôi phục đơn hàng thành công!"
+        });
+
+    } catch (error) {
+        res.json({
+            code: 400,
+            message: "Khôi phục đơn hàng thất bại!"
+        });
+    };
+};
+
+//[DELETE] /api/admin/order/trash/delete/:orderId
+module.exports.deletePermanently = async (req, res) => {
+    try {
+        const orderId = req.params.orderId;
+        await Order.deleteOne({ _id: orderId });
+        res.json({
+            code: 200,
+            message: "Xóa vĩnh viễn đơn hàng thành công!"
+        });
+    } catch (error) {
+        res.json({
+            code: 400,
+            message: "Xóa vĩnh viễn đơn hàng thất bại!"
+        });
+    };
+};
+
+//[PATCH] /api/admin/order/trash/restore-multi
+module.exports.restoreMulti = async (req, res) => {
+    try {
+        const { ids, key } = req.body;
+        switch (key) {
+            case 'restore':
+                await Order.updateMany({
+                    _id: { $in: ids }
+                }, {
+                    deleted: false
+                });
+                res.json({
+                    code: 200,
+                    message: "Khôi phục đơn hàng thành công!"
+                })
+                break;
+            case 'delete':
+                await Order.deleteMany({
+                    _id: { $in: ids }
+                });
+
+                res.json({
+                    code: 200,
+                    message: "Xóa vĩnh viễn đơn hàng thành công!"
+                });
+                break;
+            default:
+                res.json({
+                    code: 400,
+                    message: "Khôi phục/xóa đơn hàng thất bại!"
+                });
+                break;
+        };
+    } catch (error) {
+        res.json({
+            code: 400,
+            message: "Khôi phục/xóa đơn hàng thất bại!"
+        });
+    };
+};

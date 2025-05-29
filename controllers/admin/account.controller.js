@@ -504,3 +504,56 @@ module.exports.getRoles = async (req, res) => {
         });
     };
 };
+
+// [POST] /api/admin/accounts/logout
+module.exports.logout = async (req, res) => {
+    try {
+        const accountId = req.account._id;
+        await Account.updateOne({
+            _id: accountId,
+            deleted: false,
+            status: "active"
+        }, { $inc: { tokenVersion: 1 } });
+
+        return res.json({
+            code: 200,
+            message: "Đăng xuất tài khoản thành công!"
+        });
+    } catch (error) {
+        return res.json({
+            code: 400,
+            message: "Đăng xuất tài khoản thất bại!"
+        });
+    };
+};
+
+// [GET] /api/admin/accounts/info-account
+module.exports.infoAccount = async (req, res) => {
+    try {
+        const accountId = req.account._id;
+
+        const account = await Account.findOne({
+            _id: accountId,
+            deleted: false,
+            status: "active"
+        }).select("fullName email avatar phone");
+
+        if (!account) {
+            return res.json({
+                code: 400,
+                message: "Không tìm thấy tài khoản!"
+            });
+        };
+
+        return res.json({
+            code: 200,
+            message: "Lấy tài khoản thành công!",
+            account: account
+        });
+    } catch (error) {
+        return res.json({
+            code: 400,
+            message: "Lấy tài khoản thất bại!"
+        });
+    };
+};

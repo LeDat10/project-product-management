@@ -36,4 +36,7 @@ router.patch("/trash/restore-multi", authMiddleware.requireAuth, controller.rest
 
 router.get("/get-roles", authMiddleware.requireAuth, controller.getRoles);
 
+router.post("/logout", authMiddleware.requireAuth, controller.logout);
+
+router.get("/info-account", authMiddleware.requireAuth, controller.infoAccount);
 module.exports = router;
