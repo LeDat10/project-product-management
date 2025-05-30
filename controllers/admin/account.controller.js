@@ -8,7 +8,7 @@ module.exports.index = async (req, res) => {
     try {
 
         const find = {
-            deleted:false
+            deleted: false
         };
         const sort = {};
 
@@ -50,15 +50,19 @@ module.exports.index = async (req, res) => {
             .lean();
 
         for (const account of accounts) {
-            const role = await Role.findOne({
-                _id: account.role_id,
-                deleted: false
-            });
+            if (account.role_id) {
+                const role = await Role.findOne({
+                    _id: account.role_id,
+                    deleted: false
+                });
 
-            if (role) {
-                account.roleTitle = role.title
-            };
+                if (role) {
+                    account.roleTitle = role.title
+                };
+            }
         };
+
+
 
         await Promise.all(accounts.map(async (account) => {
             if (account.updatedBy?.length) {
@@ -187,17 +191,19 @@ module.exports.detail = async (req, res) => {
             _id: id,
             deleted: false
         })
-            .select("avatar fullName email status role_id updatedBy deletedBy createdBy")
+            .select("avatar phone fullName email status role_id updatedBy deletedBy createdBy")
             .lean();
 
-        const role = await Role.findOne({
-            _id: account.role_id,
-            deleted: false
-        });
+        if (account.role_id) {
+            const role = await Role.findOne({
+                _id: account.role_id,
+                deleted: false
+            });
 
-        if (role) {
-            account.roleTitle = role.title
-        };
+            if (role) {
+                account.roleTitle = role.title
+            };
+        }
 
 
         if (account.updatedBy?.length) {
@@ -310,7 +316,7 @@ module.exports.login = async (req, res) => {
             return;
         };
 
-        if(account.status === "inactive") {
+        if (account.status === "inactive") {
             return res.json({
                 code: 400,
                 message: "Tài khoản này đã bị khóa. Không thể đăn nhập!"
